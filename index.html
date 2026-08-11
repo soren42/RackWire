@@ -31,9 +31,11 @@
          RESOLVED dashboard token values in (setTheme's second argument), so
          `var(--accent)` &c. resolve to the host's real palette, not a copy.
 
-     Two tokens stay literal by design (HANDOFF §5): --sn-signal-other, because
-     the four cable domains need an orange the SolariNet palette does not have,
-     and --sn-signal-open, held clear of the amber warn band. */
+     The cable signal hues are brand literals (Brand Standards v1.1 §Signal
+     Palette), NOT host tokens: a run's color states what it carries, and that
+     meaning must survive any host retheme and any edition upgrade. They are
+     specified against Rack Ink and are theme-invariant — the light theme does
+     not restate them; the plot field stays dark (or labels carry the relief). */
   :root {
     --sn-bg: var(--bg, #070A0F); --sn-surface: var(--panel, #0E151D); --sn-raised: var(--panel-3, #16202C);
     --sn-ink: var(--ink, #DFE8F2); --sn-dim: var(--ink-dim, #9DB0C4); --sn-faint: var(--ink-faint, #6E8399);
@@ -49,9 +51,14 @@
     --sn-maint: var(--violet, #9B87FF); --sn-neutral: var(--ink-dim, #8299AF);
     /* crit trio == the dashboard's .btn-danger recipe: crit border, crit-bg fill, crit text */
     --sn-crit-ink: var(--crit, #FF8A95); --sn-crit-surface: var(--crit-bg, #2A1218); --sn-crit-border: var(--crit, #6B2733);
-    --sn-signal-other: #E8833A;
-    /* unconnected ends: a true yellow, held clear of the amber warn band so the two never blur */
-    --sn-signal-open: #FFE04D;
+    /* Signal palette — cable domain hues, Brand Standards v1.1. Fixed order, never cycled:
+       network=cyan, power=amber, usb=blue (the USB-IF SuperSpeed echo), other=slate
+       (a run with no protocol identity wears no hue — distinct value and role from
+       Frame Steel, which stays chrome-only). Lighting/audio are reserved for Studio. */
+    --rw-cable-net: #22D3EE; --rw-cable-power: #FB923C; --rw-cable-usb: #2E6BE6; --rw-cable-other: #74889D;
+    --rw-cable-lighting: #E879F9; --rw-cable-audio: #A3E635;
+    /* unconnected ends: a true yellow, held clear of the amber power/warn band so the two never blur */
+    --rw-cable-open: #FFE04D;
     --font-display: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
@@ -134,11 +141,11 @@
         <div style="position:absolute;right:14px;top:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
           <button onClick="{{ goIssues }}" style="{{ issueBtnStyle }}">{{ issueSummary }}</button>
           <div style="padding:10px 12px;background:rgba(14,21,29,0.94);border:1px solid var(--sn-divider, #22303F);border-radius:13px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.9;color:var(--sn-dim, #9DB0C4)">
-            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--sn-accent, #22B8F0)"></span>Network</div>
-            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--sn-ok, #3DD68C)"></span>Power</div>
-            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--sn-maint, #9B87FF)"></span>USB / serial</div>
-            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--sn-signal-other, #E8833A)"></span>Other</div>
-            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--sn-signal-open, #FFE04D)"></span>Unconnected</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-net, #22D3EE)"></span>Network</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-power, #FB923C)"></span>Power</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-usb, #2E6BE6)"></span>USB / serial</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-other, #74889D)"></span>Other</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-open, #FFE04D)"></span>Unconnected</div>
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--sn-crit, #FF4D5E)"></span>Over capacity</div>
             <sc-if value="{{ liveOn }}" hint-placeholder-val="{{ false }}">
               <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--sn-divider, #22303F)">
@@ -1968,6 +1975,7 @@ class Component extends DCLogic {
     if (typeof getComputedStyle !== 'function') return {};
     const cs = getComputedStyle(document.documentElement);
     const g = (k, f) => (cs.getPropertyValue('--sn-' + k) || '').trim() || f;
+    const b = (k, f) => (cs.getPropertyValue('--rw-' + k) || '').trim() || f;
     const t = {
       bg: g('bg', '#070A0F'), surface: g('surface', '#0E151D'), raised: g('raised', '#16202C'),
       ink: g('ink', '#DFE8F2'), dim: g('dim', '#9DB0C4'), faint: g('faint', '#6E8399'), quiet: g('quiet', '#4E6B7E'),
@@ -1975,13 +1983,13 @@ class Component extends DCLogic {
       accent: g('accent', '#22B8F0'), accent700: g('accent-700', '#5FCCFA'), onField: g('on-field', '#06090D'),
       ok: g('ok', '#3DD68C'), warn: g('warn', '#F5A623'), crit: g('crit', '#FF4D5E'),
       maint: g('maint', '#9B87FF'), neutral: g('neutral', '#8299AF'),
-      open: g('signal-open', '#FFE04D'),
+      open: b('cable-open', '#FFE04D'),
       critInk: g('crit-ink', '#FF8A95'), critSurface: g('crit-surface', '#2A1218'), critBorder: g('crit-border', '#6B2733'),
       critBorder2: g('crit-border', '#6B2733')
     };
-    // signal-other stays outside the SolariNet set: the palette has no orange, and the
-    // four cable domains must remain distinguishable (network / power / USB / other).
-    t.dom = { net: t.accent, power: t.ok, usb: t.maint, other: g('signal-other', '#E8833A') };
+    // cable domain hues are brand literals (Brand Standards v1.1), deliberately outside
+    // the --sn-* bridge: a host retheme may repaint the chrome but never a run's meaning.
+    t.dom = { net: b('cable-net', '#22D3EE'), power: b('cable-power', '#FB923C'), usb: b('cable-usb', '#2E6BE6'), other: b('cable-other', '#74889D') };
     this._tok = t;
     return this._tok;
   }
