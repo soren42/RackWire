@@ -1,0 +1,29 @@
+<svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="920" height="300" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <path d="M 205.77,71.00 L 221.36,80.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 290.64,120.00 L 441.33,207.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,120.00 L 391.10,138.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,218.00 L 391.10,392.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 441.33,305.00 L 425.74,314.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 356.46,354.00 L 205.77,441.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 306.23,441.00 L 290.64,432.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 221.36,392.00 L 70.67,305.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,392.00 L 120.90,374.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,294.00 L 120.90,120.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 70.67,207.00 L 86.26,198.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 155.54,158.00 L 306.23,71.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 256.00,210.00 L 295.84,233.00 L 295.84,279.00 L 256.00,302.00 L 216.16,279.00 L 216.16,233.00 Z" fill="currentColor"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="fra" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla)"/></g>
+      <g clip-path="url(#cpa)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa)" filter="url(#gla)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>

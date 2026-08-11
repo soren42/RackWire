@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="32" height="32" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <rect width="512" height="512" rx="104" fill="#070A0E"/>
+    <path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+    <path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#63788F" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#63788F" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#63788F" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 256.00,204.00 L 301.03,230.00 L 301.03,282.00 L 256.00,308.00 L 210.97,282.00 L 210.97,230.00 Z" fill="#070A0E"/>
+  <path d="M 256.00,222.00 L 285.44,239.00 L 285.44,273.00 L 256.00,290.00 L 226.56,273.00 L 226.56,239.00 Z" fill="#fff"/>
+</svg>

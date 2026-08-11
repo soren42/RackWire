@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RackWire — Brand Standards</title>
+<style>
+:root {
+  --unit:8px;
+  --font-heading: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  --sig-cyan:#22D3EE; --sig-magenta:#E879F9; --sig-amber:#FB923C; --sig-lime:#A3E635;
+  --color-on-field:#fff;
+}
+html[data-mode="dark"] body {
+  --color-bg:#070A0E; --color-text:#EDF3F9; --color-paper:#0E141C;
+  --color-surface:#0E141C; --color-divider:#1E2937; --color-accent:#22D3EE;
+  --color-accent-700:#22D3EE; --color-neutral-700:#63788F; --color-muted:#63788F;
+  --color-field:#22D3EE; --color-field-ink:#070A0E;
+}
+html[data-mode="light"] body {
+  --color-bg:#F4F7FA; --color-text:#070A0E; --color-paper:#FFFFFF;
+  --color-surface:#FFFFFF; --color-divider:#D3DCE6; --color-accent:#0B7FA8;
+  --color-accent-700:#075A78; --color-neutral-700:#4A5B6B; --color-muted:#4A5B6B;
+  --color-field:#0B7FA8; --color-field-ink:#FFFFFF;
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--color-bg); font-family:var(--font-body);
+       -webkit-font-smoothing:antialiased; }
+code, .mono { font-family:var(--font-mono); }
+
+.page { width:1920px; height:1080px; padding:88px 96px; box-sizing:border-box;
+        background:var(--color-bg); color:var(--color-text); display:none;
+        flex-direction:column; gap:32px; margin:0 auto 24px; position:relative; overflow:hidden; }
+.page.is-current { display:flex; }
+
+.ph { flex:0 0 auto; }
+.eyebrow { font-size:24px; font-weight:800; letter-spacing:.18em; text-transform:uppercase;
+           color:var(--color-accent-700); margin:0 0 12px; }
+.ph h1 { font-size:76px; line-height:1.08; letter-spacing:-.02em; font-weight:700; margin:0;
+         font-family:var(--font-heading); }
+.ph .sub { font-size:26px; color:var(--color-muted); margin:14px 0 0; max-width:110ch; }
+.hrule { height:4px; background:var(--color-text); flex:0 0 auto; }
+.body { flex:1; display:flex; flex-direction:column; gap:26px; min-height:0; }
+.pf { margin-top:auto; border-top:2px solid var(--color-divider); padding-top:18px;
+      display:flex; justify-content:space-between; font-size:24px;
+      color:var(--color-neutral-700); flex:0 0 auto; }
+
+.lede { font-size:30px; line-height:1.45; margin:0; max-width:150ch; }
+.note { font-size:24px; line-height:1.4; color:var(--color-muted); margin:0;
+        border-top:2px solid var(--color-divider); padding-top:14px; }
+.note b { color:var(--color-text); }
+
+/* cover */
+.cover { flex:1; display:flex; flex-direction:column; }
+.cover-mark { flex:0 0 auto; }
+.cover-foot { margin-top:auto; }
+.display { font-size:150px; line-height:1.02; letter-spacing:-.03em; font-weight:800;
+           margin:0; font-family:var(--font-heading); }
+.close .display { font-size:104px; }
+.cover-sub { font-size:40px; color:var(--color-accent); margin:16px 0 0; font-weight:600;
+             letter-spacing:.02em; }
+.cover-rule { height:4px; background:var(--color-text); margin:40px 0 24px; }
+.cover-meta { display:flex; gap:64px; font-size:24px; color:var(--color-muted); flex-wrap:wrap; }
+.cover-meta b { color:var(--color-text); font-weight:600; }
+.close .cover-meta { flex-direction:column; gap:14px; }
+.close .cover-meta span { max-width:150ch; }
+
+/* tables */
+.ctable, .ttable, .stable { display:grid; width:100%; font-size:24px; }
+.ctable { grid-template-columns:200px 90px 420px 1fr; }
+.ttable { grid-template-columns:340px 380px 260px 1fr 200px; }
+.stable { grid-template-columns:260px 180px 220px 180px 1fr; }
+.tc { padding:13px 16px; border-bottom:2px solid var(--color-divider); line-height:1.35; }
+.th { font-size:24px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+      color:var(--color-accent-700); border-bottom:4px solid var(--color-text); }
+.tc.num { font-family:var(--font-mono); color:var(--color-text); }
+.tc.nm { font-weight:600; }
+.tc.ds, .tc.part { color:var(--color-muted); }
+
+/* columns */
+.cols3 { display:grid; grid-template-columns:repeat(3,1fr); gap:56px; }
+.cols2 { display:grid; grid-template-columns:repeat(2,1fr); gap:56px; }
+.cell .lead, .lead { font-size:30px; font-weight:600; margin:0 0 14px;
+       color:var(--color-accent); font-family:var(--font-heading); }
+.cell p { font-size:26px; line-height:1.5; margin:0; color:var(--color-muted); }
+
+/* specimens */
+.specimen3, .specimen4, .specimen6, .swgrid, .comps, .apps, .imgrid, .faces, .icgrid
+  { display:grid; gap:32px; flex:1; min-height:0; }
+.specimen3 { grid-template-columns:repeat(3,1fr); }
+.specimen4 { grid-template-columns:repeat(4,1fr); }
+.specimen6 { grid-template-columns:repeat(3,1fr); grid-template-rows:1fr 1fr; }
+.swgrid { grid-template-columns:repeat(4,1fr); grid-template-rows:1fr 1fr; }
+.comps, .apps { grid-template-columns:repeat(4,1fr); }
+.imgrid { grid-template-columns:repeat(3,1fr); }
+.faces { grid-template-columns:repeat(2,1fr); }
+.icgrid { grid-template-columns:repeat(6,1fr); flex:0 0 auto; }
+.samp svg { max-width:100%; }   /* never max-height: with a fixed width attribute it squashes */
+figure { margin:0; display:flex; flex-direction:column; gap:14px; min-height:0; }
+.samp { flex:1; display:flex; align-items:center; justify-content:center;
+        background:var(--color-surface); border:2px solid var(--color-divider);
+        border-radius:10px; padding:28px; min-height:0; overflow:hidden; }
+.samp.col { flex-direction:column; gap:18px; align-items:stretch; justify-content:center; }
+.samp.mono-l { color:var(--color-text); }
+/* Full-colour artwork is authored for an ink ground. In light mode the
+   surface token goes near-white and the wordmark disappears — which is the
+   very misuse page 07 prohibits. These cells keep their ground in both modes. */
+.samp.ink, .grid-bg.ink { background:#070A0E; border-color:#1E2937; }
+.cover-mark { align-self:flex-start; background:#070A0E; border-radius:14px; padding:24px; }
+figcaption { font-size:24px; color:var(--color-muted); line-height:1.35; }
+figcaption b { display:block; color:var(--color-text); font-weight:600; }
+figcaption span { display:block; }
+
+/* misuse */
+.mis .samp { position:relative; }
+.mis figcaption b { color:var(--sig-magenta); }
+.mis-rotate svg { transform:rotate(22deg); }
+.mis-stretch svg { transform:scaleX(1.55); }
+.mis-glow svg { filter:drop-shadow(0 0 16px var(--sig-cyan)) drop-shadow(0 0 30px var(--sig-magenta)); }
+.mis-onwhite { background:#fff; }
+.mis-recolour-run svg path[stroke="#22D3EE"] { stroke:#A3E635; }
+.mis-recolour-run svg path[stroke="#E879F9"] { stroke:#22D3EE; }
+.mis-recolour-run svg path[stroke="#FB923C"] { stroke:#E879F9; }
+.mis-respace { font-family:var(--font-heading); font-size:34px; letter-spacing:.4em;
+               font-weight:300; color:var(--color-muted); }
+.mis-respace svg { display:none; }
+.mis-respace::after { content:"R A C K W I R E"; }
+
+/* swatches */
+.sw .chip { height:150px; border-radius:10px; border:2px solid var(--color-divider); }
+.sw figcaption code { display:block; font-size:24px; color:var(--color-text); }
+.sw .role { color:var(--color-muted); margin-bottom:6px; }
+
+/* contrast matrix */
+.cmatrix { width:100%; border-collapse:collapse; font-size:24px; flex:0 0 auto; }
+.mflex { display:grid; grid-template-columns:1fr 1fr; }
+.mflex > div { min-height:0; }
+.cmatrix th, .cmatrix td { padding:7px 12px; border-bottom:2px solid var(--color-divider);
+       text-align:left; font-family:var(--font-mono); }
+.cmatrix th { font-family:var(--font-body); font-weight:800; text-transform:uppercase;
+       letter-spacing:.08em; color:var(--color-accent-700); border-bottom:4px solid var(--color-text); }
+tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
+
+/* split diagram */
+.split { flex-direction:row; gap:64px; }
+.constr { flex:0 0 720px; display:flex; flex-direction:column; gap:20px; }
+.grid-bg { flex:1; background:
+     linear-gradient(var(--color-divider) 1px, transparent 1px) 0 0/40px 40px,
+     linear-gradient(90deg, var(--color-divider) 1px, transparent 1px) 0 0/40px 40px,
+     var(--color-surface);
+   border:2px solid var(--color-divider); border-radius:10px;
+   display:flex; align-items:center; justify-content:center; }
+.clearframe { border:2px dashed var(--color-accent); padding:68px; }
+.caption { font-size:24px; color:var(--color-muted); margin:0; }
+.specs { flex:1; display:flex; flex-direction:column; justify-content:center; }
+.specs.wide { flex:0 0 auto; }
+.srow { display:grid; grid-template-columns:300px 1fr; gap:24px; padding:11px 0;
+        border-top:2px solid var(--color-divider); font-size:24px; line-height:1.4; }
+.srow b { font-weight:600; }
+.srow span { color:var(--color-muted); }
+.srow.open b::after { content:" ○"; color:var(--sig-amber); }
+.coldemo { display:grid; grid-template-columns:repeat(12,1fr); gap:16px;
+           width:88%; height:70%; }
+.coldemo i { background:var(--color-accent); opacity:.30; border-radius:3px; }
+
+/* typefaces */
+.face { background:var(--color-surface); border:2px solid var(--color-divider);
+        border-radius:10px; padding:36px; display:flex; flex-direction:column; gap:14px; }
+.fspec { font-size:86px; font-weight:600; letter-spacing:-.02em; line-height:1;
+         font-family:var(--font-heading); }
+.fspec.mono { font-family:var(--font-mono); font-size:74px; }
+.fsample { font-size:30px; margin:0 0 8px; color:var(--color-accent); }
+.frow { display:grid; grid-template-columns:180px 1fr; gap:20px; font-size:24px;
+        border-top:2px solid var(--color-divider); padding-top:12px; line-height:1.35; }
+.frow span { color:var(--color-muted); }
+
+/* icons */
+.icn { align-items:center; gap:12px; }
+.ico { width:76px; height:76px; color:var(--color-accent); }
+.icn figcaption { text-align:center; }
+
+/* imagery mockups */
+.shot { flex:1; background:var(--color-surface); border:2px solid var(--color-divider);
+        border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+.shot-bar { height:34px; background:var(--color-bg); display:flex; align-items:center;
+            gap:9px; padding:0 14px; border-bottom:2px solid var(--color-divider); }
+.shot-bar i { width:11px; height:11px; border-radius:50%; background:var(--color-divider); }
+.shot-canvas { flex:1; position:relative; background:var(--color-bg); }
+.wires { position:absolute; inset:0; width:100%; height:100%; }
+.node { position:absolute; width:52px; height:34px; border-radius:5px;
+        background:var(--color-surface); border:2px solid var(--color-muted); }
+.n1 { left:6%; top:16%; } .n2 { left:52%; top:56%; } .n3 { left:76%; top:32%; }
+.shot-list { flex:1; display:flex; flex-direction:column; gap:10px; padding:18px;
+             background:var(--color-bg); }
+.shot-list .row { font-family:var(--font-mono); font-size:24px; padding:9px 12px;
+       border-radius:5px; background:var(--color-surface);
+       border-left:5px solid var(--color-muted); color:var(--color-muted); }
+.row.ok { border-left-color:#A3E635; }
+.row.warn { border-left-color:#FB923C; }
+.row.err { border-left-color:#E879F9; }
+.shot-legend { flex:1; display:flex; flex-direction:column; justify-content:center;
+               gap:16px; padding:24px; background:var(--color-bg); font-size:26px; }
+.shot-legend span { display:flex; align-items:center; gap:14px; }
+.shot-legend i { width:34px; height:7px; border-radius:4px; }
+.policy { display:grid; grid-template-columns:repeat(3,1fr); gap:48px;
+          border-top:2px solid var(--color-divider); padding-top:24px; }
+.policy p:not(.lead) { font-size:24px; line-height:1.45; margin:0; color:var(--color-muted); }
+
+/* voice */
+.tonerows { display:flex; flex-direction:column; }
+.trow { display:grid; grid-template-columns:300px 1fr; gap:32px; padding:15px 0;
+        border-top:2px solid var(--color-divider); font-size:24px; line-height:1.4; }
+.trow b { font-weight:600; } .trow span { color:var(--color-muted); }
+
+/* copy pairs */
+.pairs { display:grid; grid-template-columns:1fr 1fr; gap:14px 40px; flex:1; min-height:0; }
+.pcell { background:var(--color-surface); border:2px solid var(--color-divider);
+         border-left-width:6px; border-radius:8px; padding:12px 20px;
+         display:flex; flex-direction:column; gap:8px; justify-content:center; }
+.pcell.no { border-left-color:var(--sig-magenta); }
+.pcell.yes { border-left-color:var(--sig-lime); }
+.pcell p { margin:0; font-size:26px; line-height:1.35; }
+.pcell.no p { color:var(--color-muted); }
+.tag { font-size:24px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; }
+.pcell.no .tag { color:var(--sig-magenta); }
+.pcell.yes .tag { color:var(--sig-lime); }
+
+/* components */
+.btn { font:600 26px var(--font-body); padding:16px 30px; border-radius:8px; border:none;
+       background:var(--color-field); color:var(--color-field-ink); cursor:pointer; }
+.btn.hover { filter:brightness(1.18); box-shadow:0 0 0 4px var(--color-divider); }
+.btn.dis { background:var(--color-divider); color:var(--color-muted); }
+.fld { display:flex; flex-direction:column; gap:8px; font-size:24px; }
+.fld span { color:var(--color-muted); }
+.fld input { font:400 26px var(--font-body); background:var(--color-bg);
+       color:var(--color-text); border:none; border-bottom:2px solid var(--color-divider);
+       padding:10px 4px; }
+.fld input.mono { font-family:var(--font-mono); }
+.card { background:var(--color-bg); border:2px solid var(--color-divider); border-radius:8px;
+        padding:20px; display:flex; flex-direction:column; gap:10px; font-size:26px; }
+.badge { align-self:flex-start; font:800 24px var(--font-mono); letter-spacing:.08em;
+         padding:5px 12px; border-radius:5px; }
+.badge.ok { background:#A3E635; color:#070A0E; }
+.card .meta { font-size:24px; color:var(--color-muted); }
+.alert { background:var(--color-bg); border:2px solid var(--sig-magenta);
+         border-left-width:6px; border-radius:8px; padding:20px;
+         display:flex; flex-direction:column; gap:10px; font-size:26px; }
+.alert span { font-size:24px; color:var(--color-muted); }
+
+/* applications */
+.app { flex:1; background:var(--color-surface); border:2px solid var(--color-divider);
+       border-radius:10px; overflow:hidden; display:flex; flex-direction:column; }
+.url { height:42px; background:var(--color-bg); border-bottom:2px solid var(--color-divider);
+       display:flex; align-items:center; padding:0 16px; font-size:24px;
+       color:var(--color-muted); }
+.appbody { flex:1; display:flex; flex-direction:column; }
+.apphead { padding:12px 16px; border-bottom:2px solid var(--color-divider);
+           background:var(--color-bg); }
+.appcanvas { flex:1; position:relative; background:var(--color-bg); }
+.appcanvas i { position:absolute; width:44px; height:30px; border-radius:4px;
+       border:2px solid var(--color-muted); background:var(--color-surface); }
+.d1 { left:12%; top:22%; } .d2 { left:56%; top:52%; } .d3 { left:70%; top:20%; }
+.site { background:var(--color-bg); }
+.sitehead { padding:16px; border-bottom:2px solid var(--color-divider); }
+.sitehero { flex:1; display:flex; flex-direction:column; justify-content:center;
+            gap:14px; padding:24px; }
+.sitehero b { font-size:30px; line-height:1.25; }
+.sitehero span { font-size:24px; color:var(--color-accent); }
+.manual { background:var(--color-bg); padding:22px; gap:16px; }
+.manrule { height:4px; background:var(--color-accent); }
+.manlines { display:flex; flex-direction:column; gap:12px; }
+.manlines i { height:9px; border-radius:4px; background:var(--color-divider); }
+.manlines i:nth-child(2) { width:88%; } .manlines i:nth-child(4) { width:72%; }
+.manlines i:last-child { width:54%; }
+.tile { align-items:center; justify-content:center; background:var(--color-bg); }
+
+
+/* contents parts */
+.cols4 { display:grid; grid-template-columns:repeat(4,1fr); gap:48px; flex:1; }
+.pcol { display:flex; flex-direction:column; gap:14px;
+        border-top:4px solid var(--color-accent); padding-top:20px; }
+.pnum { font:800 24px var(--font-mono); color:var(--color-accent-700); margin:0;
+        letter-spacing:.1em; }
+.pname { font-size:40px; font-weight:600; margin:0; line-height:1.15;
+         font-family:var(--font-heading); }
+.pdesc { font-size:24px; line-height:1.45; color:var(--color-muted); margin:0 0 8px; }
+.plist { display:flex; flex-direction:column; margin-top:auto; }
+.plist span { display:flex; gap:16px; font-size:24px; padding:11px 0;
+              border-top:2px solid var(--color-divider); }
+.plist i { font-family:var(--font-mono); font-style:normal; color:var(--color-muted); }
+.cols2.tight { gap:48px; align-items:start; flex:1; min-height:0; overflow:hidden; }
+.cols2.tight .cmatrix td, .cols2.tight .cmatrix th { padding:3px 12px; line-height:1.25; }
+.mlabel { font-size:24px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+          color:var(--color-accent-700); margin:0 0 6px; }
+
+/* chrome */
+.deck-chrome { position:fixed; right:20px; bottom:20px; z-index:99; display:flex; gap:8px;
+      background:#0E141C; border:1px solid #1E2937; border-radius:10px; padding:8px 12px;
+      align-items:center; color:#EDF3F9; font-size:14px; font-family:var(--font-body); }
+.deck-chrome button { font:600 14px var(--font-body); background:#22D3EE; color:#070A0E;
+      border:none; border-radius:6px; padding:7px 12px; cursor:pointer; }
+
+@media print {
+  @page { size: 13.333in 7.5in; margin:0; }
+  body { background:#fff; }
+  .deck-chrome { display:none !important; }
+  .page { display:flex !important; break-after:page; margin:0; }
+}
+</style>
+</head>
+<body data-type-floor="24">
+<div class="deck-chrome">
+  <button data-nav="prev">←</button>
+  <span data-slide-counter></span>
+  <button data-nav="next">→</button>
+  <button data-theme-toggle>Light</button>
+</div>
+<section class="page" data-label="01 Cover" data-notes="Poster field. Mark straddles the rule.">
+<div class="cover">
+  <div class="cover-mark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="280.0" height="280.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="fra-i1" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa-i1" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma-i1" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa-i1"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla-i1" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i1)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i1)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra-i1)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i1)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra-i1)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i1)"/></g>
+      <g clip-path="url(#cpa-i1)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i1)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa-i1)" filter="url(#gla-i1)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+  <div class="cover-foot">
+    <h1 class="display">RackWire</h1>
+    <p class="cover-sub">Brand Standards</p>
+    <div class="cover-rule"></div>
+    <div class="cover-meta">
+      <span><b>Version</b> 1.0.0</span>
+      <span><b>Issued</b> 2026-08-11</span>
+      <span><b>Format</b> Deck · 1920×1080</span>
+      <span><b>Home</b> rackwire.studio</span>
+    </div>
+  </div>
+</div></section>
+<section class="page" data-label="02 Contents" data-notes="Four parts, generated from the pages actually kept."><header class="ph"><p class="eyebrow">Contents</p><h1>What this guide settles</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="cols4"><div class="pcol"><p class="pnum">01</p><p class="pname">Foundation</p>
+      <p class="pdesc">Why the product exists, what it refuses to do, and how three editions share one mark.</p>
+      <div class="plist"><span><i>03</i>Origin &amp; principles</span><span><i>04</i>Product tiers</span></div></div><div class="pcol"><p class="pnum">02</p><p class="pname">Identity</p>
+      <p class="pdesc">Every approved lockup, the 60&deg; grid it is built on, and the six prohibitions.</p>
+      <div class="plist"><span><i>05</i>Logo suite</span><span><i>06</i>Construction</span><span><i>07</i>Misuse</span></div></div><div class="pcol"><p class="pnum">03</p><p class="pname">System</p>
+      <p class="pdesc">The measurable layer — hues bound to cable domains, ratios computed at render time.</p>
+      <div class="plist"><span><i>08</i>Colour</span><span><i>09</i>Contrast</span><span><i>10</i>Typefaces</span><span><i>11</i>Type scale</span><span><i>12</i>Spacing &amp; grid</span><span><i>13</i>Iconography</span></div></div><div class="pcol"><p class="pnum">04</p><p class="pname">Practice</p>
+      <p class="pdesc">How the system behaves once it meets a real surface and a real reader.</p>
+      <div class="plist"><span><i>14</i>Imagery &amp; AI</span><span><i>15</i>Voice &amp; tone</span><span><i>16</i>Copy rules</span><span><i>17</i>Components</span><span><i>18</i>Motion</span><span><i>19</i>Applications</span><span><i>20</i>Assets &amp; contact</span></div></div></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>02</span></footer></section>
+<section class="page" data-label="03 Background &amp; principles" data-notes="Columns. Origin then three falsifiable principles."><header class="ph"><p class="eyebrow">Foundation</p><h1>Origin &amp; principles</h1></header><div class="hrule"></div>
+<div class="body">
+  <p class="lede">RackWire began as a single HTML file for planning the cabling of a theatre rig —
+     one document, opened from disk, that made no network request and asked for no account. That
+     constraint turned out to be the product. A planner used in a rack room, a dimmer beach or a
+     loading dock has to work where the signal does not, and a plan that cannot be opened in ten
+     years is not a plan. Everything below follows from holding that line while the tool grew from
+     one stage to three editions.</p>
+  <div class="cols3">
+    <div class="cell">
+      <p class="lead">Offline is the default, not a mode</p>
+      <p>Every edition opens from a local file and completes its core work with the network
+         unplugged. Features that require a connection are additive and are named as such at the
+         point of use. A release that cannot be exercised on an air-gapped laptop has regressed.</p>
+    </div>
+    <div class="cell">
+      <p class="lead">Provenance over plausibility</p>
+      <p>Any figure a user could sign a load schedule against carries its source. Datasheet values
+         and representative values are visually distinct everywhere they appear, and the tool
+         never silently upgrades one to the other.</p>
+    </div>
+    <div class="cell">
+      <p class="lead">The file outlives the vendor</p>
+      <p>Plans are plain JSON with a documented shape, exportable to CSV without loss of the
+         fields an engineer needs. No format we ship should require RackWire to read it.</p>
+    </div>
+  </div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>03</span></footer></section>
+<section class="page" data-label="04 Product tiers" data-notes="Table plus specimen row. The mark never changes between tiers."><header class="ph"><p class="eyebrow">Foundation</p><h1>Product tiers</h1><p class="sub">One mark, three editions, one descriptor rule</p></header><div class="hrule"></div>
+<div class="body">
+  <div class="ttable">
+    <div class="tc th">Edition</div><div class="tc th">Audience</div><div class="tc th">Ceiling</div>
+    <div class="tc th">Scope</div><div class="tc th">Descriptor</div>
+    <div class="tc nm">RackWire</div><div class="tc">Homelab &amp; small business</div><div class="tc num">Up to 50 devices</div><div class="tc ds">Computing, networking and power gear. Plan, analyse, export.</div><div class="tc num">None</div><div class="tc nm">RackWire Pro</div><div class="tc">IT professionals</div><div class="tc num">Up to 150 devices</div><div class="tc ds">Everything in RackWire, plus realtime device discovery and analysis.</div><div class="tc num">PRO</div><div class="tc nm">RackWire Studio</div><div class="tc">Media production facilities</div><div class="tc num">Unlimited devices</div><div class="tc ds">Adds professional sound and lighting alongside network and power, with Pro discovery.</div><div class="tc num">STUDIO</div>
+  </div>
+  <div class="specimen3">
+    <figure><div class="samp ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="372.0" height="121.3" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="frb-i2" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cob-i2" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmb-i2" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpb-i2"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glb-i2" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb-i2)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i2)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frb-i2)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i2)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frb-i2)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i2)"/></g>
+      <g clip-path="url(#cpb-i2)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb-i2)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cob-i2)" filter="url(#glb-i2)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmb-i2)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmb-i2)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmb-i2)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmb-i2)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+      <figcaption>Base edition. No descriptor — never “Free” or “Base”.</figcaption></figure>
+    <figure><div class="samp ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="372.0" height="121.3" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="frhpro-i3" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cohpro-i3" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmhpro-i3" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cphpro-i3"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glhpro-i3" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhpro-i3)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glhpro-i3)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frhpro-i3)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glhpro-i3)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frhpro-i3)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glhpro-i3)"/></g>
+      <g clip-path="url(#cphpro-i3)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhpro-i3)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cohpro-i3)" filter="url(#glhpro-i3)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,77.3) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmhpro-i3)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmhpro-i3)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmhpro-i3)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmhpro-i3)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(0,143.0) scale(0.3)">
+        <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52" transform="translate(0.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(112.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 37,0 A 37,50 0 1 1 37,100 A 37,50 0 1 1 37,0" transform="translate(228.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+  </g>
+</svg>
+</div>
+      <figcaption>Descriptor left-aligned to the <b>R</b>.</figcaption></figure>
+    <figure><div class="samp ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="372.0" height="121.3" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="frhstudio-i4" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cohstudio-i4" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmhstudio-i4" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cphstudio-i4"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glhstudio-i4" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhstudio-i4)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glhstudio-i4)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frhstudio-i4)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glhstudio-i4)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frhstudio-i4)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glhstudio-i4)"/></g>
+      <g clip-path="url(#cphstudio-i4)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhstudio-i4)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cohstudio-i4)" filter="url(#glhstudio-i4)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,77.3) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmhstudio-i4)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmhstudio-i4)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmhstudio-i4)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmhstudio-i4)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(0,143.0) scale(0.3)">
+        <path d="M 58,24 A 27,27 0 1 0 30,50 A 27,27 0 1 1 2,76" transform="translate(0.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 62,0 M 31,0 L 31,100" transform="translate(106.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,66 A 33,33 0 0 0 66,66 L 66,0" transform="translate(214.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100 M 0,0 L 26,0 A 34,50 0 0 1 26,100 L 0,100" transform="translate(326.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100" transform="translate(432.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 37,0 A 37,50 0 1 1 37,100 A 37,50 0 1 1 37,0" transform="translate(483.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+  </g>
+</svg>
+</div>
+      <figcaption>Longest descriptor sets the tracking for all tiers.</figcaption></figure>
+  </div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>04</span></footer></section>
+<section class="page" data-label="05 Logo suite" data-notes="Specimen grid. Four approved lockups."><header class="ph"><p class="eyebrow">Identity</p><h1>Logo suite</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="specimen4">
+    <figure><div class="samp ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="300.0" height="97.8" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="frb-i5" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cob-i5" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmb-i5" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpb-i5"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glb-i5" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb-i5)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i5)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frb-i5)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i5)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frb-i5)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i5)"/></g>
+      <g clip-path="url(#cpb-i5)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb-i5)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cob-i5)" filter="url(#glb-i5)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmb-i5)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmb-i5)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmb-i5)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmb-i5)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+      <figcaption><b>Primary</b><span>Default signature wherever width allows</span></figcaption></figure>
+    <figure><div class="samp ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 586 496" width="231.6" height="196.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="frc-i6" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coc-i6" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmc-i6" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpc-i6"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glc-i6" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(124.2,14) scale(0.66)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frc-i6)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glc-i6)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frc-i6)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glc-i6)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frc-i6)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glc-i6)"/></g>
+      <g clip-path="url(#cpc-i6)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frc-i6)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coc-i6)" filter="url(#glc-i6)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(45.1,381.9) scale(0.78)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmc-i6)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmc-i6)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmc-i6)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmc-i6)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+      <figcaption><b>Stacked</b><span>Square placements, splash screens, merchandise</span></figcaption></figure>
+    <figure><div class="samp ink"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="196.0" height="196.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="fra-i7" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa-i7" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma-i7" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa-i7"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla-i7" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i7)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i7)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra-i7)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i7)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra-i7)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i7)"/></g>
+      <g clip-path="url(#cpa-i7)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i7)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa-i7)" filter="url(#gla-i7)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+      <figcaption><b>Mark</b><span>Avatars, favicons, watermarks, loading states</span></figcaption></figure>
+    <figure><div class="samp mono-l"><svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="300.0" height="97.8" role="img" aria-label="RackWire">
+  
+  
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <path d="M 205.77,71.00 L 221.36,80.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 290.64,120.00 L 441.33,207.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,120.00 L 391.10,138.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,218.00 L 391.10,392.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 441.33,305.00 L 425.74,314.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 356.46,354.00 L 205.77,441.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 306.23,441.00 L 290.64,432.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 221.36,392.00 L 70.67,305.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,392.00 L 120.90,374.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,294.00 L 120.90,120.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 70.67,207.00 L 86.26,198.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 155.54,158.00 L 306.23,71.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 256.00,210.00 L 295.84,233.00 L 295.84,279.00 L 256.00,302.00 L 216.16,279.00 L 216.16,233.00 Z" fill="currentColor"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+      <figcaption><b>Monochrome</b><span>Busy grounds, one-colour print, laser etch</span></figcaption></figure>
+  </div>
+  <p class="note">The monochrome cut inherits <code>currentColor</code>, so a single file serves both
+     knockout and solid-ink reproduction. Its interlace is cut into the geometry rather than masked,
+     which is why it survives scaling inside a lockup.</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>05</span></footer></section>
+<section class="page" data-label="06 Construction &amp; clear space" data-notes="Split diagram. Unit derived from real artwork."><header class="ph"><p class="eyebrow">Identity</p><h1>Construction &amp; clear space</h1></header><div class="hrule"></div>
+<div class="body split">
+  <div class="constr">
+    <div class="grid-bg ink">
+      <div class="clearframe"><svg style="display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="300.0" height="300.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="fra-i9" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa-i9" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma-i9" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa-i9"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla-i9" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i9)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i9)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra-i9)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i9)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra-i9)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i9)"/></g>
+      <g clip-path="url(#cpa-i9)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i9)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa-i9)" filter="url(#gla-i9)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+    </div>
+    <p class="caption">Dashed frame = one core node <b>C</b> on every side.</p>
+  </div>
+  <div class="specs">
+    <div class="srow"><b>Unit</b><span><i>C</i> — the width of the core node, 116 u of the 512 u artboard</span></div>
+    <div class="srow"><b>Grid</b><span>60°. Every run lies on a hexagonal axis; no other angle exists in the mark</span></div>
+    <div class="srow"><b>Circumradius</b><span>156 u</span></div>
+    <div class="srow"><b>Run body / casing</b><span>30 u / 36 u — a 3 u dark gap each side reads as overlap</span></div>
+    <div class="srow"><b>Overhang</b><span>44 u, which must exceed half the casing cut</span></div>
+    <div class="srow"><b>Clear space</b><span>1 <i>C</i> on all four sides of any lockup</span></div>
+    <div class="srow"><b>Minimum — mark</b><span>24 px screen · 7 mm print</span></div>
+    <div class="srow"><b>Minimum — lockup</b><span>120 px screen · 32 mm print</span></div>
+    <div class="srow"><b>Below 40 px</b><span>Switch to the simplified favicon cut; casing gaps close up</span></div>
+  </div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>06</span></footer></section>
+<section class="page" data-label="07 Logo misuse" data-notes="Specimen grid. Prohibitions only, no approved examples."><header class="ph"><p class="eyebrow">Identity</p><h1>Misuse</h1><p class="sub">Prohibitions only — none of these is a judgement call</p></header><div class="hrule"></div>
+<div class="body">
+  <div class="specimen6"><figure class="mis">
+      <div class="samp ink mis-recolour-run"><svg style="display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="112.0" height="112.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="fra-i10" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa-i10" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma-i10" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa-i10"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla-i10" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i10)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i10)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra-i10)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i10)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra-i10)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i10)"/></g>
+      <g clip-path="url(#cpa-i10)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i10)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa-i10)" filter="url(#gla-i10)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+      <figcaption><b>Recolour a signal run</b><span>Hues are bound to cable domains</span></figcaption></figure><figure class="mis">
+      <div class="samp ink mis-rotate"><svg style="display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="112.0" height="112.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="fra-i11" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa-i11" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma-i11" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa-i11"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla-i11" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i11)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i11)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra-i11)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i11)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra-i11)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i11)"/></g>
+      <g clip-path="url(#cpa-i11)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i11)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa-i11)" filter="url(#gla-i11)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+      <figcaption><b>Rotate the mark</b><span>The vertical steel run anchors it upright</span></figcaption></figure><figure class="mis">
+      <div class="samp ink mis-stretch"><svg style="display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="112.0" height="112.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="fra-i12" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa-i12" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma-i12" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa-i12"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla-i12" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i12)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i12)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra-i12)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i12)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra-i12)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i12)"/></g>
+      <g clip-path="url(#cpa-i12)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i12)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa-i12)" filter="url(#gla-i12)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+      <figcaption><b>Stretch either axis</b><span>The 60° grid is destroyed by non-uniform scale</span></figcaption></figure><figure class="mis">
+      <div class="samp ink mis-glow"><svg style="display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="112.0" height="112.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="fra-i13" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa-i13" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma-i13" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa-i13"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla-i13" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i13)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i13)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra-i13)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i13)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra-i13)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i13)"/></g>
+      <g clip-path="url(#cpa-i13)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i13)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa-i13)" filter="url(#gla-i13)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+      <figcaption><b>Add glow, shadow or bevel</b><span>The supplied art already carries its own light</span></figcaption></figure><figure class="mis">
+      <div class="samp  mis-onwhite"><svg style="display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="112.0" height="112.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="fra-i14" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa-i14" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma-i14" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa-i14"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla-i14" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i14)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i14)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra-i14)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i14)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra-i14)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i14)"/></g>
+      <g clip-path="url(#cpa-i14)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i14)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa-i14)" filter="url(#gla-i14)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+      <figcaption><b>Place full colour on white</b><span>Neon needs the ink ground behind it</span></figcaption></figure><figure class="mis">
+      <div class="samp ink mis-respace"><svg style="display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="112.0" height="112.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="fra-i15" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa-i15" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma-i15" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa-i15"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla-i15" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i15)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i15)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra-i15)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i15)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra-i15)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla-i15)"/></g>
+      <g clip-path="url(#cpa-i15)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra-i15)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa-i15)" filter="url(#gla-i15)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+      <figcaption><b>Retype or respace the wordmark</b><span>It is drawn outlines, not live type</span></figcaption></figure></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>07</span></footer></section>
+<section class="page" data-label="08 Colour palette" data-notes="Specimen grid. Four signal hues capped as accents."><header class="ph"><p class="eyebrow">System</p><h1>Colour</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="swgrid"><figure class="sw">
+    <div class="chip" style="background:#22D3EE"></div>
+    <figcaption><b>Signal Cyan</b><span class="role">Network &amp; data</span>
+      <code data-allow="hex">#22D3EE</code>
+      <code data-allow="hex">RGB 34 211 238</code>
+      <code data-allow="hex">CMYK 72 0 6 0</code></figcaption></figure><figure class="sw">
+    <div class="chip" style="background:#E879F9"></div>
+    <figcaption><b>Signal Magenta</b><span class="role">Lighting &amp; DMX</span>
+      <code data-allow="hex">#E879F9</code>
+      <code data-allow="hex">RGB 232 121 249</code>
+      <code data-allow="hex">CMYK 27 56 0 0</code></figcaption></figure><figure class="sw">
+    <div class="chip" style="background:#FB923C"></div>
+    <figcaption><b>Signal Amber</b><span class="role">Power &amp; distribution</span>
+      <code data-allow="hex">#FB923C</code>
+      <code data-allow="hex">RGB 251 146 60</code>
+      <code data-allow="hex">CMYK 0 51 84 0</code></figcaption></figure><figure class="sw">
+    <div class="chip" style="background:#A3E635"></div>
+    <figcaption><b>Signal Lime</b><span class="role">Audio</span>
+      <code data-allow="hex">#A3E635</code>
+      <code data-allow="hex">RGB 163 230 53</code>
+      <code data-allow="hex">CMYK 40 0 87 0</code></figcaption></figure><figure class="sw">
+    <div class="chip" style="background:#63788F"></div>
+    <figcaption><b>Frame Steel</b><span class="role">Structure, chrome</span>
+      <code data-allow="hex">#63788F</code>
+      <code data-allow="hex">RGB 99 120 143</code>
+      <code data-allow="hex">CMYK 56 34 20 12</code></figcaption></figure><figure class="sw">
+    <div class="chip" style="background:#EDF3F9"></div>
+    <figcaption><b>Type White</b><span class="role">Body copy, wordmark</span>
+      <code data-allow="hex">#EDF3F9</code>
+      <code data-allow="hex">RGB 237 243 249</code>
+      <code data-allow="hex">CMYK 3 1 0 0</code></figcaption></figure><figure class="sw">
+    <div class="chip" style="background:#0E141C"></div>
+    <figcaption><b>Surface</b><span class="role">Panels, cards</span>
+      <code data-allow="hex">#0E141C</code>
+      <code data-allow="hex">RGB 14 20 28</code>
+      <code data-allow="hex">CMYK 78 62 47 76</code></figcaption></figure><figure class="sw">
+    <div class="chip" style="background:#070A0E"></div>
+    <figcaption><b>Rack Ink</b><span class="role">Ground, cable casing</span>
+      <code data-allow="hex">#070A0E</code>
+      <code data-allow="hex">RGB 7 10 14</code>
+      <code data-allow="hex">CMYK 82 66 51 90</code></figcaption></figure></div>
+  <p class="note">The four signal hues are the same tokens the planner uses for its cable domains, so
+     the identity and the running application cannot drift apart. Steel carries structure only and
+     must never be given signal meaning. Across any surface the signal hues together cover no more
+     than <b>10%</b> — the composition reads dark first, colour second.</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>08</span></footer></section>
+<section class="page" data-label="09 Contrast &amp; accessibility" data-notes="Two matrices. Every ratio measured by the runtime at render time."><header class="ph"><p class="eyebrow">System</p><h1>Contrast</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="cols2 tight mflex">
+    <div>
+      <p class="mlabel">Ground, ink, chrome and accent</p>
+      <table data-contrast-matrix class="cmatrix"
+        data-palette='[{"name":"Ink","hex":"#EDF3F9"},{"name":"Steel","hex":"#63788F"},{"name":"Cyan","hex":"#22D3EE"},{"name":"Ground","hex":"#070A0E"}]'></table>
+    </div>
+    <div>
+      <p class="mlabel">Remaining signal hues against ground</p>
+      <table data-contrast-matrix class="cmatrix"
+        data-palette='[{"name":"Magenta","hex":"#E879F9"},{"name":"Amber","hex":"#FB923C"},{"name":"Lime","hex":"#A3E635"},{"name":"Ground","hex":"#070A0E"}]'></table>
+    </div>
+  </div>
+  <p class="note"><b>Measured at render time, not authored.</b> Body copy ≥ 7:1; chrome ≥ 3:1; below 3:1
+     prohibited. <b>Frame Steel</b> clears 3:1 but not 7:1 — chrome only, never body copy.</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>09</span></footer></section>
+<section class="page" data-label="10 Typefaces" data-notes="Specimen grid. Two faces, both from the system stack."><header class="ph"><p class="eyebrow">System</p><h1>Typefaces</h1><p class="sub">System stack by policy — a webfont that fails to load changes every measurement</p></header><div class="hrule"></div>
+<div class="body">
+  <div class="faces">
+    <div class="face">
+      <div class="fspec">Aa Ee Rr</div>
+      <p class="fsample">Terminate the DMX chain at the last fixture.</p>
+      <div class="frow"><b>Role</b><span>Headings, wordmark substitute, UI labels</span></div>
+      <div class="frow"><b>Stack</b><span>system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial</span></div>
+      <div class="frow"><b>Licence</b><span>None required — resolves to the host OS face</span></div>
+      <div class="frow"><b>Weights</b><span>400 regular · 600 semibold · 800 for eyebrows</span></div>
+    </div>
+    <div class="face">
+      <div class="fspec mono">0123 Aa</div>
+      <p class="fsample mono">SOCA-19 · 32 A · 3-phase · 208 V</p>
+      <div class="frow"><b>Role</b><span>All measured values, hex, port and cable identifiers</span></div>
+      <div class="frow"><b>Stack</b><span>ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas</span></div>
+      <div class="frow"><b>Licence</b><span>None required — resolves to the host OS face</span></div>
+      <div class="frow"><b>Weights</b><span>400 regular · 600 semibold</span></div>
+    </div>
+  </div>
+  <p class="note">The wordmark is <b>drawn outlines</b>, not set type, so no licensed display face is
+     required to reproduce the logo. Where a heading must visually echo the wordmark, use the heading
+     stack at 600 with <code>-0.02em</code> tracking — never attempt to re-set the logotype.</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>10</span></footer></section>
+<section class="page" data-label="11 Type scale" data-notes="Table. 24px is the floor for this format."><header class="ph"><p class="eyebrow">System</p><h1>Type scale</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="stable">
+    <div class="tc th">Step</div><div class="tc th">Size</div><div class="tc th">Line height</div>
+    <div class="tc th">Weight</div><div class="tc th">Use</div>
+    <div class="tc nm">Display</div><div class="tc num">104px</div><div class="tc num">1.02</div><div class="tc num">800</div><div class="tc ds">Cover and closing poster fields only</div><div class="tc nm">Title</div><div class="tc num">76px</div><div class="tc num">1.08</div><div class="tc num">700</div><div class="tc ds">Page titles, one per page</div><div class="tc nm">Section</div><div class="tc num">40px</div><div class="tc num">1.2</div><div class="tc num">600</div><div class="tc ds">Block headings inside a page body</div><div class="tc nm">Lead</div><div class="tc num">30px</div><div class="tc num">1.45</div><div class="tc num">600</div><div class="tc ds">Opening paragraph, cell lead lines</div><div class="tc nm">Body</div><div class="tc num">26px</div><div class="tc num">1.5</div><div class="tc num">400</div><div class="tc ds">Default prose. The minimum for running copy</div><div class="tc nm">Caption</div><div class="tc num">24px</div><div class="tc num">1.4</div><div class="tc num">400</div><div class="tc ds">Figure captions, table cells, footer</div><div class="tc nm">Eyebrow</div><div class="tc num">24px</div><div class="tc num">1.2</div><div class="tc num">800</div><div class="tc ds">Uppercase, 0.18em tracking, accent coloured</div>
+  </div>
+  <p class="note"><b>The floor is 24px</b> in this format and 12px in the printed document format.
+     Nothing renders below it, including captions, table cells and legal lines. If content does not
+     fit above the floor, the page is carrying too much and must be split — never shrink to fit.</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>11</span></footer></section>
+<section class="page" data-label="12 Spacing, grid &amp; placement" data-notes="Split diagram. The 8px unit and mark placement."><header class="ph"><p class="eyebrow">System</p><h1>Spacing, grid &amp; placement</h1></header><div class="hrule"></div>
+<div class="body split">
+  <div class="constr">
+    <div class="grid-bg gb2">
+      <div class="coldemo"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <p class="caption">12 columns · 32px gutter · 96px margin, at 1920px.</p>
+  </div>
+  <div class="specs">
+    <div class="srow"><b>Base unit</b><span>8px. Every gap, pad and offset is a multiple</span></div>
+    <div class="srow"><b>Scale</b><span>8 · 16 · 24 · 32 · 48 · 64 · 96 · 128</span></div>
+    <div class="srow"><b>Deck page</b><span>1920×1080, padding 88px 96px, block gap 32px</span></div>
+    <div class="srow"><b>Document page</b><span>816×1056 Letter · 794×1123 A4, padding 44px 60px 36px</span></div>
+    <div class="srow"><b>App header</b><span>Mark at 32px, left, 24px from the edge, vertically centred</span></div>
+    <div class="srow"><b>Marketing site</b><span>Primary lockup, 180px wide, 96px from the left margin</span></div>
+    <div class="srow"><b>Manual masthead</b><span>Tier lockup, 260px wide, above a 4px accent rule</span></div>
+    <div class="srow"><b>Clearance</b><span>1 <i>C</i> everywhere, without exception for tight headers</span></div>
+  </div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>12</span></footer></section>
+<section class="page" data-label="13 Iconography" data-notes="Specimen grid. Named library, not a bespoke set."><header class="ph"><p class="eyebrow">System</p><h1>Iconography</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="icgrid"><figure class="icn">
+    <svg viewBox="0 0 24 24" class="ico"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor"
+      stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <figcaption>Rack unit</figcaption></figure><figure class="icn">
+    <svg viewBox="0 0 24 24" class="ico"><path d="M12 3v7m0 4v7M5 12h14" fill="none" stroke="currentColor"
+      stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <figcaption>Patch point</figcaption></figure><figure class="icn">
+    <svg viewBox="0 0 24 24" class="ico"><path d="M4 12a8 8 0 0 1 16 0M8 12a4 4 0 0 1 8 0" fill="none" stroke="currentColor"
+      stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <figcaption>Discovery</figcaption></figure><figure class="icn">
+    <svg viewBox="0 0 24 24" class="ico"><path d="M6 4h12v16H6zM9 8h6M9 12h6M9 16h3" fill="none" stroke="currentColor"
+      stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <figcaption>Device</figcaption></figure><figure class="icn">
+    <svg viewBox="0 0 24 24" class="ico"><path d="M3 12h6l2-5 3 10 2-5h5" fill="none" stroke="currentColor"
+      stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <figcaption>Signal</figcaption></figure><figure class="icn">
+    <svg viewBox="0 0 24 24" class="ico"><path d="M12 4l8 4v8l-8 4-8-4V8z" fill="none" stroke="currentColor"
+      stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <figcaption>Enclosure</figcaption></figure></div>
+  <div class="specs wide">
+    <div class="srow"><b>Library</b><span>Lucide — used unmodified for every general-purpose icon</span></div>
+    <div class="srow"><b>Licence</b><span>ISC. Redistributable; retain the copyright notice in the asset bundle</span></div>
+    <div class="srow"><b>Stroke</b><span>1.75px on a 24px grid, round cap, round join</span></div>
+    <div class="srow"><b>Sizes</b><span>16 · 20 · 24 · 32px. Never scale a 24px icon past 32px</span></div>
+    <div class="srow"><b>Bespoke</b><span>Only for rack-domain concepts Lucide has no term for, drawn to the
+      same grid and stroke. The six above are the complete bespoke set</span></div>
+    <div class="srow"><b>Colour</b><span>Inherits <code>currentColor</code>. Signal hues only when the icon
+      denotes that cable domain</span></div>
+  </div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>13</span></footer></section>
+<section class="page" data-label="14 Imagery &amp; AI policy" data-notes="Specimen grid plus policy. Screenshots are the imagery."><header class="ph"><p class="eyebrow">Practice</p><h1>Imagery &amp; AI policy</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="imgrid">
+    <figure><div class="shot">
+      <div class="shot-bar"><i></i><i></i><i></i></div>
+      <div class="shot-canvas">
+        <span class="node n1"></span><span class="node n2"></span><span class="node n3"></span>
+        <svg class="wires" viewBox="0 0 320 150" preserveAspectRatio="none">
+          <path d="M64,42 C120,42 140,104 196,104" stroke="#22D3EE" fill="none" stroke-width="3"/>
+          <path d="M64,42 C130,42 150,68 256,68" stroke="#FB923C" fill="none" stroke-width="3"/>
+          <path d="M196,104 C230,104 236,68 256,68" stroke="#A3E635" fill="none" stroke-width="3"/>
+        </svg>
+      </div></div>
+      <figcaption><b>Plan canvas</b><span>Ground background, no browser chrome, 16:10</span></figcaption></figure>
+    <figure><div class="shot">
+      <div class="shot-bar"><i></i><i></i><i></i></div>
+      <div class="shot-list">
+        <span class="row ok">DATASHEET · Source Four LED S3</span>
+        <span class="row warn">NOMINAL · 19-pin distro</span>
+        <span class="row ok">DATASHEET · Rio3224-D2</span>
+        <span class="row err">UNTERMINATED · universe 2</span>
+      </div></div>
+      <figcaption><b>Punch list</b><span>Real seeded data, never lorem</span></figcaption></figure>
+    <figure><div class="shot">
+      <div class="shot-bar"><i></i><i></i><i></i></div>
+      <div class="shot-legend">
+        <span><i style="background:#22D3EE"></i>Network</span>
+        <span><i style="background:#E879F9"></i>DMX</span>
+        <span><i style="background:#FB923C"></i>Power</span>
+        <span><i style="background:#A3E635"></i>Audio</span>
+      </div></div>
+      <figcaption><b>Legend detail</b><span>Cropped at 2×, one concept per figure</span></figcaption></figure>
+  </div>
+  <div class="policy">
+    <div><p class="lead">Treatment recipe</p>
+      <p>Capture at 2× device pixel ratio on the ground background with browser chrome removed.
+         Crop to the feature, never the whole window. No drop shadow, no perspective, no device
+         frame. Corner radius 8px. Annotate with the accent at 2px stroke only.</p></div>
+    <div><p class="lead">Generated imagery — permitted</p>
+      <p>Exploratory concept work and internal moodboards. Abstract textures and geometry where no
+         human, no identifiable artist's style and no third-party mark is depicted.</p></div>
+    <div><p class="lead">Generated imagery — prohibited</p>
+      <p>Any screenshot or depiction of the product. Anything imitating a living artist's style.
+         Depictions of real equipment, venues or people. Any generated asset that ships without
+         disclosure in the asset record.</p></div>
+  </div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>14</span></footer></section>
+<section class="page" data-label="15 Voice &amp; tone" data-notes="Columns. Attributes need real opposites."><header class="ph"><p class="eyebrow">Practice</p><h1>Voice &amp; tone</h1></header><div class="hrule"></div>
+<div class="body">
+  <p class="lede">RackWire talks to somebody standing in front of a half-patched rack with a call in
+     forty minutes. It states what is true, names what it does not know, and gets out of the way.</p>
+  <div class="cols3">
+    <div class="cell"><p class="lead">Precise, not pedantic</p>
+      <p>Give the number, the unit and the source. Do not restate the obvious, do not hedge a value
+         that is measured, and never pad a sentence to sound thorough.</p></div>
+    <div class="cell"><p class="lead">Plain, not folksy</p>
+      <p>Short declarative sentences in the language an engineer already uses. No exclamation marks,
+         no jokes in error states, no addressing the user as “friend”.</p></div>
+    <div class="cell"><p class="lead">Candid, not alarming</p>
+      <p>Name the failure and the fix in the same breath. A warning that cannot be acted on should
+         not have been written.</p></div>
+  </div>
+  <div class="tonerows">
+    <div class="trow"><b>Onboarding</b><span>Brief and confident. Assume competence; the user has racked gear before.</span></div>
+    <div class="trow"><b>Analysis warning</b><span>State the rule, the offending element, and the remedy. No apology.</span></div>
+    <div class="trow"><b>Error</b><span>What failed, what was preserved, what to do next — in that order.</span></div>
+    <div class="trow"><b>Marketing</b><span>Claims that survive a datasheet check. Name the ceiling, not “unlimited power”.</span></div>
+  </div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>15</span></footer></section>
+<section class="page" data-label="16 Copy rules" data-notes="Columns. Every prohibition carries its rewrite."><header class="ph"><p class="eyebrow">Practice</p><h1>Copy rules</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="pairs"><div class="pcell no"><span class="tag">Don’t</span><p>Oops! Something went wrong 😕</p></div><div class="pcell yes"><span class="tag">Do</span><p>Import failed at line 42: unknown port type “XLR7”.</p></div><div class="pcell no"><span class="tag">Don’t</span><p>Unlimited devices, infinite possibilities!</p></div><div class="pcell yes"><span class="tag">Do</span><p>Studio plans an unlimited device count. Pro stops at 150.</p></div><div class="pcell no"><span class="tag">Don’t</span><p>This device might use around 500W</p></div><div class="pcell yes"><span class="tag">Do</span><p>575 W — nominal. Confirm before signing a load schedule.</p></div><div class="pcell no"><span class="tag">Don’t</span><p>Warning: potential DMX issue detected</p></div><div class="pcell yes"><span class="tag">Do</span><p>Universe 2 is unterminated. Terminate at the last fixture.</p></div></div>
+  <p class="note">Each “don’t” above shipped on a real surface at some point. The pattern behind every
+     rewrite: <b>name the thing, give the number, state the next action.</b> Adjectives that cannot be
+     checked against a datasheet do not appear on any RackWire surface, marketing included.</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>16</span></footer></section>
+<section class="page" data-label="17 Components" data-notes="Specimen grid. The smallest set that proves the system."><header class="ph"><p class="eyebrow">Practice</p><h1>Components</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="comps">
+    <figure><div class="samp col">
+      <button class="btn">Analyse plan</button>
+      <button class="btn hover">Analyse plan</button>
+      <button class="btn dis">Analyse plan</button>
+    </div><figcaption><b>Button</b><span>Rest · hover · disabled. Ground text on an accent field</span></figcaption></figure>
+    <figure><div class="samp col">
+      <label class="fld"><span>Device name</span>
+        <input value="Source Four LED S3" readonly></label>
+      <label class="fld"><span>Load (W)</span>
+        <input value="171" readonly class="mono"></label>
+    </div><figcaption><b>Field</b><span>Label above, 1px rule, accent on focus</span></figcaption></figure>
+    <figure><div class="samp col">
+      <div class="card">
+        <span class="badge ok">DATASHEET</span>
+        <b>ETC Source Four LED S3</b>
+        <span class="meta mono">171 W · powerCON TRUE1 · DMX 5-pin</span>
+      </div>
+    </div><figcaption><b>Card</b><span>Provenance badge always first</span></figcaption></figure>
+    <figure><div class="samp col">
+      <div class="alert"><b>Universe 2 unterminated</b>
+        <span>Add a terminator at the last fixture in the chain.</span></div>
+    </div><figcaption><b>Alert</b><span>Rule, element, remedy — in that order</span></figcaption></figure>
+  </div>
+  <p class="note">Provenance badges are the one place colour carries meaning outside cable domains:
+     <b>green</b> for a datasheet value, <b>amber</b> for a representative one. That pairing is fixed
+     and must not be restyled to match a surrounding surface.</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>17</span></footer></section>
+<section class="page" data-label="18 Motion" data-notes="Columns. Reduced motion is mandatory."><header class="ph"><p class="eyebrow">Practice</p><h1>Motion</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="cols3">
+    <div class="cell"><p class="lead">Instant — 120ms</p>
+      <p>Hover, focus ring, button press, checkbox. Anything acknowledging a pointer that is already
+         on the element. Easing <code>ease-out</code>.</p></div>
+    <div class="cell"><p class="lead">Transition — 220ms</p>
+      <p>Panel open, inspector slide, tab change, cable dialog. The default for anything moving a
+         region of the interface. Easing <code>cubic-bezier(.2,.8,.2,1)</code>.</p></div>
+    <div class="cell"><p class="lead">Deliberate — 400ms</p>
+      <p>Full-view change and first paint of the canvas. Nothing exceeds 400ms; a plan of 150 devices
+         must never wait on an animation.</p></div>
+  </div>
+  <div class="specs wide">
+    <div class="srow"><b>Reduced motion</b><span>Under <code>prefers-reduced-motion: reduce</code> every duration
+      collapses to 0ms and transforms are removed. Opacity changes may remain. This is mandatory and
+      ships with the first release that has any motion at all</span></div>
+    <div class="srow"><b>Never animate</b><span>Analysis results, punch-list rows, or any measured value.
+      A number that fades in reads as a number still settling</span></div>
+    <div class="srow"><b>Canvas</b><span>Pan and zoom follow the pointer directly with no easing and no inertia</span></div>
+  </div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>18</span></footer></section>
+<section class="page" data-label="19 Applications" data-notes="Specimen grid. Four surfaces that actually ship."><header class="ph"><p class="eyebrow">Practice</p><h1>Applications</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="apps">
+    <figure><div class="app browser">
+      <div class="url"><span class="mono">app.rackwire.studio</span></div>
+      <div class="appbody">
+        <div class="apphead"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="79.7" height="26.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="frb-i16" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cob-i16" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmb-i16" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpb-i16"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glb-i16" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb-i16)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i16)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frb-i16)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i16)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frb-i16)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i16)"/></g>
+      <g clip-path="url(#cpb-i16)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb-i16)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cob-i16)" filter="url(#glb-i16)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmb-i16)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmb-i16)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmb-i16)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmb-i16)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+        <div class="appcanvas"><i class="d1"></i><i class="d2"></i><i class="d3"></i></div>
+      </div></div>
+      <figcaption><b>Application</b><span>app.rackwire.studio</span></figcaption></figure>
+    <figure><div class="app site">
+      <div class="sitehead"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="92.0" height="30.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="frb-i17" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cob-i17" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmb-i17" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpb-i17"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glb-i17" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb-i17)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i17)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frb-i17)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i17)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frb-i17)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glb-i17)"/></g>
+      <g clip-path="url(#cpb-i17)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb-i17)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cob-i17)" filter="url(#glb-i17)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmb-i17)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmb-i17)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmb-i17)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmb-i17)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+      <div class="sitehero"><b>Plan the patch before you pull the cable.</b>
+        <span class="mono">rackwire.studio</span></div></div>
+      <figcaption><b>Marketing site</b><span>rackwire.studio</span></figcaption></figure>
+    <figure><div class="app manual">
+      <div class="manhead"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="104.3" height="34.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="frhstudio-i18" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cohstudio-i18" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmhstudio-i18" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cphstudio-i18"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glhstudio-i18" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhstudio-i18)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glhstudio-i18)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frhstudio-i18)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glhstudio-i18)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frhstudio-i18)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glhstudio-i18)"/></g>
+      <g clip-path="url(#cphstudio-i18)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhstudio-i18)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cohstudio-i18)" filter="url(#glhstudio-i18)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,77.3) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmhstudio-i18)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmhstudio-i18)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmhstudio-i18)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmhstudio-i18)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(0,143.0) scale(0.3)">
+        <path d="M 58,24 A 27,27 0 1 0 30,50 A 27,27 0 1 1 2,76" transform="translate(0.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 62,0 M 31,0 L 31,100" transform="translate(106.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,66 A 33,33 0 0 0 66,66 L 66,0" transform="translate(214.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100 M 0,0 L 26,0 A 34,50 0 0 1 26,100 L 0,100" transform="translate(326.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100" transform="translate(432.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 37,0 A 37,50 0 1 1 37,100 A 37,50 0 1 1 37,0" transform="translate(483.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+  </g>
+</svg>
+</div>
+      <div class="manrule"></div>
+      <div class="manlines"><i></i><i></i><i></i><i></i><i></i></div></div>
+      <figcaption><b>User manual</b><span>Tier lockup on the masthead</span></figcaption></figure>
+    <figure><div class="app tile"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="104.0" height="104.0" role="img" aria-label="RackWire">
+  
+  <defs>
+    <linearGradient id="frd-i19" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cod-i19" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmd-i19" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpd-i19"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gld-i19" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="114" fill="#070A0E"/>
+  <g transform="translate(256,256) scale(0.84) translate(-256,-256)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frd-i19)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gld-i19)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frd-i19)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gld-i19)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frd-i19)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gld-i19)"/></g>
+      <g clip-path="url(#cpd-i19)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frd-i19)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cod-i19)" filter="url(#gld-i19)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+</svg>
+</div>
+      <figcaption><b>Application icon</b><span>Desktop, mobile, PWA install</span></figcaption></figure>
+  </div>
+  <p class="note">All three editions ship from <b>rackwire.studio</b>, with the application at
+     <b>app.rackwire.studio</b>. The tier descriptor appears on the manual masthead and in the
+     application header; the marketing site uses the base lockup and names the edition in copy.</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>19</span></footer></section>
+<section class="page" data-label="20 Assets, licence &amp; contact" data-notes="Columns. Trademark stated separately from asset licence."><header class="ph"><p class="eyebrow">Practice</p><h1>Assets, licence &amp; contact</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="cols2">
+    <div class="specs">
+      <div class="srow"><b>Logo suite</b><span>SVG (primary, stacked, mark, mono, app icon, favicon) and
+        PNG at 1024–2400px, transparent</span></div>
+      <div class="srow"><b>Tier lockups</b><span>SVG and PNG for Pro and Studio, horizontal, stacked
+        and monochrome</span></div>
+      <div class="srow"><b>Identity sheet</b><span>RackWire-Identity.html — self-contained, no network</span></div>
+      <div class="srow"><b>This guide</b><span>RackWire-Brand-Standards.html — prints to PDF at 13.333×7.5in</span></div>
+      <div class="srow"><b>Fonts</b><span>None to distribute. System stack by policy</span></div>
+      <div class="srow"><b>Icons</b><span>Lucide, ISC licence, retained in the asset bundle</span></div>
+    </div>
+    <div class="specs">
+      <div class="srow"><b>Home</b><span>rackwire.studio</span></div>
+      <div class="srow"><b>Application</b><span>app.rackwire.studio</span></div>
+      <div class="srow open"><b>Asset licence</b><span>To be set by the owner. Covers artwork
+        redistribution and is a separate instrument from any code licence</span></div>
+      <div class="srow open"><b>Code licence</b><span>To be set by the owner</span></div>
+      <div class="srow open"><b>Trademark</b><span>To be set by the owner. A code licence does not
+        grant use of the name or the mark; state that separately</span></div>
+      <div class="srow"><b>Review cadence</b><span>Every minor release, and on any new edition</span></div>
+    </div>
+  </div>
+  <p class="note">Rows marked <b>open</b> are slots for the brand owner to fill or have reviewed, left
+     empty rather than filled with plausible boilerplate.</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>20</span></footer></section>
+<section class="page" data-label="21 Close" data-notes="Poster field. The standing rule.">
+<div class="cover close">
+  <div class="cover-mark"><svg style="color:var(--color-accent)" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="170.0" height="170.0" role="img" aria-label="RackWire">
+  
+  
+  <g>
+      <path d="M 205.77,71.00 L 221.36,80.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 290.64,120.00 L 441.33,207.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,120.00 L 391.10,138.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,218.00 L 391.10,392.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 441.33,305.00 L 425.74,314.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 356.46,354.00 L 205.77,441.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 306.23,441.00 L 290.64,432.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 221.36,392.00 L 70.67,305.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,392.00 L 120.90,374.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,294.00 L 120.90,120.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 70.67,207.00 L 86.26,198.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 155.54,158.00 L 306.23,71.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 256.00,210.00 L 295.84,233.00 L 295.84,279.00 L 256.00,302.00 L 216.16,279.00 L 216.16,233.00 Z" fill="currentColor"/>
+    </g>
+</svg>
+</div>
+  <div class="cover-foot">
+    <h1 class="display">Read the plan by<br>colour first,<br>geometry second.</h1>
+    <div class="cover-rule"></div>
+    <div class="cover-meta">
+      <span><b>When this guide does not cover the case</b> — hold the principle, not the example:
+        offline by default, provenance over plausibility, the file outlives the vendor.</span>
+      <span><b>Then ask</b> rackwire.studio</span>
+    </div>
+  </div>
+</div></section>
+<script>window.guideTheme = { accent:"#22D3EE", ink:"#EDF3F9", ground:"#070A0E", surface:"#0E141C" };</script>
+<script>/* guide-runtime.js — v1.0
+ * Embedded verbatim inside every generated style guide. No dependencies,
+ * no network, no build step. Browser only.
+ *
+ * Replaces the build-time CLI: colour ramps, contrast ratios and overflow
+ * checks are computed by the document itself at render time, so a guide can
+ * never state a fabricated number.
+ *
+ * Public surface, on window.guideKit:
+ *   buildRamp(hex)              nine perceptual steps 100–900
+ *   contrast(fg, bg)            WCAG 2.1 ratio, one decimal
+ *   contrastVerdict(ratio)      'body' | 'large' | 'prohibited'
+ *   applyTheme({accent, ink, ground, surface})
+ *   checkOverflow()             PROMISE of pages that clip — awaits fonts
+ *   checkDensity()              pages under the 95-100% target band
+ *   checkTypeFloor(px)          elements below the format's type floor
+ */
+(function () {
+  'use strict';
+
+  /* ── colour space ─────────────────────────────────────────────────────── */
+
+  /* Lightness of ramp steps 100…900 on the system's perceptual scale. */
+  var rampL = [0.970, 0.930, 0.870, 0.780, 0.680, 0.580, 0.481, 0.379, 0.291];
+  /* Chroma at each step, as a fraction of the base colour's chroma. */
+  var rampC = [0.065, 0.159, 0.311, 0.573, 0.929, 0.956, 0.822, 0.622, 0.372];
+  var rampSteps = [100, 200, 300, 400, 500, 600, 700, 800, 900];
+
+  var lin = function (v) { return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  var unlin = function (v) { return v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055; };
+
+  // Accepts #rgb, #rrggbb, or rgb()/rgba(). Throws rather than guessing.
+  function toRgb(colour) {
+    var s = String(colour).trim();
+    var m = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(s);
+    if (m) {
+      var h = m[1].length === 3 ? m[1].split('').map(function (x) { return x + x; }).join('') : m[1];
+      return [0, 2, 4].map(function (i) { return parseInt(h.slice(i, i + 2), 16); });
+    }
+    m = /^rgba?\(([^)]+)\)$/i.exec(s);
+    if (m) return m[1].split(/[\s,\/]+/).slice(0, 3).map(Number);
+    throw new Error('Cannot parse colour "' + colour + '" — use #rrggbb or rgb().');
+  }
+
+  function hexToOklch(hex) {
+    var rgb = toRgb(hex).map(function (v) { return lin(v / 255); });
+    var r = rgb[0], g = rgb[1], b = rgb[2];
+    var l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+    var m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+    var s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+    var lightness = 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s;
+    var aAxis = 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s;
+    var bAxis = 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s;
+    return {
+      L: lightness,
+      C: Math.hypot(aAxis, bAxis),
+      h: (Math.atan2(bAxis, aAxis) * 180 / Math.PI + 360) % 360
+    };
+  }
+
+  function oklchToRgbRaw(colour) {
+    var a = colour.C * Math.cos(colour.h * Math.PI / 180);
+    var b2 = colour.C * Math.sin(colour.h * Math.PI / 180);
+    var l = Math.pow(colour.L + 0.3963377774 * a + 0.2158037573 * b2, 3);
+    var m = Math.pow(colour.L - 0.1055613458 * a - 0.0638541728 * b2, 3);
+    var s = Math.pow(colour.L - 0.0894841775 * a - 1.2914855480 * b2, 3);
+    return [
+      4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+      -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+      -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s
+    ];
+  }
+
+  /* Reduce chroma until the colour lands inside sRGB, then emit hex. */
+  function oklchToHex(colour) {
+    var c = colour.C, rgb, i;
+    for (i = 0; i < 40; i++) {
+      rgb = oklchToRgbRaw({ L: colour.L, C: c, h: colour.h });
+      if (rgb.every(function (v) { return v >= -0.0005 && v <= 1.0005; })) break;
+      c *= 0.94;
+    }
+    return '#' + oklchToRgbRaw({ L: colour.L, C: c, h: colour.h }).map(function (v) {
+      return Math.round(Math.min(1, Math.max(0, unlin(v))) * 255).toString(16).padStart(2, '0');
+    }).join('');
+  }
+
+  /* Nine steps from one base colour. Hue and chroma curve are preserved, so
+     step 700 means the same visual weight whatever the brand's accent is. */
+  function buildRamp(hex) {
+    var base = hexToOklch(hex), out = {};
+    rampSteps.forEach(function (step, i) {
+      out[step] = oklchToHex({ L: rampL[i], C: base.C * rampC[i], h: base.h });
+    });
+    return out;
+  }
+
+  /* ── contrast ─────────────────────────────────────────────────────────── */
+
+  function luminance(rgb) {
+    var weights = [0.2126, 0.7152, 0.0722];
+    return rgb.map(function (v) {
+      var x = v / 255;
+      return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+    }).reduce(function (acc, c, i) { return acc + c * weights[i]; }, 0);
+  }
+
+  /* WCAG 2.1 ratio. This is the only permitted source for any ratio printed
+     in a guide — never author one by hand, never estimate. */
+  function contrast(fg, bg) {
+    var a = luminance(toRgb(fg)), b = luminance(toRgb(bg));
+    var hi = Math.max(a, b), lo = Math.min(a, b);
+    return Math.round((hi + 0.05) / (lo + 0.05) * 10) / 10;
+  }
+
+  function contrastVerdict(ratio) {
+    return ratio >= 4.5 ? 'body' : ratio >= 3 ? 'large' : 'prohibited';
+  }
+
+  var verdictLabel = {
+    body: 'Body text',
+    large: 'Large text only',
+    prohibited: 'Do not use'
+  };
+
+  /* ── theming ──────────────────────────────────────────────────────────── */
+
+  /* Sets every --color-* token from four roles. A dark ground inverts both
+     ramps so step 700 stays "the step you put text in" in either polarity. */
+  function applyTheme(roles, root) {
+    var target = root || document.documentElement;
+    if (!roles) return;
+    var dark = roles.ground ? hexToOklch(roles.ground).L < 0.5 : false;
+
+    function setRamp(prefix, hex) {
+      if (!hex) return;
+      var ramp = buildRamp(hex);
+      rampSteps.forEach(function (step, i) {
+        var value = dark ? ramp[rampSteps[rampSteps.length - 1 - i]] : ramp[step];
+        target.style.setProperty('--color-' + prefix + '-' + step, value);
+      });
+      target.style.setProperty('--color-' + prefix, hex);
+    }
+
+    setRamp('accent', roles.accent);
+    setRamp('ink', roles.ink);
+    if (roles.ground) target.style.setProperty('--color-bg', roles.ground);
+    if (roles.surface) target.style.setProperty('--color-surface', roles.surface);
+    if (roles.ink) target.style.setProperty('--color-text', roles.ink);
+    // Foreground for filled accent fields: whichever of ink/paper wins on contrast.
+    if (roles.accent) {
+      var onField = contrast('#ffffff', roles.accent) >= contrast(roles.ink || '#111111', roles.accent)
+        ? '#ffffff' : (roles.ink || '#111111');
+      target.style.setProperty('--color-on-field', onField);
+    }
+  }
+
+  /* ── contrast matrix rendering ────────────────────────────────────────── */
+
+  /* Fills any <table data-contrast-matrix> whose palette is declared as
+     data-palette='[{"name":"Accent","hex":"#c8102e"}, …]'. The table is built
+     from measurement, so pages 10/10B cannot drift from the real palette. */
+  function renderMatrices(scope) {
+    var tables = (scope || document).querySelectorAll('[data-contrast-matrix]');
+    Array.prototype.forEach.call(tables, function (table) {
+      var palette;
+      try {
+        palette = JSON.parse(table.getAttribute('data-palette') || '[]');
+      } catch (err) {
+        console.error('guide-runtime: bad data-palette on', table, err);
+        return;
+      }
+      if (!palette.length) return;
+
+      var head = '<thead><tr><th>Foreground</th><th>Background</th><th>Ratio</th><th>Permitted for</th></tr></thead>';
+      var rows = '';
+      palette.forEach(function (fg) {
+        palette.forEach(function (bg) {
+          if (fg.name === bg.name) return;
+          var ratio, verdict;
+          try {
+            ratio = contrast(fg.hex, bg.hex);
+          } catch (err) {
+            return;
+          }
+          verdict = contrastVerdict(ratio);
+          rows += '<tr data-verdict="' + verdict + '">'
+            + '<td><span class="swatch" style="background:' + fg.hex + '"></span>' + fg.name + '</td>'
+            + '<td><span class="swatch" style="background:' + bg.hex + '"></span>' + bg.name + '</td>'
+            + '<td class="ratio">' + ratio.toFixed(1) + ':1</td>'
+            + '<td>' + verdictLabel[verdict] + '</td></tr>';
+        });
+      });
+      table.innerHTML = head + '<tbody>' + rows + '</tbody>';
+    });
+  }
+
+  /* ── overflow check ───────────────────────────────────────────────────── */
+
+  /* Pages are CLIPPED, not reflowed — content past the box vanishes with no
+     scrollbar and no warning. This is the only thing that catches it.
+     
+     MUST await fonts. Measuring against fallback metrics returns false
+     passes: the text is narrower than the real face, everything fits, the
+     check clears a document that clips once the webfont lands. The settle
+     delay covers late layout after the swap. */
+  function checkOverflow() {
+    var ready = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+    return ready
+      .then(function () { return new Promise(function (r) { setTimeout(r, 400); }); })
+      .then(function () {
+        var bad = [];
+        Array.prototype.forEach.call(document.querySelectorAll('.page'), function (page, i) {
+          var overY = page.scrollHeight - page.clientHeight;
+          var overX = page.scrollWidth - page.clientWidth;
+          var fill = Math.round(page.scrollHeight / page.clientHeight * 100);
+          if (overY > 2 || overX > 2) {
+            bad.push({
+              index: i + 1,
+              label: page.getAttribute('data-label') || ('page ' + (i + 1)),
+              overBy: overY > 2 ? overY : overX,
+              axis: overY > 2 ? 'height' : 'width',
+              fill: fill
+            });
+          }
+        });
+        return bad;
+      });
+  }
+
+  /* Fill against the 95-100% target band. Under ~90% a page should have been
+     merged or had content pulled forward; 90-95% is thin but shippable.
+     Reported separately from overflow — this is a quality signal, not a defect. */
+  function checkDensity() {
+    var out = [];
+    Array.prototype.forEach.call(document.querySelectorAll('.page'), function (page, i) {
+      var fill = Math.round(page.scrollHeight / page.clientHeight * 100);
+      if (fill >= 95) return;
+      out.push({
+        index: i + 1,
+        label: page.getAttribute('data-label') || ('page ' + (i + 1)),
+        fill: fill,
+        severity: fill < 90 ? 'thin' : 'below-target'
+      });
+    });
+    return out;
+  }
+
+  /* Type below the format's floor.
+     
+     Only elements that directly contain text are checked. Walking every
+     descendant reports a parent and its child for the same string, which
+     is how a validator earns a reputation for crying wolf and gets
+     switched off — the failure mode that made unfilled kit slots read as
+     19 errors in the source kit. */
+  function checkTypeFloor(floorPx) {
+    var floor = floorPx || parseFloat(document.body.getAttribute('data-type-floor')) || 24;
+    var bad = [];
+    Array.prototype.forEach.call(document.querySelectorAll('.page *'), function (el) {
+      if (el.closest('[data-allow~="small-type"]')) return;
+      // Direct text only — skip pure containers.
+      var ownText = Array.prototype.filter.call(el.childNodes, function (n) {
+        return n.nodeType === 3 && n.nodeValue.trim();
+      }).length;
+      if (!ownText) return;
+      var size = parseFloat(getComputedStyle(el).fontSize);
+      if (size && size < floor) {
+        bad.push({
+          tag: el.tagName.toLowerCase(),
+          size: size,
+          floor: floor,
+          text: el.textContent.trim().slice(0, 40)
+        });
+      }
+    });
+    return bad;
+  }
+
+  /* ── deck shell ───────────────────────────────────────────────────────── */
+
+  function initDeck() {
+    var pages = Array.prototype.slice.call(document.querySelectorAll('.page'));
+    if (!pages.length) return;
+    var current = 0;
+    var counter = document.querySelector('[data-slide-counter]');
+
+    function show(n) {
+      current = Math.max(0, Math.min(pages.length - 1, n));
+      pages.forEach(function (p, i) { p.classList.toggle('is-current', i === current); });
+      if (counter) counter.textContent = (current + 1) + ' / ' + pages.length;
+      var notes = document.querySelector('[data-slide-notes]');
+      if (notes) notes.textContent = pages[current].getAttribute('data-notes') || '';
+      location.hash = 'p' + (current + 1);
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.target.matches('input, textarea')) return;
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') { e.preventDefault(); show(current + 1); }
+      if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(current - 1); }
+      if (e.key === 'Home') show(0);
+      if (e.key === 'End') show(pages.length - 1);
+      if (e.key === 'g') document.body.classList.toggle('is-grid');
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('[data-nav]'), function (btn) {
+      btn.addEventListener('click', function () {
+        var dir = btn.getAttribute('data-nav');
+        show(dir === 'next' ? current + 1 : current - 1);
+      });
+    });
+
+    var fromHash = parseInt((location.hash || '').replace('#p', ''), 10);
+    show(isNaN(fromHash) ? 0 : fromHash - 1);
+  }
+
+  /* Dark-first: honour the stored choice, else the system, else dark. */
+  function initThemeToggle() {
+    var toggle = document.querySelector('[data-theme-toggle]');
+    var prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    var mode = prefersLight ? 'light' : 'dark';
+
+    function apply(next) {
+      mode = next;
+      document.documentElement.setAttribute('data-mode', mode);
+      if (toggle) toggle.setAttribute('aria-pressed', String(mode === 'light'));
+    }
+    apply(mode);
+    if (toggle) toggle.addEventListener('click', function () { apply(mode === 'dark' ? 'light' : 'dark'); });
+  }
+
+  function init() {
+    var config = window.guideTheme;
+    if (config) applyTheme(config);
+    renderMatrices();
+    initDeck();
+    initThemeToggle();
+    checkOverflow().then(function (over) {
+      if (over.length) {
+        console.error('guide-runtime: ' + over.length + ' page(s) CLIP — content is being lost', over);
+      }
+      var thin = checkDensity();
+      if (thin.length) console.warn('guide-runtime: ' + thin.length + ' page(s) under the 95-100% target band', thin);
+      var small = checkTypeFloor();
+      if (small.length) console.warn('guide-runtime: ' + small.length + ' element(s) below the type floor', small);
+    });
+  }
+
+  window.guideKit = {
+    buildRamp: buildRamp,
+    contrast: contrast,
+    contrastVerdict: contrastVerdict,
+    hexToOklch: hexToOklch,
+    oklchToHex: oklchToHex,
+    applyTheme: applyTheme,
+    renderMatrices: renderMatrices,
+    checkOverflow: checkOverflow,
+    checkDensity: checkDensity,
+    checkTypeFloor: checkTypeFloor
+  };
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+}());
+</script>
+</body>
+</html>

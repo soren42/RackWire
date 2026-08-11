@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RackWire — Identity Sheet</title>
+<style>
+  :root {
+    --ink:#070A0E; --panel:#0E141C; --line:#1E2937; --dim:#7C8EA4;
+    --type:#EDF3F9; --cyan:#22D3EE; --magenta:#E879F9; --amber:#FB923C; --lime:#A3E635;
+    --sans: ui-sans-serif, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--ink); color:var(--type); font-family:var(--sans);
+         font-size:15px; line-height:1.6; -webkit-font-smoothing:antialiased; }
+  .wrap { max-width:1080px; margin:0 auto; padding:64px 28px 96px; }
+  header { border-bottom:1px solid var(--line); padding-bottom:40px; margin-bottom:56px; }
+  header .kicker { font-family:var(--mono); font-size:11px; letter-spacing:.22em;
+                    text-transform:uppercase; color:var(--dim); }
+  header h1 { font-size:34px; font-weight:600; letter-spacing:-.02em; margin:14px 0 6px; }
+  header p { color:var(--dim); max-width:60ch; margin:0; }
+  section { margin:0 0 64px; }
+  h2 { font-size:12px; font-family:var(--mono); letter-spacing:.2em; text-transform:uppercase;
+        color:var(--dim); font-weight:600; margin:0 0 20px;
+        border-bottom:1px solid var(--line); padding-bottom:10px; }
+  h3 { font-size:14px; font-weight:600; margin:0 0 4px; }
+  .note { color:var(--dim); font-size:13.5px; max-width:72ch; }
+  .panel { background:var(--panel); border:1px solid var(--line); border-radius:14px;
+            padding:44px; display:flex; align-items:center; justify-content:center; }
+  .panel.light { background:#F4F7FA; border-color:#DCE3EB; color:#070A0E; }
+  .grid2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:22px; }
+  .grid4 { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:18px; }
+  figcaption { font-size:12.5px; color:var(--dim); margin-top:12px; }
+  figure { margin:0; }
+  .sw .chip { height:64px; border-radius:10px; border:1px solid rgba(255,255,255,.09); }
+  .sw code { display:block; font-family:var(--mono); font-size:12px; color:var(--type); margin:3px 0; }
+  .sw b { display:block; color:var(--type); font-size:13px; }
+  .sw span { display:block; }
+  .sizes { display:flex; align-items:flex-end; gap:34px; flex-wrap:wrap; }
+  .sizes figcaption { text-align:center; font-family:var(--mono); font-size:11px; }
+  table { width:100%; border-collapse:collapse; font-size:13.5px; }
+  th, td { text-align:left; padding:11px 14px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase;
+        color:var(--dim); font-weight:600; }
+  td code { font-family:var(--mono); font-size:12.5px; color:var(--cyan); }
+  ul.rules { list-style:none; padding:0; margin:0; display:grid; gap:10px; }
+  ul.rules li { padding-left:24px; position:relative; color:var(--dim); font-size:13.5px; }
+  ul.rules li::before { content:""; position:absolute; left:0; top:.62em; width:9px; height:9px;
+        border-radius:2px; background:var(--cyan); }
+  ul.rules li.no::before { background:var(--magenta); }
+  footer { color:var(--dim); font-size:12.5px; border-top:1px solid var(--line);
+            padding-top:22px; font-family:var(--mono); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="kicker">Visual Identity · v1.1 · August 2026</div>
+  <h1>RackWire</h1>
+  <p>A hexagonal rack aperture woven from six cable runs. Three runs carry signal colour and
+     ride over the frame; three are structural steel and pass beneath. The interlace closes
+     without a seam — every run is over once and under once.</p>
+</header>
+
+<section>
+  <h2>Primary lockup</h2>
+  <div class="panel"><svg style="width:100%;max-width:760px;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="frb" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cob" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmb" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpb"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glb" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glb)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frb)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glb)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frb)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glb)"/></g>
+      <g clip-path="url(#cpb)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cob)" filter="url(#glb)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmb)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmb)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmb)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmb)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+  <p class="note" style="margin-top:14px">The default signature. Use wherever horizontal space allows —
+     application headers, documentation mastheads, presentation title bars.</p>
+</section>
+
+<section>
+  <h2>Secondary lockups</h2>
+  <div class="grid2">
+    <figure><div class="panel"><svg style="width:100%;max-width:250px;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 586 496" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="frc" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coc" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmc" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpc"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glc" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(124.2,14) scale(0.66)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frc)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glc)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frc)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glc)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frc)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glc)"/></g>
+      <g clip-path="url(#cpc)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frc)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coc)" filter="url(#glc)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(45.1,381.9) scale(0.78)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmc)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmc)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmc)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmc)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+      <figcaption>Stacked — square-ish placements, splash screens, merchandise.</figcaption></figure>
+    <figure><div class="panel"><svg style="width:100%;max-width:220px;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="fra" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="coa" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wma" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpa"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gla" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gla)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#fra)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gla)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#fra)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gla)"/></g>
+      <g clip-path="url(#cpa)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#fra)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#coa)" filter="url(#gla)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g>
+</svg>
+</div>
+      <figcaption>Mark alone — favicons, avatars, watermark, loading states.</figcaption></figure>
+  </div>
+</section>
+
+<section>
+  <h2>Monochrome</h2>
+  <div class="grid2">
+    <figure><div class="panel" style="color:#EDF3F9"><svg style="width:100%;max-width:340px;height:auto" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <path d="M 205.77,71.00 L 221.36,80.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 290.64,120.00 L 441.33,207.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,120.00 L 391.10,138.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,218.00 L 391.10,392.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 441.33,305.00 L 425.74,314.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 356.46,354.00 L 205.77,441.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 306.23,441.00 L 290.64,432.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 221.36,392.00 L 70.67,305.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,392.00 L 120.90,374.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,294.00 L 120.90,120.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 70.67,207.00 L 86.26,198.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 155.54,158.00 L 306.23,71.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 256.00,210.00 L 295.84,233.00 L 295.84,279.00 L 256.00,302.00 L 216.16,279.00 L 216.16,233.00 Z" fill="currentColor"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+      <figcaption>Knockout white — over photography, dark print, single-colour vinyl.</figcaption></figure>
+    <figure><div class="panel light" style="color:#070A0E"><svg style="width:100%;max-width:340px;height:auto" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <path d="M 205.77,71.00 L 221.36,80.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 290.64,120.00 L 441.33,207.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,120.00 L 391.10,138.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,218.00 L 391.10,392.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 441.33,305.00 L 425.74,314.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 356.46,354.00 L 205.77,441.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 306.23,441.00 L 290.64,432.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 221.36,392.00 L 70.67,305.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,392.00 L 120.90,374.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,294.00 L 120.90,120.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 70.67,207.00 L 86.26,198.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 155.54,158.00 L 306.23,71.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 256.00,210.00 L 295.84,233.00 L 295.84,279.00 L 256.00,302.00 L 216.16,279.00 L 216.16,233.00 Z" fill="currentColor"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
+</div>
+      <figcaption>Solid ink — invoices, laser etch, fax-grade reproduction.</figcaption></figure>
+  </div>
+  <p class="note" style="margin-top:14px">Both files inherit <code style="font-family:var(--mono);color:var(--cyan)">currentColor</code>,
+     so a single asset recolours from CSS. In monochrome the weave is expressed as a break in the
+     under-run rather than a dark casing.</p>
+</section>
+
+<section>
+  <h2>Application icon &amp; scale</h2>
+  <div class="sizes">
+    <figure><svg style="width:132px;height:132px;display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="frd" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cod" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmd" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpd"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gld" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="114" fill="#070A0E"/>
+  <g transform="translate(256,256) scale(0.84) translate(-256,-256)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frd)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gld)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frd)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gld)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frd)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gld)"/></g>
+      <g clip-path="url(#cpd)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frd)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cod)" filter="url(#gld)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+</svg>
+<figcaption>132 px</figcaption></figure>
+    <figure><svg style="width:64px;height:64px;display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="frd" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cod" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmd" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpd"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="gld" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="114" fill="#070A0E"/>
+  <g transform="translate(256,256) scale(0.84) translate(-256,-256)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frd)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#gld)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frd)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#gld)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frd)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#gld)"/></g>
+      <g clip-path="url(#cpd)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frd)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cod)" filter="url(#gld)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+</svg>
+<figcaption>64 px</figcaption></figure>
+    <figure><svg style="width:32px;height:32px;display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <rect width="512" height="512" rx="104" fill="#070A0E"/>
+    <path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+    <path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#63788F" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#63788F" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#63788F" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 256.00,204.00 L 301.03,230.00 L 301.03,282.00 L 256.00,308.00 L 210.97,282.00 L 210.97,230.00 Z" fill="#070A0E"/>
+  <path d="M 256.00,222.00 L 285.44,239.00 L 285.44,273.00 L 256.00,290.00 L 226.56,273.00 L 226.56,239.00 Z" fill="#fff"/>
+</svg>
+<figcaption>32 px</figcaption></figure>
+    <figure><svg style="width:16px;height:16px;display:block" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <rect width="512" height="512" rx="104" fill="#070A0E"/>
+    <path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+  <path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="52" stroke-linecap="round"/>
+    <path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#63788F" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#63788F" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#63788F" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="34" stroke-linecap="round"/>
+  <path d="M 256.00,204.00 L 301.03,230.00 L 301.03,282.00 L 256.00,308.00 L 210.97,282.00 L 210.97,230.00 Z" fill="#070A0E"/>
+  <path d="M 256.00,222.00 L 285.44,239.00 L 285.44,273.00 L 256.00,290.00 L 226.56,273.00 L 226.56,239.00 Z" fill="#fff"/>
+</svg>
+<figcaption>16 px</figcaption></figure>
+  </div>
+  <p class="note" style="margin-top:18px">Below roughly 40 px the full mark's casing gaps close up, so a
+     simplified cut with heavier runs and a solid core takes over. That switch is already baked into
+     <code style="font-family:var(--mono);color:var(--cyan)">rackwire-favicon.svg</code>.</p>
+</section>
+
+<section>
+  <h2>Product tiers</h2>
+  <p class="note" style="margin-bottom:22px">Tier lockups append a descriptor beneath the wordmark,
+     left-aligned to the <b>R</b> in the horizontal signature and centred in the stacked one. The
+     descriptor is set at 30&#37; of the wordmark cap height, tracked wide, in Frame Steel so it labels
+     the product without competing with it. The mark itself never changes between tiers.</p>
+  <div class="grid2">
+    <figure><div class="panel"><svg style="width:100%;max-width:420px;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="frhpro" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cohpro" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmhpro" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cphpro"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glhpro" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhpro)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glhpro)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frhpro)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glhpro)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frhpro)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glhpro)"/></g>
+      <g clip-path="url(#cphpro)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhpro)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cohpro)" filter="url(#glhpro)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,77.3) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmhpro)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmhpro)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmhpro)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmhpro)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(0,143.0) scale(0.3)">
+        <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52" transform="translate(0.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(112.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 37,0 A 37,50 0 1 1 37,100 A 37,50 0 1 1 37,0" transform="translate(228.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+  </g>
+</svg>
+</div>
+      <figcaption>RackWire Pro — primary.</figcaption></figure>
+    <figure><div class="panel"><svg style="width:100%;max-width:420px;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="frhstudio" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cohstudio" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmhstudio" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cphstudio"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glhstudio" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhstudio)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glhstudio)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frhstudio)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glhstudio)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frhstudio)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glhstudio)"/></g>
+      <g clip-path="url(#cphstudio)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frhstudio)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cohstudio)" filter="url(#glhstudio)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,77.3) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmhstudio)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmhstudio)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmhstudio)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmhstudio)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(0,143.0) scale(0.3)">
+        <path d="M 58,24 A 27,27 0 1 0 30,50 A 27,27 0 1 1 2,76" transform="translate(0.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 62,0 M 31,0 L 31,100" transform="translate(106.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,66 A 33,33 0 0 0 66,66 L 66,0" transform="translate(214.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100 M 0,0 L 26,0 A 34,50 0 0 1 26,100 L 0,100" transform="translate(326.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100" transform="translate(432.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 37,0 A 37,50 0 1 1 37,100 A 37,50 0 1 1 37,0" transform="translate(483.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+  </g>
+</svg>
+</div>
+      <figcaption>RackWire Studio — primary.</figcaption></figure>
+    <figure><div class="panel"><svg style="width:100%;max-width:210px;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 586 553" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="frspro" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cospro" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmspro" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpspro"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glspro" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(124.2,14) scale(0.66)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frspro)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glspro)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frspro)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glspro)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frspro)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glspro)"/></g>
+      <g clip-path="url(#cpspro)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frspro)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cospro)" filter="url(#glspro)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(45.1,381.9) scale(0.78)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmspro)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmspro)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmspro)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmspro)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(0,143.0) scale(0.3) translate(930.7,0)">
+        <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52" transform="translate(0.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(112.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 37,0 A 37,50 0 1 1 37,100 A 37,50 0 1 1 37,0" transform="translate(228.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+  </g>
+</svg>
+</div>
+      <figcaption>RackWire Pro — stacked.</figcaption></figure>
+    <figure><div class="panel"><svg style="width:100%;max-width:210px;height:auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 586 553" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="frsstudio" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cosstudio" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmsstudio" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpsstudio"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glsstudio" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(124.2,14) scale(0.66)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frsstudio)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glsstudio)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frsstudio)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glsstudio)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frsstudio)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glsstudio)"/></g>
+      <g clip-path="url(#cpsstudio)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frsstudio)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cosstudio)" filter="url(#glsstudio)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(45.1,381.9) scale(0.78)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmsstudio)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmsstudio)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmsstudio)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmsstudio)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(0,143.0) scale(0.3) translate(803.2,0)">
+        <path d="M 58,24 A 27,27 0 1 0 30,50 A 27,27 0 1 1 2,76" transform="translate(0.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 62,0 M 31,0 L 31,100" transform="translate(106.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,66 A 33,33 0 0 0 66,66 L 66,0" transform="translate(214.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100 M 0,0 L 26,0 A 34,50 0 0 1 26,100 L 0,100" transform="translate(326.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100" transform="translate(432.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 37,0 A 37,50 0 1 1 37,100 A 37,50 0 1 1 37,0" transform="translate(483.0,0)" fill="none" stroke="#8FA3BA" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+  </g>
+</svg>
+</div>
+      <figcaption>RackWire Studio — stacked.</figcaption></figure>
+    <figure><div class="panel" style="color:#EDF3F9"><svg style="width:100%;max-width:340px;height:auto" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <path d="M 205.77,71.00 L 221.36,80.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 290.64,120.00 L 441.33,207.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,120.00 L 391.10,138.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,218.00 L 391.10,392.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 441.33,305.00 L 425.74,314.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 356.46,354.00 L 205.77,441.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 306.23,441.00 L 290.64,432.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 221.36,392.00 L 70.67,305.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,392.00 L 120.90,374.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,294.00 L 120.90,120.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 70.67,207.00 L 86.26,198.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 155.54,158.00 L 306.23,71.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 256.00,210.00 L 295.84,233.00 L 295.84,279.00 L 256.00,302.00 L 216.16,279.00 L 216.16,233.00 Z" fill="currentColor"/>
+    </g></g>
+  <g transform="translate(350.7,77.3) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(0,143.0) scale(0.3)">
+        <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52" transform="translate(0.0,0)" fill="none" stroke="currentColor" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(112.0,0)" fill="none" stroke="currentColor" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 37,0 A 37,50 0 1 1 37,100 A 37,50 0 1 1 37,0" transform="translate(228.0,0)" fill="none" stroke="currentColor" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+  </g>
+</svg>
+</div>
+      <figcaption>Pro, knockout white.</figcaption></figure>
+    <figure><div class="panel light" style="color:#070A0E"><svg style="width:100%;max-width:340px;height:auto" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <path d="M 205.77,71.00 L 221.36,80.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 290.64,120.00 L 441.33,207.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,120.00 L 391.10,138.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 391.10,218.00 L 391.10,392.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 441.33,305.00 L 425.74,314.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 356.46,354.00 L 205.77,441.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 306.23,441.00 L 290.64,432.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 221.36,392.00 L 70.67,305.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,392.00 L 120.90,374.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 120.90,294.00 L 120.90,120.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 70.67,207.00 L 86.26,198.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 155.54,158.00 L 306.23,71.00" fill="none" stroke="currentColor" stroke-width="30.0" stroke-linecap="round"/>
+      <path d="M 256.00,210.00 L 295.84,233.00 L 295.84,279.00 L 256.00,302.00 L 216.16,279.00 L 216.16,233.00 Z" fill="currentColor"/>
+    </g></g>
+  <g transform="translate(350.7,77.3) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="currentColor" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <g transform="translate(0,143.0) scale(0.3)">
+        <path d="M 58,24 A 27,27 0 1 0 30,50 A 27,27 0 1 1 2,76" transform="translate(0.0,0)" fill="none" stroke="currentColor" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 62,0 M 31,0 L 31,100" transform="translate(106.0,0)" fill="none" stroke="currentColor" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,66 A 33,33 0 0 0 66,66 L 66,0" transform="translate(214.0,0)" fill="none" stroke="currentColor" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100 M 0,0 L 26,0 A 34,50 0 0 1 26,100 L 0,100" transform="translate(326.0,0)" fill="none" stroke="currentColor" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 0,0 L 0,100" transform="translate(432.0,0)" fill="none" stroke="currentColor" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 37,0 A 37,50 0 1 1 37,100 A 37,50 0 1 1 37,0" transform="translate(483.0,0)" fill="none" stroke="currentColor" stroke-width="17.0" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+  </g>
+</svg>
+</div>
+      <figcaption>Studio, solid ink.</figcaption></figure>
+  </div>
+  <table style="margin-top:26px">
+    <tr><th>Property</th><th>Value</th><th>Note</th></tr>
+    <tr><td>Descriptor cap</td><td><code>30</code> u</td><td>30&#37; of the 100 u wordmark cap height.</td></tr>
+    <tr><td>Descriptor stroke</td><td><code>17</code> u</td><td>Optically weighted, not scaled from the wordmark stroke.</td></tr>
+    <tr><td>Tracking</td><td><code>46</code> u</td><td>Wide enough to read as a label at small sizes.</td></tr>
+    <tr><td>Baseline drop</td><td><code>143</code> u</td><td>Top of descriptor, measured from the wordmark cap line.</td></tr>
+    <tr><td>Colour</td><td><code>#8FA3BA</code></td><td>Frame Steel. In monochrome it inherits currentColor with the rest.</td></tr>
+  </table>
+  <p class="note" style="margin-top:16px">Set the base product as <b>RackWire</b> with no descriptor — never
+     &ldquo;RackWire Base&rdquo; or &ldquo;RackWire Free&rdquo;. Do not invent further tiers by swapping the
+     descriptor text; new tiers need their own drawn outlines, since the descriptor is vector, not live type.</p>
+</section>
+
+<section>
+  <h2>Colour</h2>
+  <div class="grid4">
+      <figure class="sw">
+        <div class="chip" style="background:#22D3EE"></div>
+        <figcaption><b>Signal Cyan</b><code>#22D3EE</code><span>Network / data runs</span></figcaption>
+      </figure>
+      <figure class="sw">
+        <div class="chip" style="background:#E879F9"></div>
+        <figcaption><b>Signal Magenta</b><code>#E879F9</code><span>Lighting &amp; DMX runs</span></figcaption>
+      </figure>
+      <figure class="sw">
+        <div class="chip" style="background:#FB923C"></div>
+        <figcaption><b>Signal Amber</b><code>#FB923C</code><span>Power &amp; distribution runs</span></figcaption>
+      </figure>
+      <figure class="sw">
+        <div class="chip" style="background:#A3E635"></div>
+        <figcaption><b>Signal Lime</b><code>#A3E635</code><span>Audio runs</span></figcaption>
+      </figure>
+      <figure class="sw">
+        <div class="chip" style="background:#63788F"></div>
+        <figcaption><b>Frame Steel</b><code>#63788F</code><span>Structural runs, highlight</span></figcaption>
+      </figure>
+      <figure class="sw">
+        <div class="chip" style="background:#25303F"></div>
+        <figcaption><b>Frame Shadow</b><code>#25303F</code><span>Structural runs, shade</span></figcaption>
+      </figure>
+      <figure class="sw">
+        <div class="chip" style="background:#EDF3F9"></div>
+        <figcaption><b>Type White</b><code>#EDF3F9</code><span>Wordmark, primary text</span></figcaption>
+      </figure>
+      <figure class="sw">
+        <div class="chip" style="background:#070A0E"></div>
+        <figcaption><b>Rack Ink</b><code>#070A0E</code><span>Ground, cable casing</span></figcaption>
+      </figure>
+  </div>
+  <p class="note" style="margin-top:18px">The four signal hues are the same tokens the planner uses for
+     its cable domains, so the identity and the application UI stay in sync. Steel is reserved for
+     structure and must never carry signal meaning.</p>
+</section>
+
+<section>
+  <h2>Construction</h2>
+  <table>
+    <tr><th>Property</th><th>Value</th><th>Why</th></tr>
+    <tr><td>Grid</td><td><code>60°</code></td><td>Every run lies on a hexagonal axis; no arbitrary angles exist in the mark.</td></tr>
+    <tr><td>Circumradius</td><td><code>156</code> u</td><td>Measured in the 512 u artboard the mark is authored in.</td></tr>
+    <tr><td>Run body / casing</td><td><code>30</code> / <code>36</code> u</td><td>A 3 u dark gap on each side reads as an overlap, not a break.</td></tr>
+    <tr><td>Overhang</td><td><code>44</code> u</td><td>Must exceed half the casing cut, or the under-run loses its tip.</td></tr>
+    <tr><td>Core node</td><td><code>58</code> u</td><td>The patch point; carries all four signal hues as one gradient.</td></tr>
+    <tr><td>Clear space</td><td><code>1 core</code></td><td>Keep the width of the core node clear on all sides of any lockup.</td></tr>
+    <tr><td>Minimum size</td><td><code>24 px</code> / <code>7 mm</code></td><td>Mark alone. Lockups: 120 px / 32 mm wide.</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Usage</h2>
+  <div class="grid2">
+    <div>
+      <h3>Do</h3>
+      <ul class="rules">
+        <li>Place on ink, near-black, or a dark desaturated photograph.</li>
+        <li>Scale the SVG — it is resolution independent and hand-built on a 60° grid.</li>
+        <li>Use the monochrome cut whenever the background is busy or light.</li>
+        <li>Let the neon stay an accent; the composition should read dark first.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Don't</h3>
+      <ul class="rules">
+        <li class="no">Recolour individual runs or reassign a hue to another domain.</li>
+        <li class="no">Rotate the mark — the vertical steel run anchors it upright.</li>
+        <li class="no">Add outer glow, drop shadow, or bevel on top of the supplied art.</li>
+        <li class="no">Set the wordmark in a substitute typeface; it is drawn as outlines.</li>
+        <li class="no">Place the full-colour mark on white without the ink ground behind it.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Files</h2>
+  <table>
+    <tr><th>Asset</th><th>Use</th></tr>
+    <tr><td><code>rackwire-lockup-horizontal.svg</code></td><td>Primary signature</td></tr>
+    <tr><td><code>rackwire-lockup-stacked.svg</code></td><td>Vertical signature</td></tr>
+    <tr><td><code>rackwire-mark.svg</code></td><td>Mark, full colour</td></tr>
+    <tr><td><code>rackwire-mark-mono.svg</code></td><td>Mark, single colour (currentColor)</td></tr>
+    <tr><td><code>rackwire-lockup-mono.svg</code></td><td>Signature, single colour (currentColor)</td></tr>
+    <tr><td><code>rackwire-app-icon.svg</code></td><td>Rounded tile, desktop &amp; mobile</td></tr>
+    <tr><td><code>rackwire-pro-lockup-{horizontal,stacked,mono}.svg</code></td><td>RackWire Pro signatures</td></tr>
+    <tr><td><code>rackwire-studio-lockup-{horizontal,stacked,mono}.svg</code></td><td>RackWire Studio signatures</td></tr>
+    <tr><td><code>rackwire-favicon.svg</code></td><td>Simplified cut for 16–32 px</td></tr>
+    <tr><td><code>*.png</code></td><td>Transparent raster exports, 1024–2400 px wide</td></tr>
+  </table>
+</section>
+
+<footer>RackWire identity sheet · self-contained, no external requests · built 2026-08-11</footer>
+</div>
+</body>
+</html>
