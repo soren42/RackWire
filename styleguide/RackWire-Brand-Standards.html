@@ -295,6 +295,17 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
 .mlabel { font-size:24px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
           color:var(--color-accent-700); margin:0 0 6px; }
 
+/* cable palette (v1.1) */
+.cbtable, .detable { display:grid; width:100%; font-size:24px; }
+.cbtable { grid-template-columns:60px 340px 500px 180px 1fr 220px; }
+.detable { grid-template-columns:340px 280px 140px 200px 1fr; }
+.cbtable .tc, .detable .tc { display:flex; align-items:center; gap:12px; padding:9px 16px; }
+.cbchip { width:26px; height:26px; border-radius:5px; border:2px solid var(--color-divider);
+          flex:0 0 auto; }
+.tc .st { color:var(--color-muted); font-weight:400; }
+.tc.prop { font-family:var(--font-mono); color:var(--color-muted); }
+.tc.band { color:var(--sig-amber); }
+
 /* chrome */
 .deck-chrome { position:fixed; right:20px; bottom:20px; z-index:99; display:flex; gap:8px;
       background:#0E141C; border:1px solid #1E2937; border-radius:10px; padding:8px 12px;
@@ -357,10 +368,11 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
     <p class="cover-sub">Brand Standards</p>
     <div class="cover-rule"></div>
     <div class="cover-meta">
-      <span><b>Version</b> 1.0.0</span>
+      <span><b>Version</b> 1.1.0</span>
       <span><b>Issued</b> 2026-08-11</span>
       <span><b>Format</b> Deck · 1920×1080</span>
       <span><b>Home</b> rackwire.studio</span>
+      <span><b>Amendment</b> v1.1.0 — cable signal palette: Signal Blue and Signal Slate added, Open Yellow canonised, pages 09–10</span>
     </div>
   </div>
 </div></section>
@@ -372,9 +384,9 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
       <p class="pdesc">Every approved lockup, the 60&deg; grid it is built on, and the six prohibitions.</p>
       <div class="plist"><span><i>05</i>Logo suite</span><span><i>06</i>Construction</span><span><i>07</i>Misuse</span></div></div><div class="pcol"><p class="pnum">03</p><p class="pname">System</p>
       <p class="pdesc">The measurable layer — hues bound to cable domains, ratios computed at render time.</p>
-      <div class="plist"><span><i>08</i>Colour</span><span><i>09</i>Contrast</span><span><i>10</i>Typefaces</span><span><i>11</i>Type scale</span><span><i>12</i>Spacing &amp; grid</span><span><i>13</i>Iconography</span></div></div><div class="pcol"><p class="pnum">04</p><p class="pname">Practice</p>
+      <div class="plist"><span><i>08</i>Colour</span><span><i>09</i>Cable palette</span><span><i>10</i>Separation</span><span><i>11</i>Contrast</span><span><i>12</i>Typefaces</span><span><i>13</i>Type scale</span><span><i>14</i>Spacing &amp; grid</span><span><i>15</i>Iconography</span></div></div><div class="pcol"><p class="pnum">04</p><p class="pname">Practice</p>
       <p class="pdesc">How the system behaves once it meets a real surface and a real reader.</p>
-      <div class="plist"><span><i>14</i>Imagery &amp; AI</span><span><i>15</i>Voice &amp; tone</span><span><i>16</i>Copy rules</span><span><i>17</i>Components</span><span><i>18</i>Motion</span><span><i>19</i>Applications</span><span><i>20</i>Assets &amp; contact</span></div></div></div>
+      <div class="plist"><span><i>16</i>Imagery &amp; AI</span><span><i>17</i>Voice &amp; tone</span><span><i>18</i>Copy rules</span><span><i>19</i>Components</span><span><i>20</i>Motion</span><span><i>21</i>Applications</span><span><i>22</i>Assets &amp; contact</span></div></div></div>
 </div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>02</span></footer></section>
 <section class="page" data-label="03 Background &amp; principles" data-notes="Columns. Origin then three falsifiable principles."><header class="ph"><p class="eyebrow">Foundation</p><h1>Origin &amp; principles</h1></header><div class="hrule"></div>
 <div class="body">
@@ -1023,12 +1035,91 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
       <code data-allow="hex">#070A0E</code>
       <code data-allow="hex">RGB 7 10 14</code>
       <code data-allow="hex">CMYK 82 66 51 90</code></figcaption></figure></div>
-  <p class="note">The four signal hues are the same tokens the planner uses for its cable domains, so
+  <p class="note">The signal hues are the same tokens the planner uses for its cable domains, so
      the identity and the running application cannot drift apart. Steel carries structure only and
-     must never be given signal meaning. Across any surface the signal hues together cover no more
+     must never be given signal meaning &mdash; the full hue&#8596;domain binding, including the two
+     hues added at v1.1, is on page <b>09</b>. Across any surface the signal hues together cover no more
      than <b>10%</b> — the composition reads dark first, colour second.</p>
 </div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>08</span></footer></section>
-<section class="page" data-label="09 Contrast &amp; accessibility" data-notes="Two matrices. Every ratio measured by the runtime at render time."><header class="ph"><p class="eyebrow">System</p><h1>Contrast</h1></header><div class="hrule"></div>
+<section class="page" data-label="09 Cable signal palette" data-notes="Binding table. Hue to domain, frozen across editions."><header class="ph"><p class="eyebrow">System</p><h1>Cable signal palette</h1></header><div class="hrule"></div>
+<div class="body">
+  <div class="cbtable">
+    <div class="tc th"></div><div class="tc th">Domain</div><div class="tc th">Token</div>
+    <div class="tc th">Hex</div><div class="tc th">CSS custom property</div><div class="tc th">On Ink</div>
+    <div class="tc"><span class="cbchip" style="background:#22D3EE"></span></div>
+    <div class="tc ds">Network &amp; data</div><div class="tc nm">Signal Cyan</div>
+    <div class="tc num">#22D3EE</div><div class="tc prop">--rw-cable-net</div>
+    <div class="tc num" data-ratio-vs="#22D3EE"></div>
+    <div class="tc"><span class="cbchip" style="background:#FB923C"></span></div>
+    <div class="tc ds">Power &amp; distribution</div><div class="tc nm">Signal Amber</div>
+    <div class="tc num">#FB923C</div><div class="tc prop">--rw-cable-power</div>
+    <div class="tc num" data-ratio-vs="#FB923C"></div>
+    <div class="tc"><span class="cbchip" style="background:#2E6BE6"></span></div>
+    <div class="tc ds">USB &amp; serial</div><div class="tc nm">Signal Blue <span class="st">new</span></div>
+    <div class="tc num">#2E6BE6</div><div class="tc prop">--rw-cable-usb</div>
+    <div class="tc num" data-ratio-vs="#2E6BE6"></div>
+    <div class="tc"><span class="cbchip" style="background:#74889D"></span></div>
+    <div class="tc ds">Other</div><div class="tc nm">Signal Slate <span class="st">new</span></div>
+    <div class="tc num">#74889D</div><div class="tc prop">--rw-cable-other</div>
+    <div class="tc num" data-ratio-vs="#74889D"></div>
+    <div class="tc"><span class="cbchip" style="background:#FFE04D"></span></div>
+    <div class="tc ds">Unconnected / open end</div><div class="tc nm">Open Yellow <span class="st">canonised</span></div>
+    <div class="tc num">#FFE04D</div><div class="tc prop">--rw-cable-open</div>
+    <div class="tc num" data-ratio-vs="#FFE04D"></div>
+    <div class="tc"><span class="cbchip" style="background:#E879F9"></span></div>
+    <div class="tc ds">Lighting &amp; DMX</div><div class="tc nm">Signal Magenta <span class="st">reserved · Studio</span></div>
+    <div class="tc num">#E879F9</div><div class="tc prop">--rw-cable-lighting</div>
+    <div class="tc num" data-ratio-vs="#E879F9"></div>
+    <div class="tc"><span class="cbchip" style="background:#A3E635"></span></div>
+    <div class="tc ds">Audio</div><div class="tc nm">Signal Lime <span class="st">reserved · Studio</span></div>
+    <div class="tc num">#A3E635</div><div class="tc prop">--rw-cable-audio</div>
+    <div class="tc num" data-ratio-vs="#A3E635"></div>
+  </div>
+  <div class="cols3">
+    <div class="cell">
+      <p class="lead">Names and bindings are frozen</p>
+      <p>A plan drawn in Pro renders identically in Studio. New domains may add hues; bindings
+         never move.</p>
+    </div>
+    <div class="cell">
+      <p class="lead">Slate is not Steel</p>
+      <p>Slate <b>#74889D</b> draws cables only; Frame Steel <b>#63788F</b> stays chrome and
+         never signals meaning.</p>
+    </div>
+    <div class="cell">
+      <p class="lead">One field, both themes</p>
+      <p>Fixed against Rack Ink, never per theme. In a light theme the field stays dark &mdash;
+         yellow reads <span data-ratio-pair="#FFE04D|#F4F7FA"></span> on paper.</p>
+    </div>
+  </div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>09</span></footer></section>
+<section class="page" data-label="10 Cable palette separation" data-notes="Separation record. Computed in OKLab, CVD-simulated."><header class="ph"><p class="eyebrow">System</p><h1>Cable palette separation</h1><p class="sub">Measured in OKLab, &Delta;E &times;100, simulated for protanopia, deuteranopia and tritanopia</p></header><div class="hrule"></div>
+<div class="body">
+  <div class="detable">
+    <div class="tc th">Pair</div><div class="tc th">Worst case</div><div class="tc th">&Delta;E</div>
+    <div class="tc th">Normal</div><div class="tc th">Standing</div>
+    <div class="tc nm">Blue &#8596; Magenta</div><div class="tc ds">Protan</div><div class="tc num">11.9</div>
+    <div class="tc num">27.6</div><div class="tc ds">Clear</div>
+    <div class="tc nm">Blue &#8596; Cyan</div><div class="tc ds">Worst CVD</div><div class="tc num">27.0</div>
+    <div class="tc num">—</div><div class="tc ds">Clear</div>
+    <div class="tc nm">Slate &#8596; Magenta</div><div class="tc ds">Protan</div><div class="tc num">14.0</div>
+    <div class="tc num">—</div><div class="tc ds">Clear</div>
+    <div class="tc nm">Slate &#8596; Amber</div><div class="tc ds">Worst CVD</div><div class="tc num">17.4</div>
+    <div class="tc num">—</div><div class="tc ds">Clear</div>
+    <div class="tc nm">Open Yellow &#8596; Amber</div><div class="tc ds">Worst CVD</div><div class="tc num">14.8</div>
+    <div class="tc num">18.7</div><div class="tc ds">Clear — the yellow is held out of the amber band</div>
+    <div class="tc nm">Blue &#8596; Slate</div><div class="tc ds">Tritan</div><div class="tc num band">7.3</div>
+    <div class="tc num">—</div><div class="tc ds">6&ndash;8 band — secondary encoding mandatory</div>
+    <div class="tc nm">Magenta &#8596; Cyan</div><div class="tc ds">Deutan</div><div class="tc num band">5.9</div>
+    <div class="tc num">—</div><div class="tc ds">Below the band — recorded exception; the dash is primary</div>
+  </div>
+  <p class="note"><b>The floor is 8; 15 for normal vision.</b> Blue&#8596;Slate sits in the 6&ndash;8
+     band, legal only with a secondary encoding — labels, punch list and connector geometry separate
+     every run. Magenta&#8596;Cyan sits below the band, both hues locked at v1.0: a recorded exception —
+     a Studio lighting run draws its reserved dash pattern as a primary channel, never colour alone.
+     All seven hues clear the <b>3:1</b> chrome gate against Rack Ink (page <b>09</b>).</p>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>10</span></footer></section>
+<section class="page" data-label="11 Contrast &amp; accessibility" data-notes="Two matrices. Every ratio measured by the runtime at render time."><header class="ph"><p class="eyebrow">System</p><h1>Contrast</h1></header><div class="hrule"></div>
 <div class="body">
   <div class="cols2 tight mflex">
     <div>
@@ -1044,8 +1135,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
   </div>
   <p class="note"><b>Measured at render time, not authored.</b> Body copy ≥ 7:1; chrome ≥ 3:1; below 3:1
      prohibited. <b>Frame Steel</b> clears 3:1 but not 7:1 — chrome only, never body copy.</p>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>09</span></footer></section>
-<section class="page" data-label="10 Typefaces" data-notes="Specimen grid. Two faces, both from the system stack."><header class="ph"><p class="eyebrow">System</p><h1>Typefaces</h1><p class="sub">System stack by policy — a webfont that fails to load changes every measurement</p></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>11</span></footer></section>
+<section class="page" data-label="12 Typefaces" data-notes="Specimen grid. Two faces, both from the system stack."><header class="ph"><p class="eyebrow">System</p><h1>Typefaces</h1><p class="sub">System stack by policy — a webfont that fails to load changes every measurement</p></header><div class="hrule"></div>
 <div class="body">
   <div class="faces">
     <div class="face">
@@ -1068,8 +1159,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
   <p class="note">The wordmark is <b>drawn outlines</b>, not set type, so no licensed display face is
      required to reproduce the logo. Where a heading must visually echo the wordmark, use the heading
      stack at 600 with <code>-0.02em</code> tracking — never attempt to re-set the logotype.</p>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>10</span></footer></section>
-<section class="page" data-label="11 Type scale" data-notes="Table. 24px is the floor for this format."><header class="ph"><p class="eyebrow">System</p><h1>Type scale</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>12</span></footer></section>
+<section class="page" data-label="13 Type scale" data-notes="Table. 24px is the floor for this format."><header class="ph"><p class="eyebrow">System</p><h1>Type scale</h1></header><div class="hrule"></div>
 <div class="body">
   <div class="stable">
     <div class="tc th">Step</div><div class="tc th">Size</div><div class="tc th">Line height</div>
@@ -1079,8 +1170,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
   <p class="note"><b>The floor is 24px</b> in this format and 12px in the printed document format.
      Nothing renders below it, including captions, table cells and legal lines. If content does not
      fit above the floor, the page is carrying too much and must be split — never shrink to fit.</p>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>11</span></footer></section>
-<section class="page" data-label="12 Spacing, grid &amp; placement" data-notes="Split diagram. The 8px unit and mark placement."><header class="ph"><p class="eyebrow">System</p><h1>Spacing, grid &amp; placement</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>13</span></footer></section>
+<section class="page" data-label="14 Spacing, grid &amp; placement" data-notes="Split diagram. The 8px unit and mark placement."><header class="ph"><p class="eyebrow">System</p><h1>Spacing, grid &amp; placement</h1></header><div class="hrule"></div>
 <div class="body split">
   <div class="constr">
     <div class="grid-bg gb2">
@@ -1098,8 +1189,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
     <div class="srow"><b>Manual masthead</b><span>Tier lockup, 260px wide, above a 4px accent rule</span></div>
     <div class="srow"><b>Clearance</b><span>1 <i>C</i> everywhere, without exception for tight headers</span></div>
   </div>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>12</span></footer></section>
-<section class="page" data-label="13 Iconography" data-notes="Specimen grid. Named library, not a bespoke set."><header class="ph"><p class="eyebrow">System</p><h1>Iconography</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>14</span></footer></section>
+<section class="page" data-label="15 Iconography" data-notes="Specimen grid. Named library, not a bespoke set."><header class="ph"><p class="eyebrow">System</p><h1>Iconography</h1></header><div class="hrule"></div>
 <div class="body">
   <div class="icgrid"><figure class="icn">
     <svg viewBox="0 0 24 24" class="ico"><path d="M4 7h16M4 12h16M4 17h16" fill="none" stroke="currentColor"
@@ -1130,8 +1221,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
     <div class="srow"><b>Colour</b><span>Inherits <code>currentColor</code>. Signal hues only when the icon
       denotes that cable domain</span></div>
   </div>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>13</span></footer></section>
-<section class="page" data-label="14 Imagery &amp; AI policy" data-notes="Specimen grid plus policy. Screenshots are the imagery."><header class="ph"><p class="eyebrow">Practice</p><h1>Imagery &amp; AI policy</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>15</span></footer></section>
+<section class="page" data-label="16 Imagery &amp; AI policy" data-notes="Specimen grid plus policy. Screenshots are the imagery."><header class="ph"><p class="eyebrow">Practice</p><h1>Imagery &amp; AI policy</h1></header><div class="hrule"></div>
 <div class="body">
   <div class="imgrid">
     <figure><div class="shot">
@@ -1177,8 +1268,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
          Depictions of real equipment, venues or people. Any generated asset that ships without
          disclosure in the asset record.</p></div>
   </div>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>14</span></footer></section>
-<section class="page" data-label="15 Voice &amp; tone" data-notes="Columns. Attributes need real opposites."><header class="ph"><p class="eyebrow">Practice</p><h1>Voice &amp; tone</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>16</span></footer></section>
+<section class="page" data-label="17 Voice &amp; tone" data-notes="Columns. Attributes need real opposites."><header class="ph"><p class="eyebrow">Practice</p><h1>Voice &amp; tone</h1></header><div class="hrule"></div>
 <div class="body">
   <p class="lede">RackWire talks to somebody standing in front of a half-patched rack with a call in
      forty minutes. It states what is true, names what it does not know, and gets out of the way.</p>
@@ -1199,15 +1290,15 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
     <div class="trow"><b>Error</b><span>What failed, what was preserved, what to do next — in that order.</span></div>
     <div class="trow"><b>Marketing</b><span>Claims that survive a datasheet check. Name the ceiling, not “unlimited power”.</span></div>
   </div>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>15</span></footer></section>
-<section class="page" data-label="16 Copy rules" data-notes="Columns. Every prohibition carries its rewrite."><header class="ph"><p class="eyebrow">Practice</p><h1>Copy rules</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>17</span></footer></section>
+<section class="page" data-label="18 Copy rules" data-notes="Columns. Every prohibition carries its rewrite."><header class="ph"><p class="eyebrow">Practice</p><h1>Copy rules</h1></header><div class="hrule"></div>
 <div class="body">
   <div class="pairs"><div class="pcell no"><span class="tag">Don’t</span><p>Oops! Something went wrong 😕</p></div><div class="pcell yes"><span class="tag">Do</span><p>Import failed at line 42: unknown port type “XLR7”.</p></div><div class="pcell no"><span class="tag">Don’t</span><p>Unlimited devices, infinite possibilities!</p></div><div class="pcell yes"><span class="tag">Do</span><p>Studio plans an unlimited device count. Pro stops at 150.</p></div><div class="pcell no"><span class="tag">Don’t</span><p>This device might use around 500W</p></div><div class="pcell yes"><span class="tag">Do</span><p>575 W — nominal. Confirm before signing a load schedule.</p></div><div class="pcell no"><span class="tag">Don’t</span><p>Warning: potential DMX issue detected</p></div><div class="pcell yes"><span class="tag">Do</span><p>Universe 2 is unterminated. Terminate at the last fixture.</p></div></div>
   <p class="note">Each “don’t” above shipped on a real surface at some point. The pattern behind every
      rewrite: <b>name the thing, give the number, state the next action.</b> Adjectives that cannot be
      checked against a datasheet do not appear on any RackWire surface, marketing included.</p>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>16</span></footer></section>
-<section class="page" data-label="17 Components" data-notes="Specimen grid. The smallest set that proves the system."><header class="ph"><p class="eyebrow">Practice</p><h1>Components</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>18</span></footer></section>
+<section class="page" data-label="19 Components" data-notes="Specimen grid. The smallest set that proves the system."><header class="ph"><p class="eyebrow">Practice</p><h1>Components</h1></header><div class="hrule"></div>
 <div class="body">
   <div class="comps">
     <figure><div class="samp col">
@@ -1236,8 +1327,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
   <p class="note">Provenance badges are the one place colour carries meaning outside cable domains:
      <b>green</b> for a datasheet value, <b>amber</b> for a representative one. That pairing is fixed
      and must not be restyled to match a surrounding surface.</p>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>17</span></footer></section>
-<section class="page" data-label="18 Motion" data-notes="Columns. Reduced motion is mandatory."><header class="ph"><p class="eyebrow">Practice</p><h1>Motion</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>19</span></footer></section>
+<section class="page" data-label="20 Motion" data-notes="Columns. Reduced motion is mandatory."><header class="ph"><p class="eyebrow">Practice</p><h1>Motion</h1></header><div class="hrule"></div>
 <div class="body">
   <div class="cols3">
     <div class="cell"><p class="lead">Instant — 120ms</p>
@@ -1258,8 +1349,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
       A number that fades in reads as a number still settling</span></div>
     <div class="srow"><b>Canvas</b><span>Pan and zoom follow the pointer directly with no easing and no inertia</span></div>
   </div>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>18</span></footer></section>
-<section class="page" data-label="19 Applications" data-notes="Specimen grid. Four surfaces that actually ship."><header class="ph"><p class="eyebrow">Practice</p><h1>Applications</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>20</span></footer></section>
+<section class="page" data-label="21 Applications" data-notes="Specimen grid. Four surfaces that actually ship."><header class="ph"><p class="eyebrow">Practice</p><h1>Applications</h1></header><div class="hrule"></div>
 <div class="body">
   <div class="apps">
     <figure><div class="app browser">
@@ -1452,8 +1543,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
   <p class="note">All three editions ship from <b>rackwire.studio</b>, with the application at
      <b>app.rackwire.studio</b>. The tier descriptor appears on the manual masthead and in the
      application header; the marketing site uses the base lockup and names the edition in copy.</p>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>19</span></footer></section>
-<section class="page" data-label="20 Assets, licence &amp; contact" data-notes="Columns. Trademark stated separately from asset licence."><header class="ph"><p class="eyebrow">Practice</p><h1>Assets, licence &amp; contact</h1></header><div class="hrule"></div>
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>21</span></footer></section>
+<section class="page" data-label="22 Assets, licence &amp; contact" data-notes="Columns. Trademark stated separately from asset licence."><header class="ph"><p class="eyebrow">Practice</p><h1>Assets, licence &amp; contact</h1></header><div class="hrule"></div>
 <div class="body">
   <div class="cols2">
     <div class="specs">
@@ -1479,8 +1570,8 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
   </div>
   <p class="note">Rows marked <b>open</b> are slots for the brand owner to fill or have reviewed, left
      empty rather than filled with plausible boilerplate.</p>
-</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>20</span></footer></section>
-<section class="page" data-label="21 Close" data-notes="Poster field. The standing rule.">
+</div><footer class="pf"><span>RackWire — Brand Standards</span><span>rackwire.studio</span><span>22</span></footer></section>
+<section class="page" data-label="23 Close" data-notes="Poster field. The standing rule.">
 <div class="cover close">
   <div class="cover-mark"><svg style="color:var(--color-accent)" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="170.0" height="170.0" role="img" aria-label="RackWire">
   
@@ -1877,6 +1968,19 @@ tr[data-verdict="prohibited"] { opacity:.55; text-decoration:line-through; }
   } else {
     init();
   }
+}());
+</script>
+<script>/* v1.1 amendment: cable-hue ratios are measured, never authored. */
+(function () {
+  var K = window.guideKit; if (!K) return;
+  var ink = '#070A0E';
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ratio-vs]'), function (el) {
+    el.textContent = K.contrast(el.getAttribute('data-ratio-vs'), ink).toFixed(1) + ':1';
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-ratio-pair]'), function (el) {
+    var p = el.getAttribute('data-ratio-pair').split('|');
+    el.textContent = K.contrast(p[0], p[1]).toFixed(1) + ':1';
+  });
 }());
 </script>
 </body>

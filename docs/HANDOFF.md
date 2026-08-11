@@ -164,15 +164,14 @@ Everything reads SolariNet Rev 2 tokens off `:root`. Template inline styles use
 --sn-accent --sn-accent-700 --sn-on-field
 --sn-ok --sn-warn --sn-crit --sn-maint --sn-neutral
 --sn-crit-ink --sn-crit-surface --sn-crit-border
---sn-signal-other --sn-signal-open
 ```
 
-Two extension tokens beyond the SolariNet set, both deliberate:
-
-- `--sn-signal-other` (#E8833A) — the four cable domains are network / power / USB / other
-  and the palette has no orange. Retire it to `--sn-neutral` from the host if you prefer.
-- `--sn-signal-open` (#FFE04D) — unconnected cable ends. Held clear of the amber
-  `--sn-warn` band so the two never blur at 3 px stroke width.
+> **Superseded (Brand Standards v1.1):** the original two extension tokens
+> (`--sn-signal-other`, `--sn-signal-open`) are retired. Cable domain colors are
+> now brand literals outside the bridge — `--rw-cable-net/-power/-usb/-other/-open`
+> (plus `-lighting`/`-audio` reserved for Studio) — and are theme-invariant: a
+> host may retheme the chrome but never a run's meaning. See the styleguide,
+> pages 09–10.
 
 Type is IBM Plex Sans throughout, IBM Plex Mono for all numerics, port IDs and status.
 
