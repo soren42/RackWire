@@ -30,8 +30,13 @@ fi
 echo "==> publishing static assets to $WWW"
 sudo install -d -m 0755 "$WWW" "$WWW/discover"
 # The planner is shipped byte-for-byte; its offline/same-origin contract holds.
+# index.html loads support.js AND device-library.js + live-adapter.js (the
+# latter two define window.RW — the device/cable library and live adapter);
+# all of them must be published or the planner crashes at render.
 sudo install -m 0644 "$REPO/index.html" "$WWW/index.html"
-[[ -f "$REPO/support.js" ]] && sudo install -m 0644 "$REPO/support.js" "$WWW/support.js"
+for asset in support.js device-library.js live-adapter.js; do
+    [[ -f "$REPO/$asset" ]] && sudo install -m 0644 "$REPO/$asset" "$WWW/$asset"
+done
 [[ -d "$REPO/vendor" ]] && sudo cp -r "$REPO/vendor" "$WWW/"
 [[ -d "$REPO/styleguide" ]] && sudo cp -r "$REPO/styleguide" "$WWW/"
 sudo install -m 0644 "$REPO/web/index.html"   "$WWW/discover/index.html"
