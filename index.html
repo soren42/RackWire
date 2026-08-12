@@ -3,54 +3,74 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- WP1 self-containment: point the dc-runtime resource hook at vendored copies
+     (verified sha384 == the SRI pins in support.js) so the app boots with zero
+     network requests, including under file:// where SRI+crossOrigin would fail. -->
+<script>
+window.__resources = Object.assign(window.__resources || {}, {
+  "https://unpkg.com/react@18.3.1/umd/react.production.min.js": "./vendor/react.production.min.js",
+  "https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js": "./vendor/react-dom.production.min.js",
+  "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js": "./vendor/babel.min.js"
+});
+</script>
 <script src="./support.js"></script>
 </head>
 <body>
 <x-dc>
 <helmet>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<!-- IBM Plex, self-hosted by the dashboard (no-cloud house rule, index.html §Fonts).
-     404s harmlessly when the file is opened straight off disk, exactly as the old
-     Google Fonts <link> did with no network — the stack falls through to system-ui. -->
-<link rel="stylesheet" href="../fonts/plex.css" />
+<link rel="icon" type="image/png" href="./styleguide/rackwire-favicon.png" />
+<!-- Type is the system stack by brand policy (Brand Standards v1.1 p. 12) —
+     a webfont that fails to load changes every measurement, so none is loaded. -->
 <style>
-  /* ── SolariNet token bridge (CONTRACT-RW.md §0 D9, §5.2) ───────────────────
-     The app is authored against the SolariNet Rev 2 `--sn-*` set; the dashboard
-     (dashboard/public/styles.css) publishes a different, older token vocabulary
-     under [data-theme="dark"|"light"]. Rather than restyle the app, every
-     `--sn-*` token it uses is DERIVED from the dashboard token of the same
-     meaning, with the app's original literal as the var() fallback.
+  /* ── Host token bridge, RackWire brand fallbacks (CONTRACT-RW.md §0 D9, §5.2;
+     Brand Standards v1.1) ──────────────────────────────────────────────────────
+     The `--sn-*` NAMES are the host-bridge interface and never change: an
+     embedding host (SolariNet today, anyone tomorrow) pushes its resolved
+     palette into `--bg`, `--ink`, `--accent` &c. and the chrome retints.
+     What each token FALLS BACK to when no host is present is RackWire's own
+     brand — the v1.1 deck's colour system — so a standalone or file:// load
+     wears the brand, not a copy of somebody's dashboard.
 
      Consequences, all three of which are required:
-       · file:// standalone — no dashboard tokens exist, every fallback fires,
-         and the visuals are byte-for-byte what they were before. Sacred.
-       · same-origin standalone (/rackwire/) — boot copies the dashboard's
+       · file:// standalone — no host tokens exist, every fallback fires, and
+         the page is Brand Standards v1.1 exactly. Sacred.
+       · same-origin standalone (/rackwire/) — boot copies the host's
          `solari-theme` out of localStorage onto <html data-theme>, so the
-         light block below fires and the page matches the dashboard.
-       · iframe embed — screens-rackwire.jsx additionally pushes the parent's
-         RESOLVED dashboard token values in (setTheme's second argument), so
-         `var(--accent)` &c. resolve to the host's real palette, not a copy.
+         light block below fires; absent host CSS it is the deck's light set.
+       · iframe embed — the host additionally pushes its RESOLVED token values
+         in (setTheme's second argument), so `var(--accent)` &c. resolve to
+         the host's real palette, not a copy.
 
-     The cable signal hues are brand literals (Brand Standards v1.1 §Signal
-     Palette), NOT host tokens: a run's color states what it carries, and that
-     meaning must survive any host retheme and any edition upgrade. They are
-     specified against Rack Ink and are theme-invariant — the light theme does
-     not restate them; the plot field stays dark (or labels carry the relief). */
+     Steps the deck does not name (raised surface, the faint/quiet ink rungs,
+     the light status set, the crit trio) are constructed between named brand
+     anchors and are marked DERIVED where they appear.
+
+     The cable signal hues are brand literals (Brand Standards v1.1 pp. 08–10),
+     NOT host tokens: a run's color states what it carries, and that meaning
+     must survive any host retheme and any edition upgrade. They are specified
+     against Rack Ink and are theme-invariant — the light theme does not
+     restate them; the plot field stays dark (or labels carry the relief). */
   :root {
-    --sn-bg: var(--bg, #070A0F); --sn-surface: var(--panel, #0E151D); --sn-raised: var(--panel-3, #16202C);
-    --sn-ink: var(--ink, #DFE8F2); --sn-dim: var(--ink-dim, #9DB0C4); --sn-faint: var(--ink-faint, #6E8399);
-    /* the dashboard has no fourth ink step; quiet collapses onto faint when a host palette is present */
-    --sn-quiet: var(--ink-faint, #4E6B7E);
-    --sn-divider: var(--line, #22303F); --sn-divider-strong: var(--line-2, #31465C);
-    --sn-accent: var(--accent, #22B8F0);
-    /* accent-700 is the app's "accent as text on the on-field chip"; dark wants the
-       brighter step (the dashboard tops out at --accent), light wants the deeper one */
-    --sn-accent-700: var(--accent, #5FCCFA);
-    --sn-on-field: var(--bg-deep, #06090D);
-    --sn-ok: var(--ok, #3DD68C); --sn-warn: var(--warn, #F5A623); --sn-crit: var(--crit, #FF4D5E);
-    --sn-maint: var(--violet, #9B87FF); --sn-neutral: var(--ink-dim, #8299AF);
-    /* crit trio == the dashboard's .btn-danger recipe: crit border, crit-bg fill, crit text */
-    --sn-crit-ink: var(--crit, #FF8A95); --sn-crit-surface: var(--crit-bg, #2A1218); --sn-crit-border: var(--crit, #6B2733);
+    --sn-bg: var(--bg, #070A0E); --sn-surface: var(--panel, #0E141C); --sn-raised: var(--panel-3, #161F2A); /* raised DERIVED: Surface ½-step toward Divider */
+    --sn-ink: var(--ink, #EDF3F9); --sn-dim: var(--ink-dim, #8FA3BA); --sn-faint: var(--ink-faint, #798EA4); /* dim = deck secondary stroke; faint DERIVED dim↔Steel midpoint */
+    /* the host bridge has no fourth ink step; quiet collapses onto faint when a host palette is present.
+       Fallback is Frame Steel — chrome only, which is exactly what quiet text is */
+    --sn-quiet: var(--ink-faint, #63788F);
+    --sn-divider: var(--line, #1E2937); --sn-divider-strong: var(--line-2, #25303F); /* Divider / Frame Shadow */
+    --sn-accent: var(--accent, #22D3EE);
+    /* accent-700 is the app's "accent as text on the on-field chip"; the dark deck
+       tops out at Signal Cyan itself, light wants the deeper #075A78 step */
+    --sn-accent-700: var(--accent, #22D3EE);
+    --sn-on-field: var(--bg-deep, #070A0E);
+    /* status = deck semantics: lime ok, amber warn, magenta error (pp. 08, 17).
+       Amber is also power and magenta is also lighting — legitimate reuse, the
+       deck binds hue to meaning, and a status IS a meaning */
+    --sn-ok: var(--ok, #A3E635); --sn-warn: var(--warn, #FB923C); --sn-crit: var(--crit, #E879F9);
+    /* maint violet has no deck equivalent; retained unchanged, DERIVED (pre-brand) */
+    --sn-maint: var(--violet, #9B87FF); --sn-neutral: var(--ink-dim, #8FA3BA);
+    /* crit trio DERIVED from Signal Magenta: lightened ink, Ink-mixed surface, dimmed border */
+    --sn-crit-ink: var(--crit, #ED94FA); --sn-crit-surface: var(--crit-bg, #22172A); --sn-crit-border: var(--crit, #61366C);
     /* Signal palette — cable domain hues, Brand Standards v1.1. Fixed order, never cycled:
        network=cyan, power=amber, usb=blue (the USB-IF SuperSpeed echo), other=slate
        (a run with no protocol identity wears no hue — distinct value and role from
@@ -59,116 +79,131 @@
     --rw-cable-lighting: #E879F9; --rw-cable-audio: #A3E635;
     /* unconnected ends: a true yellow, held clear of the amber power/warn band so the two never blur */
     --rw-cable-open: #FFE04D;
-    --font-display: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    --font-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    /* Type is the system's own (deck p. 12): a webfont that fails to load
+       changes every measurement, so nothing is allowed to fail to load */
+    --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    /* Motion scale (deck p. 20): instant / transition / deliberate. Brand-invariant, hence --rw-*. */
+    --rw-motion-fast: 120ms; --rw-motion-base: 220ms; --rw-motion-slow: 400ms;
   }
-  /* Light host. The fallbacks here are styles.css's own light values, so a
-     same-origin standalone load is correct before any host pushes anything. */
+  /* Light theme. The fallbacks are the deck's own light palette (p. 02 CSS /
+     p. 08), so a themed standalone load is correct before any host pushes
+     anything. Status hues are the signal hues pulled down to hold on paper —
+     DERIVED, the deck states no light status set. */
   :root[data-theme="light"] {
-    --sn-bg: var(--bg, #e9edf3); --sn-surface: var(--panel, #ffffff); --sn-raised: var(--panel-3, #eef2f8);
-    --sn-ink: var(--ink, #14202e); --sn-dim: var(--ink-dim, #51637a); --sn-faint: var(--ink-faint, #6b7d92);
-    --sn-quiet: var(--ink-faint, #6b7d92);
-    --sn-divider: var(--line, #d3dbe7); --sn-divider-strong: var(--line-2, #c2cdde);
-    --sn-accent: var(--accent, #0e78c2);
-    --sn-accent-700: var(--accent-deep, #0b5f9c);
-    --sn-on-field: var(--panel, #ffffff);
-    --sn-ok: var(--ok, #0a9b6a); --sn-warn: var(--warn, #c2780e); --sn-crit: var(--crit, #db1f57);
-    --sn-maint: var(--violet, #6a4fe6); --sn-neutral: var(--ink-dim, #51637a);
-    --sn-crit-ink: var(--crit, #db1f57); --sn-crit-surface: var(--crit-bg, rgba(219, 31, 87, 0.11)); --sn-crit-border: var(--crit, #db1f57);
+    --sn-bg: var(--bg, #F4F7FA); --sn-surface: var(--panel, #FFFFFF); --sn-raised: var(--panel-3, #EDF1F5); /* raised DERIVED: Surface toward Divider */
+    --sn-ink: var(--ink, #070A0E); --sn-dim: var(--ink-dim, #4A5B6B); --sn-faint: var(--ink-faint, #63788F);
+    --sn-quiet: var(--ink-faint, #63788F);
+    --sn-divider: var(--line, #D3DCE6); --sn-divider-strong: var(--line-2, #B1BECC); /* strong DERIVED: Divider toward Steel */
+    --sn-accent: var(--accent, #0B7FA8);
+    --sn-accent-700: var(--accent-deep, #075A78);
+    --sn-on-field: var(--panel, #FFFFFF);
+    --sn-ok: var(--ok, #4D7C0F); --sn-warn: var(--warn, #C2410C); --sn-crit: var(--crit, #A21CAF);
+    --sn-maint: var(--violet, #6a4fe6); --sn-neutral: var(--ink-dim, #4A5B6B);
+    --sn-crit-ink: var(--crit, #A21CAF); --sn-crit-surface: var(--crit-bg, rgba(162, 28, 175, 0.10)); --sn-crit-border: var(--crit, #A21CAF);
   }
-  html, body { margin: 0; padding: 0; background: var(--sn-bg, var(--sn-bg, #070A0F)); overscroll-behavior: none; }
+  html, body { margin: 0; padding: 0; background: var(--sn-bg, #070A0E); overscroll-behavior: none; }
   body { -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
-  a { color: var(--sn-accent, #22B8F0); text-decoration: none; }
-  a:hover { color: var(--sn-accent-700, #5FCCFA); }
+  a { color: var(--sn-accent, #22D3EE); text-decoration: none; }
+  a:hover { color: var(--sn-accent-700, #22D3EE); }
   input, select, textarea, button { font-family: inherit; font-size: inherit; color: inherit; }
-  input, select, textarea { box-sizing: border-box; background: var(--sn-surface, #0E151D); border: 1px solid var(--sn-divider-strong, #31465C); border-radius: 6px; padding: 8px 10px; color: var(--sn-ink, #DFE8F2); }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--sn-accent, #22B8F0); }
+  input, select, textarea { box-sizing: border-box; background: var(--sn-surface, #0E141C); border: 1px solid var(--sn-divider-strong, #25303F); border-radius: 6px; padding: 8px 10px; color: var(--sn-ink, #EDF3F9); }
+  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--sn-accent, #22D3EE); }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-thumb { background: var(--sn-divider, #22303F); border-radius: 5px; }
+  ::-webkit-scrollbar-thumb { background: var(--sn-divider, #1E2937); border-radius: 5px; }
   @keyframes rw-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
   @keyframes rw-dash { to { stroke-dashoffset: -24; } }
+  /* Reduced motion is mandatory (deck p. 20): every duration collapses to zero.
+     rw-in elements land in their settled state; a dashed ghost or flow run keeps
+     its dashes but stops marching. */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+  }
 </style>
 <script src="device-library.js"></script>
 <script src="live-adapter.js"></script>
 </helmet>
-<div style="display:flex;flex-direction:column;height:100vh;width:100vw;background:var(--sn-bg, #070A0F);color:var(--sn-ink, #DFE8F2);font-family:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;overflow:hidden;touch-action:manipulation">
+<div style="display:flex;flex-direction:column;height:100vh;width:100vw;background:var(--sn-bg, #070A0E);color:var(--sn-ink, #EDF3F9);font-family:var(--font-display);overflow:hidden;touch-action:manipulation">
 
-  <div style="flex:0 0 auto;display:{{ chromeDisplay }};align-items:center;gap:10px;padding:10px 14px;background:var(--sn-accent, #22B8F0);color:var(--sn-on-field, #06090D);border-radius:0 0 18px 18px;box-shadow:0 6px 24px rgba(34,184,240,0.18)">
-    <div style="display:flex;flex-direction:column;line-height:1;margin-right:6px">
-      <span style="font-size:17px;font-weight:700;letter-spacing:-0.02em">RackWire</span>
-      <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:0.14em;opacity:0.65">CONNECTION PLANNER</span>
+  <!-- Header is dark chrome (deck p. 21 application spec): Surface bar, Divider rule,
+       signal reserved for the one primary action and the active tab — no filled field,
+       no shadow, no radius. -->
+  <div style="flex:0 0 auto;display:{{ chromeDisplay }};align-items:center;gap:8px;padding:8px 16px;background:var(--sn-surface, #0E141C);color:var(--sn-ink, #EDF3F9);border-bottom:1px solid var(--sn-divider, #1E2937)">
+    <div style="display:flex;flex-direction:column;line-height:1;margin-right:8px">
+      <span style="font-size:17px;font-weight:600;letter-spacing:-0.02em">RackWire</span>
+      <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:var(--sn-faint, #798EA4)">CONNECTION PLANNER</span>
     </div>
-    <div style="display:flex;gap:4px;padding:3px;background:rgba(6,9,13,0.16);border-radius:11px">
+    <div style="display:flex;gap:4px;padding:3px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px">
       <button onClick="{{ goMap }}" style="{{ tabMapStyle }}">Map</button>
       <button onClick="{{ goTable }}" style="{{ tabTableStyle }}">Data</button>
     </div>
     <div style="flex:1"></div>
-    <button onClick="{{ openLibrary }}" style="display:flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;background:var(--sn-on-field, #06090D);color:var(--sn-accent-700, #5FCCFA);border:none;border-radius:11px;font-weight:600;font-size:14px;cursor:pointer">
-      <span style="font-size:18px;line-height:1;margin-top:-2px">+</span> Add gear
+    <button onClick="{{ openLibrary }}" style="display:flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;background:var(--sn-accent, #22D3EE);color:var(--sn-on-field, #070A0E);border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg> Add gear
     </button>
     <div style="display:flex;gap:4px">
-      <button onClick="{{ doUndo }}" title="Undo" style="{{ undoStyle }}">↶</button>
-      <button onClick="{{ doRedo }}" title="Redo" style="{{ redoStyle }}">↷</button>
+      <button onClick="{{ doUndo }}" title="Undo" style="{{ undoStyle }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"></path><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"></path></svg></button>
+      <button onClick="{{ doRedo }}" title="Redo" style="{{ redoStyle }}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"></path><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"></path></svg></button>
     </div>
-    <button onClick="{{ openSearch }}" title="Find a device or port" style="min-height:44px;min-width:44px;padding:0 12px;background:rgba(6,9,13,0.12);color:var(--sn-on-field, #06090D);border:1px solid rgba(6,9,13,0.25);border-radius:11px;font-weight:600;cursor:pointer;font-size:15px">⌕</button>
+    <button onClick="{{ openSearch }}" title="Find a device or port" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;padding:0 12px;background:var(--sn-raised, #161F2A);color:var(--sn-dim, #8FA3BA);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg></button>
     <button onClick="{{ toggleLive }}" style="{{ liveBtnStyle }}">{{ liveLabel }}</button>
-    <button onClick="{{ openScan }}" title="Scan barcode" style="min-height:44px;min-width:44px;padding:0 12px;background:rgba(6,9,13,0.14);color:var(--sn-on-field, #06090D);border:1px solid rgba(6,9,13,0.28);border-radius:11px;font-weight:600;cursor:pointer;font-family:'IBM Plex Mono',monospace;font-size:12px">SCAN</button>
-    <button onClick="{{ openMenu }}" style="min-height:44px;min-width:44px;background:rgba(6,9,13,0.14);color:var(--sn-on-field, #06090D);border:1px solid rgba(6,9,13,0.28);border-radius:11px;font-weight:600;cursor:pointer;font-size:16px">···</button>
+    <button onClick="{{ openScan }}" title="Scan barcode" style="min-height:44px;min-width:44px;padding:0 12px;background:var(--sn-raised, #161F2A);color:var(--sn-dim, #8FA3BA);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;font-weight:600;cursor:pointer;font-family:var(--font-mono);font-size:12px;letter-spacing:0.1em">SCAN</button>
+    <button onClick="{{ openMenu }}" title="Menu" style="display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;background:var(--sn-raised, #161F2A);color:var(--sn-dim, #8FA3BA);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg></button>
   </div>
 
   <div style="flex:1;position:relative;min-height:0;display:flex">
 
     <sc-if value="{{ isMap }}" hint-placeholder-val="{{ true }}">
       <div style="position:relative;flex:1;min-width:0;overflow:hidden">
-        <div ref="{{ stageRef }}" onPointerDown="{{ onDown }}" onPointerMove="{{ onMove }}" onPointerUp="{{ onUp }}" onPointerCancel="{{ onUp }}" onWheel="{{ onWheel }}" onContextMenu="{{ noCtx }}" style="position:absolute;inset:0;touch-action:none;background:var(--sn-bg, #070A0F);cursor:crosshair">
+        <div ref="{{ stageRef }}" onPointerDown="{{ onDown }}" onPointerMove="{{ onMove }}" onPointerUp="{{ onUp }}" onPointerCancel="{{ onUp }}" onWheel="{{ onWheel }}" onContextMenu="{{ noCtx }}" style="position:absolute;inset:0;touch-action:none;background:var(--sn-bg, #070A0E);cursor:crosshair">
           {{ world }}
         </div>
 
-        <div style="position:absolute;left:14px;bottom:14px;display:flex;flex-direction:column;gap:8px;pointer-events:none">
-          <div style="display:flex;gap:6px;padding:6px;background:rgba(14,21,29,0.94);border:1px solid var(--sn-divider, #22303F);border-radius:13px;pointer-events:auto;backdrop-filter:blur(6px)">
+        <div style="position:absolute;left:16px;bottom:16px;display:flex;flex-direction:column;gap:8px;pointer-events:none">
+          <div style="display:flex;gap:6px;padding:6px;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider, #1E2937);border-radius:10px;pointer-events:auto">
             <button onClick="{{ toolPointer }}" style="{{ toolPointerStyle }}">Move</button>
             <button onClick="{{ toolSelect }}" style="{{ toolSelectStyle }}">Select</button>
             <button onClick="{{ toolNote }}" style="{{ toolNoteStyle }}">Note</button>
             <button onClick="{{ toolRack }}" style="{{ toolRackStyle }}">Rack</button>
           </div>
-          <div style="display:flex;gap:6px;padding:6px;background:rgba(14,21,29,0.94);border:1px solid var(--sn-divider, #22303F);border-radius:13px;pointer-events:auto">
-            <button onClick="{{ zoomOut }}" style="min-width:44px;min-height:44px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:9px;color:var(--sn-dim, #9DB0C4);font-size:18px;cursor:pointer">−</button>
-            <button onClick="{{ zoomIn }}" style="min-width:44px;min-height:44px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:9px;color:var(--sn-dim, #9DB0C4);font-size:18px;cursor:pointer">+</button>
-            <button onClick="{{ fitAll }}" style="min-height:44px;padding:0 14px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:9px;color:var(--sn-dim, #9DB0C4);font-size:13px;cursor:pointer">Fit</button>
+          <div style="display:flex;gap:6px;padding:6px;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider, #1E2937);border-radius:10px;pointer-events:auto">
+            <button onClick="{{ zoomOut }}" title="Zoom out" style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+            <button onClick="{{ zoomIn }}" title="Zoom in" style="display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg></button>
+            <button onClick="{{ fitAll }}" style="min-height:44px;padding:0 14px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-dim, #8FA3BA);font-size:13px;cursor:pointer">Fit</button>
           </div>
         </div>
 
-        <div style="position:absolute;right:14px;top:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+        <div style="position:absolute;right:16px;top:16px;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
           <button onClick="{{ goIssues }}" style="{{ issueBtnStyle }}">{{ issueSummary }}</button>
-          <div style="padding:10px 12px;background:rgba(14,21,29,0.94);border:1px solid var(--sn-divider, #22303F);border-radius:13px;font-family:'IBM Plex Mono',monospace;font-size:10px;line-height:1.9;color:var(--sn-dim, #9DB0C4)">
+          <div style="padding:10px 12px;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider, #1E2937);border-radius:10px;font-family:var(--font-mono);font-size:10px;line-height:1.9;color:var(--sn-dim, #8FA3BA)">
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-net, #22D3EE)"></span>Network</div>
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-power, #FB923C)"></span>Power</div>
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-usb, #2E6BE6)"></span>USB / serial</div>
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-other, #74889D)"></span>Other</div>
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-open, #FFE04D)"></span>Unconnected</div>
-            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--sn-crit, #FF4D5E)"></span>Over capacity</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--sn-crit, #E879F9)"></span>Over capacity</div>
             <sc-if value="{{ liveOn }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--sn-divider, #22303F)">
-                <div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--sn-ok, #3DD68C);opacity:0.75"></span>Path to internet</div>
-                <div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--sn-warn, #F5A623);opacity:0.75"></span>On battery backup</div>
+              <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--sn-divider, #1E2937)">
+                <div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--sn-ok, #A3E635);opacity:0.75"></span>Path to internet</div>
+                <div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--sn-warn, #FB923C);opacity:0.75"></span>On battery backup</div>
               </div>
             </sc-if>
           </div>
         </div>
 
         <sc-if value="{{ liveOn }}" hint-placeholder-val="{{ false }}">
-          <div style="position:absolute;left:14px;top:14px;width:250px;background:rgba(14,21,29,0.94);border:1px solid rgba(34,184,240,0.35);border-radius:14px;padding:12px;font-family:'IBM Plex Mono',monospace;animation:rw-in 0.2s ease">
+          <div style="position:absolute;left:16px;top:16px;width:250px;background:var(--sn-surface, #0E141C);border:1px solid rgba(34,211,238,0.35);border-radius:10px;padding:12px;font-family:var(--font-mono);animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
             <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
-              <span style="width:8px;height:8px;border-radius:50%;background:{{ liveDot }};box-shadow:0 0 8px {{ liveDot }}"></span>
-              <span style="font-size:10px;letter-spacing:0.14em;color:var(--sn-accent-700, #5FCCFA)">{{ liveStatusLabel }}</span>
+              <span style="width:8px;height:8px;border-radius:50%;background:{{ liveDot }}"></span>
+              <span style="font-size:10px;letter-spacing:0.14em;color:var(--sn-accent-700, #22D3EE)">{{ liveStatusLabel }}</span>
             </div>
-            <div style="font-size:9.5px;line-height:1.7;color:var(--sn-dim, #9DB0C4);margin-bottom:9px">{{ liveMsg }}</div>
-            <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:10px;color:var(--sn-dim, #9DB0C4)">
-              <span style="color:var(--sn-faint, #6E8399)">LINKS UP</span><span>{{ liveStats.up }} / {{ liveStats.total }}</span>
-              <span style="color:var(--sn-faint, #6E8399)">THROUGHPUT</span><span>{{ liveStats.tput }} Gbps</span>
-              <span style="color:var(--sn-faint, #6E8399)">MEASURED LOAD</span><span>{{ liveStats.watts }} W</span>
-              <span style="color:var(--sn-faint, #6E8399)">PoE DELIVERED</span><span>{{ liveStats.poe }} W</span>
-              <span style="color:var(--sn-faint, #6E8399)">LAST FRAME</span><span>{{ liveStats.age }}</span>
+            <div style="font-size:9.5px;line-height:1.7;color:var(--sn-dim, #8FA3BA);margin-bottom:9px">{{ liveMsg }}</div>
+            <div style="display:grid;grid-template-columns:auto 1fr;gap:3px 10px;font-size:10px;color:var(--sn-dim, #8FA3BA)">
+              <span style="color:var(--sn-faint, #798EA4)">LINKS UP</span><span>{{ liveStats.up }} / {{ liveStats.total }}</span>
+              <span style="color:var(--sn-faint, #798EA4)">THROUGHPUT</span><span>{{ liveStats.tput }} Gbps</span>
+              <span style="color:var(--sn-faint, #798EA4)">MEASURED LOAD</span><span>{{ liveStats.watts }} W</span>
+              <span style="color:var(--sn-faint, #798EA4)">PoE DELIVERED</span><span>{{ liveStats.poe }} W</span>
+              <span style="color:var(--sn-faint, #798EA4)">LAST FRAME</span><span>{{ liveStats.age }}</span>
             </div>
             <select value="{{ liveSource }}" onChange="{{ setLiveSource }}" style="width:100%;margin-top:10px;min-height:38px;font-size:11px">
               <sc-for list="{{ liveSources }}" as="s" hint-placeholder-count="3">
@@ -178,41 +213,41 @@
             <input value="{{ liveUrl }}" onChange="{{ setLiveUrl }}" placeholder="/api/rackwire/telemetry (computed from the plan)" style="width:100%;margin-top:6px;min-height:38px;font-size:10.5px" />
           </div>
         </sc-if>
-        <div style="position:absolute;left:50%;top:14px;transform:translateX(-50%);pointer-events:none">
-          <div style="padding:8px 14px;background:rgba(14,21,29,0.94);border:1px solid var(--sn-divider, #22303F);border-radius:11px;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sn-accent, #22B8F0);letter-spacing:0.04em">{{ hint }}</div>
+        <div style="position:absolute;left:50%;top:16px;transform:translateX(-50%);pointer-events:none">
+          <div style="padding:8px 14px;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider, #1E2937);border-radius:8px;font-family:var(--font-mono);font-size:11px;color:var(--sn-accent, #22D3EE);letter-spacing:0.04em">{{ hint }}</div>
         </div>
 
         <sc-if value="{{ insp }}" hint-placeholder-val="{{ false }}">
-          <div style="position:absolute;right:14px;bottom:14px;width:330px;max-height:60%;overflow:auto;background:rgba(14,21,29,0.97);border:1px solid var(--sn-divider-strong, #31465C);border-radius:16px;padding:14px;animation:rw-in 0.18s ease">
+          <div style="position:absolute;right:16px;bottom:16px;width:330px;max-height:60%;overflow:auto;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
             <div style="display:flex;align-items:flex-start;gap:8px">
               <input value="{{ insp.name }}" onChange="{{ inspName }}" style="flex:1;font-weight:600;font-size:14px" />
-              <button onClick="{{ closeInsp }}" style="min-width:32px;min-height:32px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:8px;color:var(--sn-faint, #6E8399);cursor:pointer">✕</button>
+              <button onClick="{{ closeInsp }}" style="min-width:32px;min-height:32px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
             </div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--sn-faint, #6E8399);margin:8px 0 2px">{{ insp.vendor }} · {{ insp.model }}</div>
-            <div style="font-size:11px;color:var(--sn-dim, #9DB0C4);line-height:1.5;margin-bottom:12px">{{ insp.note }}</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--sn-faint, #798EA4);margin:8px 0 2px">{{ insp.vendor }} · {{ insp.model }}</div>
+            <div style="font-size:11px;color:var(--sn-dim, #8FA3BA);line-height:1.5;margin-bottom:12px">{{ insp.note }}</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-              <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">DRAW (W)<input value="{{ insp.drawW }}" onChange="{{ inspDraw }}" type="number" style="width:100%;margin-top:4px" /></label>
-              <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">PoE BUDGET (W)<input value="{{ insp.poeBudgetW }}" onChange="{{ inspPoe }}" type="number" style="width:100%;margin-top:4px" /></label>
-              <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">CIRCUIT (A)<input value="{{ insp.circuitA }}" onChange="{{ inspAmps }}" type="number" style="width:100%;margin-top:4px" /></label>
-              <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">RACK U<input value="{{ insp.ru }}" onChange="{{ inspRu }}" type="number" style="width:100%;margin-top:4px" /></label>
-              <label style="grid-column:span 2;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">OUTPUT BUDGET (W) — overrides circuit math<input value="{{ insp.budgetW }}" onChange="{{ inspBudget }}" type="number" style="width:100%;margin-top:4px" /></label>
-              <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">ASSET ID<input value="{{ insp.assetId }}" onChange="{{ inspAsset }}" style="width:100%;margin-top:4px" /></label>
-              <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">SERIAL<input value="{{ insp.serial }}" onChange="{{ inspSerial }}" style="width:100%;margin-top:4px" /></label>
-              <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">LIVE KEY<input value="{{ insp.liveKey }}" onChange="{{ inspLiveKey }}" placeholder="{{ insp.liveKeyHint }}" style="width:100%;margin-top:4px" /></label>
-              <label style="grid-column:span 2;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">PORT MAP — monitoring ifName = port ID, comma separated<input value="{{ insp.ifMap }}" onChange="{{ inspIfMap }}" placeholder="GigabitEthernet0/3=ge-3, Te1/0/1=sfp-1" style="width:100%;margin-top:4px" /></label>
-              <label style="grid-column:span 2;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">LOCATION<input value="{{ insp.location }}" onChange="{{ inspLocation }}" placeholder="Under-desk 3U, shelf 2…" style="width:100%;margin-top:4px" /></label>
-              <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">PURCHASED<input value="{{ insp.purchased }}" onChange="{{ inspPurchased }}" type="date" style="width:100%;margin-top:4px" /></label>
-              <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">WARRANTY ENDS<input value="{{ insp.warranty }}" onChange="{{ inspWarranty }}" type="date" style="width:100%;margin-top:4px" /></label>
+              <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">DRAW (W)<input value="{{ insp.drawW }}" onChange="{{ inspDraw }}" type="number" style="width:100%;margin-top:4px" /></label>
+              <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">PoE BUDGET (W)<input value="{{ insp.poeBudgetW }}" onChange="{{ inspPoe }}" type="number" style="width:100%;margin-top:4px" /></label>
+              <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">CIRCUIT (A)<input value="{{ insp.circuitA }}" onChange="{{ inspAmps }}" type="number" style="width:100%;margin-top:4px" /></label>
+              <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">RACK U<input value="{{ insp.ru }}" onChange="{{ inspRu }}" type="number" style="width:100%;margin-top:4px" /></label>
+              <label style="grid-column:span 2;font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">OUTPUT BUDGET (W) — overrides circuit math<input value="{{ insp.budgetW }}" onChange="{{ inspBudget }}" type="number" style="width:100%;margin-top:4px" /></label>
+              <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">ASSET ID<input value="{{ insp.assetId }}" onChange="{{ inspAsset }}" style="width:100%;margin-top:4px" /></label>
+              <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">SERIAL<input value="{{ insp.serial }}" onChange="{{ inspSerial }}" style="width:100%;margin-top:4px" /></label>
+              <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">LIVE KEY<input value="{{ insp.liveKey }}" onChange="{{ inspLiveKey }}" placeholder="{{ insp.liveKeyHint }}" style="width:100%;margin-top:4px" /></label>
+              <label style="grid-column:span 2;font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">PORT MAP — monitoring ifName = port ID, comma separated<input value="{{ insp.ifMap }}" onChange="{{ inspIfMap }}" placeholder="GigabitEthernet0/3=ge-3, Te1/0/1=sfp-1" style="width:100%;margin-top:4px" /></label>
+              <label style="grid-column:span 2;font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">LOCATION<input value="{{ insp.location }}" onChange="{{ inspLocation }}" placeholder="Under-desk 3U, shelf 2…" style="width:100%;margin-top:4px" /></label>
+              <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">PURCHASED<input value="{{ insp.purchased }}" onChange="{{ inspPurchased }}" type="date" style="width:100%;margin-top:4px" /></label>
+              <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">WARRANTY ENDS<input value="{{ insp.warranty }}" onChange="{{ inspWarranty }}" type="date" style="width:100%;margin-top:4px" /></label>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:12px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider, #22303F);border-radius:11px">
-              <input type="checkbox" checked="{{ insp.isInternet }}" onChange="{{ inspInternet }}" style="width:22px;height:22px;accent-color:var(--sn-accent, #22B8F0);flex:0 0 auto" />
-              <span style="font-size:12.5px;color:var(--sn-ink, #DFE8F2)">Internet termination point</span>
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:12px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px">
+              <input type="checkbox" checked="{{ insp.isInternet }}" onChange="{{ inspInternet }}" style="width:22px;height:22px;accent-color:var(--sn-accent, #22D3EE);flex:0 0 auto" />
+              <span style="font-size:12.5px;color:var(--sn-ink, #EDF3F9)">Internet termination point</span>
             </div>
-            <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:12px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider, #22303F);border-radius:11px">
-              <input type="checkbox" checked="{{ insp.isBattery }}" onChange="{{ inspBattery }}" style="width:22px;height:22px;accent-color:var(--sn-warn, #F5A623);flex:0 0 auto" />
-              <span style="font-size:12.5px;color:var(--sn-ink, #DFE8F2)">Battery source (UPS)</span>
+            <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;margin-bottom:12px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px">
+              <input type="checkbox" checked="{{ insp.isBattery }}" onChange="{{ inspBattery }}" style="width:22px;height:22px;accent-color:var(--sn-warn, #FB923C);flex:0 0 auto" />
+              <span style="font-size:12.5px;color:var(--sn-ink, #EDF3F9)">Battery source (UPS)</span>
             </div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em;margin-bottom:6px">ADD PORT GROUP</div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:6px">ADD PORT GROUP</div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
               <input value="{{ npg.label }}" onChange="{{ npgLabel }}" placeholder="Label" style="grid-column:span 2" />
               <select value="{{ npg.glyph }}" onChange="{{ npgGlyph }}">
@@ -229,9 +264,9 @@
               <input value="{{ npg.cap }}" onChange="{{ npgCap }}" placeholder="Gbps / W" />
             </div>
             <div style="display:flex;gap:8px">
-              <button onClick="{{ addGroup }}" style="flex:1;min-height:44px;background:var(--sn-accent, #22B8F0);color:var(--sn-on-field, #06090D);border:none;border-radius:10px;font-weight:600;cursor:pointer">Add ports</button>
-              <button onClick="{{ dupDevice }}" style="min-height:44px;padding:0 14px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:10px;color:var(--sn-dim, #9DB0C4);cursor:pointer">Duplicate</button>
-              <button onClick="{{ delDevice }}" style="min-height:44px;padding:0 14px;background:var(--sn-crit-surface, #2A1218);border:1px solid var(--sn-crit-border, #6B2733);border-radius:10px;color:var(--sn-crit-ink, #FF8A95);cursor:pointer">Delete</button>
+              <button onClick="{{ addGroup }}" style="flex:1;min-height:44px;background:var(--sn-accent, #22D3EE);color:var(--sn-on-field, #070A0E);border:none;border-radius:8px;font-weight:600;cursor:pointer">Add ports</button>
+              <button onClick="{{ dupDevice }}" style="min-height:44px;padding:0 14px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer">Duplicate</button>
+              <button onClick="{{ delDevice }}" style="min-height:44px;padding:0 14px;background:var(--sn-crit-surface, #22172A);border:1px solid var(--sn-crit-border, #61366C);border-radius:8px;color:var(--sn-crit-ink, #ED94FA);cursor:pointer">Delete</button>
             </div>
           </div>
         </sc-if>
@@ -240,8 +275,8 @@
 
     <sc-if value="{{ isTable }}" hint-placeholder-val="{{ false }}">
       <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
-        <div style="flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--sn-divider, #22303F);flex-wrap:wrap">
-          <div style="display:flex;gap:4px;padding:3px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider, #22303F);border-radius:11px">
+        <div style="flex:0 0 auto;display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--sn-divider, #1E2937);flex-wrap:wrap">
+          <div style="display:flex;gap:4px;padding:3px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px">
             <button onClick="{{ tabConns }}" style="{{ tConnStyle }}">Connections</button>
             <button onClick="{{ tabDevs }}" style="{{ tDevStyle }}">Devices</button>
             <button onClick="{{ tabIssues }}" style="{{ tIssueStyle }}">Punch list</button>
@@ -258,8 +293,8 @@
             <option value="installed">Installed</option>
           </select>
           <div style="flex:1"></div>
-          <button onClick="{{ exportCsv }}" style="min-height:40px;padding:0 14px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider, #22303F);border-radius:10px;color:var(--sn-dim, #9DB0C4);cursor:pointer;font-size:13px">Export CSV</button>
-          <button onClick="{{ importCsv }}" style="min-height:40px;padding:0 14px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider, #22303F);border-radius:10px;color:var(--sn-dim, #9DB0C4);cursor:pointer;font-size:13px">Import CSV</button>
+          <button onClick="{{ exportCsv }}" style="min-height:40px;padding:0 14px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer;font-size:13px">Export CSV</button>
+          <button onClick="{{ importCsv }}" style="min-height:40px;padding:0 14px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer;font-size:13px">Import CSV</button>
         </div>
         <div style="flex:1;overflow:auto;padding:0 4px 40px">
           {{ table }}
@@ -273,24 +308,24 @@
     <div onClick="{{ closeLibrary }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40"></div>
   </sc-if>
   <sc-if value="{{ libOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed;left:0;top:0;bottom:0;width:390px;max-width:88vw;background:var(--sn-surface, #0E151D);border-right:1px solid var(--sn-divider, #22303F);z-index:41;display:flex;flex-direction:column;animation:rw-in 0.2s ease">
-      <div style="padding:14px;border-bottom:1px solid var(--sn-raised, #16202C)">
+    <div style="position:fixed;left:0;top:0;bottom:0;width:390px;max-width:88vw;background:var(--sn-surface, #0E141C);border-right:1px solid var(--sn-divider, #1E2937);z-index:41;display:flex;flex-direction:column;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
+      <div style="padding:16px;border-bottom:1px solid var(--sn-raised, #161F2A)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
           <div style="font-size:15px;font-weight:600">Gear library</div>
           <div style="flex:1"></div>
-          <button onClick="{{ closeLibrary }}" style="min-width:36px;min-height:36px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:9px;color:var(--sn-faint, #6E8399);cursor:pointer">✕</button>
+          <button onClick="{{ closeLibrary }}" style="min-width:36px;min-height:36px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
         </div>
         <input value="{{ libQ }}" onChange="{{ setLibQ }}" placeholder="Name, model or UPC…" style="width:100%;min-height:44px;box-sizing:border-box" />
       </div>
       <div style="flex:1;overflow:auto;padding:10px">
         <sc-for list="{{ libResults }}" as="d" hint-placeholder-count="6">
-          <button onClick="{{ d.add }}" style="display:block;width:100%;text-align:left;margin-bottom:8px;padding:12px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider, #22303F);border-radius:12px;cursor:pointer" style-hover="border-color:var(--sn-accent, #22B8F0);background:var(--sn-divider, #22303F)">
+          <button onClick="{{ d.add }}" style="display:block;width:100%;text-align:left;margin-bottom:8px;padding:12px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px;cursor:pointer" style-hover="border-color:var(--sn-accent, #22D3EE);background:var(--sn-divider, #1E2937)">
             <div style="display:flex;align-items:baseline;gap:8px">
-              <span style="font-size:14px;font-weight:600;color:var(--sn-ink, #DFE8F2)">{{ d.name }}</span>
-              <span style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-accent, #22B8F0);letter-spacing:0.08em">{{ d.kind }}</span>
+              <span style="font-size:14px;font-weight:600;color:var(--sn-ink, #EDF3F9)">{{ d.name }}</span>
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--sn-accent, #22D3EE);letter-spacing:0.08em">{{ d.kind }}</span>
             </div>
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--sn-faint, #6E8399);margin-top:3px">{{ d.vendor }} · {{ d.model }}</div>
-            <div style="font-size:11px;color:var(--sn-dim, #9DB0C4);margin-top:6px;line-height:1.45">{{ d.summary }}</div>
+            <div style="font-family:var(--font-mono);font-size:10px;color:var(--sn-faint, #798EA4);margin-top:3px">{{ d.vendor }} · {{ d.model }}</div>
+            <div style="font-size:11px;color:var(--sn-dim, #8FA3BA);margin-top:6px;line-height:1.45">{{ d.summary }}</div>
           </button>
         </sc-for>
       </div>
@@ -299,49 +334,49 @@
 
   <sc-if value="{{ cm }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px">
-      <div style="width:520px;max-width:100%;max-height:92vh;overflow:auto;background:var(--sn-surface, #0E151D);border:1px solid var(--sn-divider-strong, #31465C);border-radius:18px;padding:18px;animation:rw-in 0.18s ease">
+      <div style="width:520px;max-width:100%;max-height:92vh;overflow:auto;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
         <div style="font-size:16px;font-weight:600;margin-bottom:4px">{{ cm.title }}</div>
-        <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sn-accent, #22B8F0);margin-bottom:14px;line-height:1.6">{{ cm.route }}</div>
+        <div style="font-family:var(--font-mono);font-size:11px;color:var(--sn-accent, #22D3EE);margin-bottom:16px;line-height:1.6">{{ cm.route }}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <label style="grid-column:span 2;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">CABLE TYPE / STANDARD
+          <label style="grid-column:span 2;font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">CABLE TYPE / STANDARD
             <select value="{{ cm.standard }}" onChange="{{ cmStd }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box">
               <sc-for list="{{ cableStds }}" as="s" hint-placeholder-count="6">
                 <option value="{{ s.id }}">{{ s.name }}</option>
               </sc-for>
             </select>
           </label>
-          <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">CATEGORY / GAUGE<input value="{{ cm.category }}" onChange="{{ cmCat }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
-          <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">RATED CAPACITY<input value="{{ cm.capacity }}" onChange="{{ cmCap }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
-          <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">LENGTH (m)<input value="{{ cm.lengthM }}" onChange="{{ cmLen }}" type="number" step="0.25" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
-          <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">JACKET COLOR<input value="{{ cm.jacket }}" onChange="{{ cmJacket }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
-          <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">LABEL / ID<input value="{{ cm.label }}" onChange="{{ cmLabel }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
-          <label style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">STATUS
+          <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">CATEGORY / GAUGE<input value="{{ cm.category }}" onChange="{{ cmCat }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
+          <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">RATED CAPACITY<input value="{{ cm.capacity }}" onChange="{{ cmCap }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
+          <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">LENGTH (m)<input value="{{ cm.lengthM }}" onChange="{{ cmLen }}" type="number" step="0.25" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
+          <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">JACKET COLOR<input value="{{ cm.jacket }}" onChange="{{ cmJacket }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
+          <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">LABEL / ID<input value="{{ cm.label }}" onChange="{{ cmLabel }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box" /></label>
+          <label style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">STATUS
             <select value="{{ cm.status }}" onChange="{{ cmStatus }}" style="width:100%;min-height:44px;margin-top:4px;box-sizing:border-box">
               <option value="planned">Planned</option>
               <option value="installed">Installed</option>
             </select>
           </label>
           <sc-if value="{{ cm.canBulk }}" hint-placeholder-val="{{ false }}">
-            <div style="grid-column:span 2;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider, #22303F);border-radius:11px">
-              <span style="font-size:12.5px;color:var(--sn-ink, #DFE8F2);white-space:nowrap">Patch a run of</span>
+            <div style="grid-column:span 2;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px">
+              <span style="font-size:12.5px;color:var(--sn-ink, #EDF3F9);white-space:nowrap">Patch a run of</span>
               <input value="{{ cm.bulk }}" onChange="{{ cmBulk }}" type="number" min="1" style="width:72px;min-height:40px" />
-              <span style="font-size:12.5px;color:var(--sn-dim, #9DB0C4)">{{ cm.bulkHint }}</span>
+              <span style="font-size:12.5px;color:var(--sn-dim, #8FA3BA)">{{ cm.bulkHint }}</span>
             </div>
           </sc-if>
-          <div style="grid-column:span 2;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider, #22303F);border-radius:11px">
-            <input type="checkbox" checked="{{ cm.callout }}" onChange="{{ cmCallout }}" style="width:22px;height:22px;accent-color:var(--sn-accent, #22B8F0);flex:0 0 auto" />
-            <span style="font-size:12.5px;color:var(--sn-ink, #DFE8F2);white-space:nowrap">Callout on map</span>
+          <div style="grid-column:span 2;display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px">
+            <input type="checkbox" checked="{{ cm.callout }}" onChange="{{ cmCallout }}" style="width:22px;height:22px;accent-color:var(--sn-accent, #22D3EE);flex:0 0 auto" />
+            <span style="font-size:12.5px;color:var(--sn-ink, #EDF3F9);white-space:nowrap">Callout on map</span>
             <input value="{{ cm.calloutText }}" onChange="{{ cmCalloutText }}" placeholder="Internet path · WAN → core" style="flex:1;min-height:40px" />
           </div>
-          <label style="grid-column:span 2;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em">NOTES<textarea value="{{ cm.notes }}" onChange="{{ cmNotes }}" rows="2" style="width:100%;margin-top:4px;box-sizing:border-box;resize:vertical"></textarea></label>
+          <label style="grid-column:span 2;font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">NOTES<textarea value="{{ cm.notes }}" onChange="{{ cmNotes }}" rows="2" style="width:100%;margin-top:4px;box-sizing:border-box;resize:vertical"></textarea></label>
         </div>
-        <div style="margin-top:12px;padding:10px 12px;border-radius:11px;background:{{ cm.checkBg }};border:1px solid {{ cm.checkBorder }};font-size:12px;line-height:1.55;color:{{ cm.checkColor }}">{{ cm.check }}</div>
-        <div style="display:flex;gap:8px;margin-top:14px">
-          <button onClick="{{ cmSave }}" style="flex:1;min-height:48px;background:var(--sn-accent, #22B8F0);color:var(--sn-on-field, #06090D);border:none;border-radius:12px;font-weight:600;font-size:15px;cursor:pointer">Save cable</button>
+        <div style="margin-top:12px;padding:10px 12px;border-radius:8px;background:{{ cm.checkBg }};border:1px solid {{ cm.checkBorder }};font-size:12px;line-height:1.55;color:{{ cm.checkColor }}">{{ cm.check }}</div>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button onClick="{{ cmSave }}" style="flex:1;min-height:48px;background:var(--sn-accent, #22D3EE);color:var(--sn-on-field, #070A0E);border:none;border-radius:8px;font-weight:600;font-size:15px;cursor:pointer">Save cable</button>
           <sc-if value="{{ cm.canDelete }}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{ cmDelete }}" style="min-height:48px;padding:0 16px;background:var(--sn-crit-surface, #2A1218);border:1px solid var(--sn-crit-border, #6B2733);border-radius:12px;color:var(--sn-crit-ink, #FF8A95);cursor:pointer">Delete</button>
+            <button onClick="{{ cmDelete }}" style="min-height:48px;padding:0 16px;background:var(--sn-crit-surface, #22172A);border:1px solid var(--sn-crit-border, #61366C);border-radius:8px;color:var(--sn-crit-ink, #ED94FA);cursor:pointer">Delete</button>
           </sc-if>
-          <button onClick="{{ cmCancel }}" style="min-height:48px;padding:0 16px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:12px;color:var(--sn-dim, #9DB0C4);cursor:pointer">Cancel</button>
+          <button onClick="{{ cmCancel }}" style="min-height:48px;padding:0 16px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer">Cancel</button>
         </div>
       </div>
     </div>
@@ -349,13 +384,13 @@
 
   <sc-if value="{{ scan }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px">
-      <div style="width:440px;max-width:100%;background:var(--sn-surface, #0E151D);border:1px solid var(--sn-divider-strong, #31465C);border-radius:18px;padding:18px;animation:rw-in 0.18s ease">
+      <div style="width:440px;max-width:100%;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
         <div style="font-size:16px;font-weight:600;margin-bottom:6px">Scan or type a code</div>
-        <div style="font-size:12px;color:var(--sn-dim, #9DB0C4);line-height:1.55;margin-bottom:12px">{{ scan.msg }}</div>
-        <input ref="{{ scanRef }}" value="{{ scan.code }}" onChange="{{ scanChange }}" onKeyDown="{{ scanKey }}" placeholder="UPC / EAN / model" style="width:100%;min-height:48px;box-sizing:border-box;font-family:'IBM Plex Mono',monospace" />
+        <div style="font-size:12px;color:var(--sn-dim, #8FA3BA);line-height:1.55;margin-bottom:12px">{{ scan.msg }}</div>
+        <input ref="{{ scanRef }}" value="{{ scan.code }}" onChange="{{ scanChange }}" onKeyDown="{{ scanKey }}" placeholder="UPC / EAN / model" style="width:100%;min-height:48px;box-sizing:border-box;font-family:var(--font-mono)" />
         <sc-if value="{{ scan.showBind }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:12px">
-            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-faint, #6E8399);letter-spacing:0.1em;margin-bottom:5px">BIND THIS CODE TO</div>
+            <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:5px">BIND THIS CODE TO</div>
             <select value="{{ scan.bindTo }}" onChange="{{ scanBind }}" style="width:100%;min-height:44px;box-sizing:border-box">
               <sc-for list="{{ libAll }}" as="d" hint-placeholder-count="5">
                 <option value="{{ d.id }}">{{ d.name }}</option>
@@ -363,13 +398,13 @@
             </select>
           </div>
         </sc-if>
-        <div style="display:flex;gap:8px;margin-top:14px">
-          <button onClick="{{ scanGo }}" style="flex:1;min-height:48px;background:var(--sn-accent, #22B8F0);color:var(--sn-on-field, #06090D);border:none;border-radius:12px;font-weight:600;font-size:15px;cursor:pointer">{{ scan.cta }}</button>
-          <button onClick="{{ scanCam }}" style="min-height:48px;padding:0 16px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:12px;color:var(--sn-dim, #9DB0C4);cursor:pointer">Camera</button>
-          <button onClick="{{ scanClose }}" style="min-height:48px;padding:0 16px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:12px;color:var(--sn-dim, #9DB0C4);cursor:pointer">Close</button>
+        <div style="display:flex;gap:8px;margin-top:16px">
+          <button onClick="{{ scanGo }}" style="flex:1;min-height:48px;background:var(--sn-accent, #22D3EE);color:var(--sn-on-field, #070A0E);border:none;border-radius:8px;font-weight:600;font-size:15px;cursor:pointer">{{ scan.cta }}</button>
+          <button onClick="{{ scanCam }}" style="min-height:48px;padding:0 16px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer">Camera</button>
+          <button onClick="{{ scanClose }}" style="min-height:48px;padding:0 16px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer">Close</button>
         </div>
         <sc-if value="{{ scan.cam }}" hint-placeholder-val="{{ false }}">
-          <video ref="{{ videoRef }}" playsinline="" muted="" style="width:100%;margin-top:12px;border-radius:12px;background:var(--sn-bg, #070A0F)"></video>
+          <video ref="{{ videoRef }}" playsinline="" muted="" style="width:100%;margin-top:12px;border-radius:8px;background:var(--sn-bg, #070A0E)"></video>
         </sc-if>
       </div>
     </div>
@@ -377,17 +412,17 @@
 
   <sc-if value="{{ search }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.66);z-index:52;display:flex;align-items:flex-start;justify-content:center;padding:70px 16px 16px">
-      <div style="width:540px;max-width:100%;max-height:72vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E151D);border:1px solid var(--sn-divider-strong, #31465C);border-radius:16px;overflow:hidden;animation:rw-in 0.16s ease">
+      <div style="width:540px;max-width:100%;max-height:72vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;overflow:hidden;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
         <div style="display:flex;align-items:center;gap:8px;padding:12px">
           <input ref="{{ searchRef }}" value="{{ search.q }}" onChange="{{ setSearch }}" placeholder="Find a device or port…" style="flex:1;min-height:46px;font-size:15px" />
-          <button onClick="{{ closeSearch }}" style="min-width:44px;min-height:44px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:11px;color:var(--sn-faint, #6E8399);cursor:pointer">✕</button>
+          <button onClick="{{ closeSearch }}" style="min-width:44px;min-height:44px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
         </div>
-        <div style="padding:0 14px 8px;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:0.1em;color:var(--sn-faint, #6E8399)">{{ searchCount }}</div>
+        <div style="padding:0 14px 8px;font-family:var(--font-mono);font-size:9.5px;letter-spacing:0.1em;color:var(--sn-faint, #798EA4)">{{ searchCount }}</div>
         <div style="flex:1;overflow:auto;padding:0 8px 10px">
           <sc-for list="{{ searchHits }}" as="hit" hint-placeholder-count="0">
-            <button onClick="{{ hit.go }}" style="display:block;width:100%;text-align:left;min-height:52px;padding:9px 12px;margin-bottom:4px;background:transparent;border:1px solid transparent;border-radius:10px;cursor:pointer" style-hover="background:var(--sn-raised, #16202C);border-color:var(--sn-divider, #22303F)">
-              <div style="font-size:13.5px;color:var(--sn-ink, #DFE8F2)">{{ hit.label }}</div>
-              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--sn-faint, #6E8399);margin-top:2px">{{ hit.sub }}</div>
+            <button onClick="{{ hit.go }}" style="display:block;width:100%;text-align:left;min-height:52px;padding:9px 12px;margin-bottom:4px;background:transparent;border:1px solid transparent;border-radius:8px;cursor:pointer" style-hover="background:var(--sn-raised, #161F2A);border-color:var(--sn-divider, #1E2937)">
+              <div style="font-size:13.5px;color:var(--sn-ink, #EDF3F9)">{{ hit.label }}</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--sn-faint, #798EA4);margin-top:2px">{{ hit.sub }}</div>
             </button>
           </sc-for>
         </div>
@@ -397,36 +432,36 @@
 
   <sc-if value="{{ help }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeHelp }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:52;display:flex;align-items:center;justify-content:center;padding:16px">
-      <div style="width:430px;max-width:100%;background:var(--sn-surface, #0E151D);border:1px solid var(--sn-divider-strong, #31465C);border-radius:16px;padding:18px;animation:rw-in 0.16s ease">
+      <div style="width:430px;max-width:100%;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
         <div style="font-size:15px;font-weight:600;margin-bottom:12px">Keyboard shortcuts</div>
         <div style="display:grid;grid-template-columns:auto 1fr;gap:7px 16px;align-items:baseline">
           <sc-for list="{{ shortcuts }}" as="row" hint-placeholder-count="6">
-            <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--sn-accent, #22B8F0);white-space:nowrap">{{ row.keys }}</span>
-            <span style="font-size:12.5px;color:var(--sn-dim, #9DB0C4)">{{ row.what }}</span>
+            <span style="font-family:var(--font-mono);font-size:11px;color:var(--sn-accent, #22D3EE);white-space:nowrap">{{ row.keys }}</span>
+            <span style="font-size:12.5px;color:var(--sn-dim, #8FA3BA)">{{ row.what }}</span>
           </sc-for>
         </div>
-        <button onClick="{{ closeHelp }}" style="width:100%;min-height:44px;margin-top:16px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:11px;color:var(--sn-dim, #9DB0C4);cursor:pointer">Close</button>
+        <button onClick="{{ closeHelp }}" style="width:100%;min-height:44px;margin-top:16px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer">Close</button>
       </div>
     </div>
   </sc-if>
 
   <sc-if value="{{ versionsOpen }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:52;display:flex;align-items:center;justify-content:center;padding:16px">
-      <div style="width:480px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E151D);border:1px solid var(--sn-divider-strong, #31465C);border-radius:16px;padding:18px;animation:rw-in 0.16s ease">
+      <div style="width:480px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
           <div style="font-size:15px;font-weight:600;flex:1">Snapshots</div>
-          <button onClick="{{ saveVersionNow }}" style="min-height:40px;padding:0 14px;background:var(--sn-accent, #22B8F0);color:var(--sn-on-field, #06090D);border:none;border-radius:10px;font-weight:600;cursor:pointer;font-size:13px">Save current</button>
-          <button onClick="{{ closeVersions }}" style="min-width:40px;min-height:40px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider-strong, #31465C);border-radius:10px;color:var(--sn-faint, #6E8399);cursor:pointer">✕</button>
+          <button onClick="{{ saveVersionNow }}" style="min-height:40px;padding:0 14px;background:var(--sn-accent, #22D3EE);color:var(--sn-on-field, #070A0E);border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Save current</button>
+          <button onClick="{{ closeVersions }}" style="min-width:40px;min-height:40px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
         </div>
         <div style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px">
           <sc-for list="{{ versionList }}" as="v" hint-placeholder-count="2">
-            <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--sn-raised, #16202C);border:1px solid var(--sn-divider, #22303F);border-radius:11px">
+            <div style="display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px">
               <div style="flex:1;min-width:0">
-                <div style="font-size:13.5px;color:var(--sn-ink, #DFE8F2)">{{ v.name }}</div>
-                <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;color:var(--sn-faint, #6E8399);margin-top:3px">{{ v.when }} · {{ v.summary }}</div>
+                <div style="font-size:13.5px;color:var(--sn-ink, #EDF3F9)">{{ v.name }}</div>
+                <div style="font-family:var(--font-mono);font-size:9.5px;color:var(--sn-faint, #798EA4);margin-top:3px">{{ v.when }} · {{ v.summary }}</div>
               </div>
-              <button onClick="{{ v.restore }}" style="min-height:38px;padding:0 12px;background:transparent;border:1px solid var(--sn-divider-strong, #31465C);border-radius:9px;color:var(--sn-accent, #22B8F0);cursor:pointer;font-size:12.5px">Restore</button>
-              <button onClick="{{ v.drop }}" style="min-height:38px;min-width:38px;background:var(--sn-crit-surface, #2A1218);border:1px solid var(--sn-crit-border, #6B2733);border-radius:9px;color:var(--sn-crit-ink, #FF8A95);cursor:pointer">✕</button>
+              <button onClick="{{ v.restore }}" style="min-height:38px;padding:0 12px;background:transparent;border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-accent, #22D3EE);cursor:pointer;font-size:12.5px">Restore</button>
+              <button onClick="{{ v.drop }}" style="min-height:38px;min-width:38px;background:var(--sn-crit-surface, #22172A);border:1px solid var(--sn-crit-border, #61366C);border-radius:8px;color:var(--sn-crit-ink, #ED94FA);cursor:pointer">✕</button>
             </div>
           </sc-for>
         </div>
@@ -438,11 +473,11 @@
     <div onClick="{{ closeMenu }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:45"></div>
   </sc-if>
   <sc-if value="{{ menu }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed;right:14px;top:70px;width:250px;background:var(--sn-surface, #0E151D);border:1px solid var(--sn-divider-strong, #31465C);border-radius:14px;padding:8px;z-index:46;animation:rw-in 0.15s ease">
+    <div style="position:fixed;right:16px;top:70px;width:250px;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:8px;z-index:46;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
       <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="5">
-        <button onClick="{{ m.go }}" style="display:block;width:100%;text-align:left;min-height:44px;padding:0 12px;background:transparent;border:none;border-radius:9px;color:var(--sn-dim, #9DB0C4);font-size:14px;cursor:pointer" style-hover="background:var(--sn-raised, #16202C)">{{ m.name }}</button>
+        <button onClick="{{ m.go }}" style="display:block;width:100%;text-align:left;min-height:44px;padding:0 12px;background:transparent;border:none;border-radius:8px;color:var(--sn-dim, #8FA3BA);font-size:14px;cursor:pointer" style-hover="background:var(--sn-raised, #161F2A)">{{ m.name }}</button>
       </sc-for>
-      <div style="padding:8px 12px 4px;font-family:'IBM Plex Mono',monospace;font-size:9px;color:var(--sn-quiet, #4E6B7E);letter-spacing:0.08em">{{ saveNote }}</div>
+      <div style="padding:8px 12px 4px;font-family:var(--font-mono);font-size:9px;color:var(--sn-quiet, #63788F);letter-spacing:0.08em">{{ saveNote }}</div>
     </div>
   </sc-if>
 
@@ -1632,7 +1667,7 @@ class Component extends DCLogic {
   saveVersion(name) {
     const list = this.localVersions();
     list.unshift({ id: 'v_' + Date.now(), name: name || 'Snapshot', at: new Date().toISOString(), plan: this.plan() });
-    try { localStorage.setItem(KEY + '.versions', JSON.stringify(list.slice(0, 25))); } catch (e) { alert('Could not save the snapshot — storage is full.'); }
+    try { localStorage.setItem(KEY + '.versions', JSON.stringify(list.slice(0, 25))); } catch (e) { alert('Could not save the snapshot — browser storage is full. Delete an older snapshot from the Versions list, then save again.'); }
     this.forceUpdate();
     this.saveVersionRemote(name);
   }
@@ -1681,7 +1716,7 @@ class Component extends DCLogic {
   async restoreVersionRemote(v) {
     const id = this.planId();
     const full = id ? await rwFetch('/plans/' + encodeURIComponent(id) + '/restore', { versionId: v.remoteId }) : null;
-    if (!full || !full.plan) { alert('Could not restore that snapshot from the server.'); return; }
+    if (!full || !full.plan) { alert('Could not load that snapshot from the server. Check the live connection, then try again.'); return; }
     const p = full.plan;
     this._geo = {};
     this._planHold = true;
@@ -1709,11 +1744,11 @@ class Component extends DCLogic {
     const w = window.open('', '_blank');
     if (!w) { alert('Allow pop-ups to print the punch list.'); return; }
     w.document.write('<!doctype html><meta charset="utf-8"><title>RackWire punch list</title><style>' +
-      '@page{size:letter;margin:14mm}body{font:11pt/1.5 "IBM Plex Sans",system-ui,sans-serif;color:#111;margin:0}' +
+      '@page{size:letter;margin:14mm}body{font:11pt/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;color:#111;margin:0}' +
       'h1{font-size:19pt;margin:0 0 2pt}h2{font-size:12pt;margin:20pt 0 6pt;border-bottom:1px solid #999;padding-bottom:3pt}' +
       '.sub{color:#666;font-size:9.5pt;margin-bottom:4pt}table{width:100%;border-collapse:collapse;font-size:9.5pt}' +
       'th{text-align:left;font-size:8pt;letter-spacing:.08em;color:#555;border-bottom:1px solid #333;padding:4pt}' +
-      'td{border-bottom:1px solid #ddd;padding:5pt 4pt;vertical-align:top}.m{font-family:"IBM Plex Mono",monospace;font-size:8pt;color:#666}' +
+      'td{border-bottom:1px solid #ddd;padding:5pt 4pt;vertical-align:top}.m{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:8pt;color:#666}' +
       '.box{display:inline-block;width:11pt;height:11pt;border:1px solid #333}ul{padding-left:14pt;font-size:10pt}' +
       'li{margin-bottom:3pt}li.err b{color:#B00020}li.warn b{color:#8A6100}li.info b{color:#005B8A}tr{break-inside:avoid}' +
       '</style><h1>RackWire punch list</h1><div class=sub>' + new Date().toLocaleString() + ' · ' +
@@ -1821,7 +1856,7 @@ class Component extends DCLogic {
     i.onchange = () => {
       const f = i.files[0]; if (!f) return;
       const r = new FileReader();
-      r.onload = () => { try { const d = JSON.parse(r.result); this._geo = {}; this.setState({ devices: this.migrate(d.devices || []), cables: d.cables || [], racks: d.racks || [], notes: d.notes || [], codeMap: d.codeMap || {}, menu: false, sel: [] }); } catch (e) { alert('Could not read that file.'); } };
+      r.onload = () => { try { const d = JSON.parse(r.result); this._geo = {}; this.setState({ devices: this.migrate(d.devices || []), cables: d.cables || [], racks: d.racks || [], notes: d.notes || [], codeMap: d.codeMap || {}, menu: false, sel: [] }); } catch (e) { alert('Could not read that file — RackWire imports its own JSON exports. Use Menu > Export JSON on a working plan to see the format.'); } };
       r.readAsText(f);
     };
     i.click();
@@ -1977,15 +2012,15 @@ class Component extends DCLogic {
     const g = (k, f) => (cs.getPropertyValue('--sn-' + k) || '').trim() || f;
     const b = (k, f) => (cs.getPropertyValue('--rw-' + k) || '').trim() || f;
     const t = {
-      bg: g('bg', '#070A0F'), surface: g('surface', '#0E151D'), raised: g('raised', '#16202C'),
-      ink: g('ink', '#DFE8F2'), dim: g('dim', '#9DB0C4'), faint: g('faint', '#6E8399'), quiet: g('quiet', '#4E6B7E'),
-      divider: g('divider', '#22303F'), dividerStrong: g('divider-strong', '#31465C'),
-      accent: g('accent', '#22B8F0'), accent700: g('accent-700', '#5FCCFA'), onField: g('on-field', '#06090D'),
-      ok: g('ok', '#3DD68C'), warn: g('warn', '#F5A623'), crit: g('crit', '#FF4D5E'),
-      maint: g('maint', '#9B87FF'), neutral: g('neutral', '#8299AF'),
+      bg: g('bg', '#070A0E'), surface: g('surface', '#0E141C'), raised: g('raised', '#161F2A'),
+      ink: g('ink', '#EDF3F9'), dim: g('dim', '#8FA3BA'), faint: g('faint', '#798EA4'), quiet: g('quiet', '#63788F'),
+      divider: g('divider', '#1E2937'), dividerStrong: g('divider-strong', '#25303F'),
+      accent: g('accent', '#22D3EE'), accent700: g('accent-700', '#22D3EE'), onField: g('on-field', '#070A0E'),
+      ok: g('ok', '#A3E635'), warn: g('warn', '#FB923C'), crit: g('crit', '#E879F9'),
+      maint: g('maint', '#9B87FF'), neutral: g('neutral', '#8FA3BA'),
       open: b('cable-open', '#FFE04D'),
-      critInk: g('crit-ink', '#FF8A95'), critSurface: g('crit-surface', '#2A1218'), critBorder: g('crit-border', '#6B2733'),
-      critBorder2: g('crit-border', '#6B2733')
+      critInk: g('crit-ink', '#ED94FA'), critSurface: g('crit-surface', '#22172A'), critBorder: g('crit-border', '#61366C'),
+      critBorder2: g('crit-border', '#61366C')
     };
     // cable domain hues are brand literals (Brand Standards v1.1), deliberately outside
     // the --sn-* bridge: a host retheme may repaint the chrome but never a run's meaning.
@@ -2025,10 +2060,10 @@ class Component extends DCLogic {
       const H = 40 + r.units * 78;
       return h('g', { key: r.uid, 'data-kind': 'rack', 'data-uid': r.uid, transform: 'translate(' + r.x + ',' + r.y + ')', style: { cursor: 'grab' } },
         h('rect', { x: 0, y: 0, width: 560, height: H, rx: 8, fill: this.T.bg, stroke: s.sel.indexOf(r.uid) >= 0 ? this.T.accent : this.T.divider, strokeWidth: 1.5 }),
-        h('text', { x: 14, y: 24, fill: this.T.faint, fontSize: 12, fontFamily: 'IBM Plex Mono, monospace', letterSpacing: 1.5 }, r.name.toUpperCase() + ' · ' + r.units + 'U'),
+        h('text', { x: 14, y: 24, fill: this.T.faint, fontSize: 12, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', letterSpacing: 1.5 }, r.name.toUpperCase() + ' · ' + r.units + 'U'),
         Array.from({ length: r.units }).map((_, i) => h('g', { key: i },
           h('line', { x1: 8, y1: 40 + i * 78, x2: 552, y2: 40 + i * 78, stroke: this.T.divider, strokeWidth: 1 }),
-          h('text', { x: 566, y: 44 + i * 78 + 34, fill: this.T.dividerStrong, fontSize: 9, fontFamily: 'IBM Plex Mono, monospace' }, 'U' + (r.units - i))
+          h('text', { x: 566, y: 44 + i * 78 + 34, fill: this.T.dividerStrong, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace' }, 'U' + (r.units - i))
         ))
       );
     });
@@ -2070,8 +2105,8 @@ class Component extends DCLogic {
       return h('g', { key: d.uid, transform: 'translate(' + d.x + ',' + d.y + ')' },
         glow,
         h('rect', { 'data-kind': 'device', 'data-uid': d.uid, x: 0, y: 0, width: g.w, height: g.h, rx: 5, fill: this.T.surface, stroke: outline, strokeWidth: selected ? 2 : 1.4, style: { cursor: 'grab' } }),
-        h('text', { x: 12, y: 17, fill: this.T.ink, fontSize: 11.5, fontWeight: 600, fontFamily: 'IBM Plex Sans, system-ui, sans-serif', style: { pointerEvents: 'none' } }, d.name),
-        h('text', { x: g.w - 12, y: 17, textAnchor: 'end', fill: this.T.faint, fontSize: 9, fontFamily: 'IBM Plex Mono, monospace', style: { pointerEvents: 'none' } }, d.model),
+        h('text', { x: 12, y: 17, fill: this.T.ink, fontSize: 11.5, fontWeight: 600, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif', style: { pointerEvents: 'none' } }, d.name),
+        h('text', { x: g.w - 12, y: 17, textAnchor: 'end', fill: this.T.faint, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, d.model),
         d.isInternet ? h('g', { style: { pointerEvents: 'none' } },
           h('circle', { cx: -1, cy: -1, r: 8, fill: this.T.bg, stroke: this.T.ok, strokeWidth: 1.4 }),
           h('circle', { cx: -1, cy: -1, r: 4.6, fill: 'none', stroke: this.T.ok, strokeWidth: 1 }),
@@ -2083,8 +2118,8 @@ class Component extends DCLogic {
           h('rect', { x: 4, y: -1.4, width: 1.6, height: 2.8, fill: this.T.warn }),
           h('rect', { x: -3.6, y: -1.6, width: 3.4, height: 3.2, fill: this.T.warn })) : null,
         this.props.showCapacityBadges === false || !meta.length ? null :
-          h('text', { x: 12, y: g.h - 7, fill: err ? this.T.crit : this.T.faint, fontSize: 9, fontFamily: 'IBM Plex Mono, monospace', style: { pointerEvents: 'none' } }, meta.join('  ·  ')),
-        showLabels ? g.marks.map((m, i) => h('text', { key: 'm' + i, x: m.x, y: m.y, textAnchor: 'middle', fill: this.T.quiet, fontSize: 7.5, fontFamily: 'IBM Plex Mono, monospace', style: { pointerEvents: 'none' } }, m.label)) : null,
+          h('text', { x: 12, y: g.h - 7, fill: err ? this.T.crit : this.T.faint, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, meta.join('  ·  ')),
+        showLabels ? g.marks.map((m, i) => h('text', { key: 'm' + i, x: m.x, y: m.y, textAnchor: 'middle', fill: this.T.quiet, fontSize: 7.5, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, m.label)) : null,
         g.ports.map((p) => {
           const k = d.uid + '|' + p.id;
           const flag = an.portFlag[k];
@@ -2131,16 +2166,16 @@ class Component extends DCLogic {
       return h('g', { key: c.uid },
         h('path', { d: dpath, fill: 'none', stroke: col, strokeWidth: base, strokeLinecap: 'round', opacity: c.status === 'installed' ? 1 : 0.92, strokeDasharray: dash }),
         flow,
-        lv && lv.link && lv.cap ? h('text', { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + 15, textAnchor: 'middle', fill: col, fontSize: 8.5, fontFamily: 'IBM Plex Mono, monospace', opacity: 0.9, style: { pointerEvents: 'none' } }, lv.tput.toFixed(2) + ' / ' + lv.cap + ' G' + (lv.poeW ? '  ·  ' + lv.poeW + ' W' : '')) : null,
+        lv && lv.link && lv.cap ? h('text', { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 + 15, textAnchor: 'middle', fill: col, fontSize: 8.5, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', opacity: 0.9, style: { pointerEvents: 'none' } }, lv.tput.toFixed(2) + ' / ' + lv.cap + ' G' + (lv.poeW ? '  ·  ' + lv.poeW + ' W' : '')) : null,
         h('path', { 'data-kind': 'cable', 'data-uid': c.uid, d: dpath, fill: 'none', stroke: 'transparent', strokeWidth: 22, style: { cursor: 'pointer', pointerEvents: 'stroke' } }),
-        c.label && !c.callout ? h('text', { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 8, textAnchor: 'middle', fill: col, fontSize: 9, fontFamily: 'IBM Plex Mono, monospace', style: { pointerEvents: 'none' } }, c.label) : null,
+        c.label && !c.callout ? h('text', { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 8, textAnchor: 'middle', fill: col, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, c.label) : null,
         c.callout && (c.calloutText || c.label) ? (() => {
           const txt = c.calloutText || c.label;
           const w = txt.length * 6.6 + 22, hh = 26;
           const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
           return h('g', { transform: 'translate(' + (mx - w / 2) + ',' + (my - hh / 2) + ')', style: { pointerEvents: 'none' } },
             h('rect', { x: 0, y: 0, width: w, height: hh, rx: 7, fill: this.T.surface, stroke: col, strokeWidth: 1.4 }),
-            h('text', { x: w / 2, y: 17, textAnchor: 'middle', fill: this.T.ink, fontSize: 11.5, fontWeight: 500, fontFamily: 'IBM Plex Sans, system-ui, sans-serif' }, txt));
+            h('text', { x: w / 2, y: 17, textAnchor: 'middle', fill: this.T.ink, fontSize: 11.5, fontWeight: 500, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }, txt));
         })() : null
       );
     });
@@ -2152,8 +2187,8 @@ class Component extends DCLogic {
     }
 
     const notes = s.notes.map((n) => h('g', { key: n.uid, 'data-kind': 'note', 'data-uid': n.uid, transform: 'translate(' + n.x + ',' + n.y + ')', style: { cursor: 'grab' } },
-      h('rect', { x: 0, y: 0, width: Math.max(60, n.text.length * 7.4 + 20), height: 30, rx: 6, fill: 'rgba(245,166,35,0.08)', stroke: s.sel.indexOf(n.uid) >= 0 ? this.T.accent : 'rgba(245,166,35,0.5)', strokeWidth: 1.2 }),
-      h('text', { x: 10, y: 20, fill: this.T.warn, fontSize: 12, fontFamily: 'IBM Plex Mono, monospace' }, n.text)
+      h('rect', { x: 0, y: 0, width: Math.max(60, n.text.length * 7.4 + 20), height: 30, rx: 6, fill: 'rgba(251,146,60,0.08)', stroke: s.sel.indexOf(n.uid) >= 0 ? this.T.accent : 'rgba(251,146,60,0.5)', strokeWidth: 1.2 }),
+      h('text', { x: 10, y: 20, fill: this.T.warn, fontSize: 12, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace' }, n.text)
     ));
 
     return h('svg', { width: '100%', height: '100%', style: { display: 'block' } },
@@ -2165,16 +2200,16 @@ class Component extends DCLogic {
       h('g', { transform: 'translate(' + s.panX + ',' + s.panY + ') scale(' + s.zoom + ')' },
         h('rect', { x: -8000, y: -8000, width: 20000, height: 20000, fill: 'url(#rwg)' }),
         racks, devices, cables, ghost, notes,
-        s.marquee ? h('rect', { x: s.marquee.x, y: s.marquee.y, width: s.marquee.w, height: s.marquee.h, fill: 'rgba(34,184,240,0.08)', stroke: this.T.accent, strokeWidth: 1, strokeDasharray: '4 4' }) : null
+        s.marquee ? h('rect', { x: s.marquee.x, y: s.marquee.y, width: s.marquee.w, height: s.marquee.h, fill: 'rgba(34,211,238,0.08)', stroke: this.T.accent, strokeWidth: 1, strokeDasharray: '4 4' }) : null
       )
     );
   }
 
   // ---------- tables ----------
-  th(t, w) { return h('th', { key: t, style: { textAlign: 'left', padding: '10px 8px', fontFamily: 'IBM Plex Mono, monospace', fontSize: 9, letterSpacing: '0.1em', color: this.T.faint, fontWeight: 500, borderBottom: '1px solid ' + this.T.divider + '', whiteSpace: 'nowrap', width: w } }, t); }
+  th(t, w) { return h('th', { key: t, style: { textAlign: 'left', padding: '10px 8px', fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', fontSize: 9, letterSpacing: '0.1em', color: this.T.faint, fontWeight: 500, borderBottom: '1px solid ' + this.T.divider + '', whiteSpace: 'nowrap', width: w } }, t); }
   td(children, extra) { return h('td', { style: Object.assign({ padding: '6px 8px', borderBottom: '1px solid ' + this.T.divider + '', fontSize: 12.5, color: this.T.ink, verticalAlign: 'middle', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }, extra || {}) }, children); }
   cell(value, on, type) {
-    return h('input', { value: value == null ? '' : value, type: type || 'text', onChange: (e) => on(e.target.value), style: { width: '100%', minHeight: 36, background: 'transparent', border: '1px solid transparent', borderRadius: 6, padding: '6px 6px', boxSizing: 'border-box' }, onFocus: (e) => { e.target.style.borderColor = this.T.accent; e.target.style.background = this.T.surface; }, onBlur: (e) => { e.target.style.borderColor = 'transparent'; e.target.style.background = 'transparent'; } });
+    return h('input', { value: value == null ? '' : value, type: type || 'text', onChange: (e) => on(e.target.value), style: { width: '100%', minHeight: 36, background: 'transparent', border: '1px solid transparent', borderRadius: 6, padding: '6px 6px', boxSizing: 'border-box', fontFamily: type === 'number' ? 'var(--font-mono)' : 'inherit' }, onFocus: (e) => { e.target.style.borderColor = this.T.accent; e.target.style.background = this.T.surface; }, onBlur: (e) => { e.target.style.borderColor = 'transparent'; e.target.style.background = 'transparent'; } });
   }
   sel(value, opts, on) {
     return h('select', { value: value, onChange: (e) => on(e.target.value), style: { width: '100%', minHeight: 36, background: this.T.surface, border: '1px solid ' + this.T.divider + '', borderRadius: 6, padding: '6px' } }, opts.map((o) => h('option', { key: o[0], value: o[0] }, o[1])));
@@ -2186,11 +2221,11 @@ class Component extends DCLogic {
     const s = this.state;
     if (s.tab === 'issues') {
       const list = an.issues;
-      if (!list.length) return h('div', { style: { padding: 40, textAlign: 'center', color: this.T.ok, fontFamily: 'IBM Plex Mono, monospace', fontSize: 13 } }, 'No capacity, length or connector conflicts.');
+      if (!list.length) return h('div', { style: { padding: 40, textAlign: 'center', color: this.T.ok, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', fontSize: 13 } }, 'No capacity, length or connector conflicts.');
       const col = { err: this.T.crit, warn: this.T.warn, info: this.T.accent700 };
       return h('div', { style: { padding: '12px 10px', display: 'flex', flexDirection: 'column', gap: 8 } },
-        list.map((i) => h('div', { key: i.id, onClick: () => i.cable && this.editCable(i.cable), style: { display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 14px', background: this.T.raised, border: '1px solid ' + this.T.divider + '', borderLeft: '3px solid ' + col[i.sev], borderRadius: 10, cursor: i.cable ? 'pointer' : 'default' } },
-          h('span', { style: { fontFamily: 'IBM Plex Mono, monospace', fontSize: 9, letterSpacing: '0.1em', color: col[i.sev], minWidth: 34, paddingTop: 2 } }, i.sev.toUpperCase()),
+        list.map((i) => h('div', { key: i.id, onClick: () => i.cable && this.editCable(i.cable), style: { display: 'flex', gap: 12, alignItems: 'flex-start', padding: '12px 14px', background: this.T.raised, border: '1px solid ' + this.T.divider + '', borderLeft: '3px solid ' + col[i.sev], borderRadius: 8, cursor: i.cable ? 'pointer' : 'default' } },
+          h('span', { style: { fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', fontSize: 9, letterSpacing: '0.1em', color: col[i.sev], minWidth: 34, paddingTop: 2 } }, i.sev.toUpperCase()),
           h('span', { style: { fontSize: 13, lineHeight: 1.55, color: this.T.ink } }, i.msg)
         ))
       );
@@ -2207,14 +2242,14 @@ class Component extends DCLogic {
           this.td(this.cell(d.location, (v) => this.setDev(d.uid, 'location', v))),
           this.td(this.cell(d.liveKey, (v) => this.setDev(d.uid, 'liveKey', v))),
           this.td(d.vendor), this.td(d.model),
-          this.td(h('span', { style: { fontFamily: 'IBM Plex Mono, monospace', fontSize: 10, color: this.T.accent } }, d.kind)),
+          this.td(h('span', { style: { fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', fontSize: 10, color: this.T.accent } }, d.kind)),
           this.td(this.geo(d).ports.length),
           this.td(this.cell(d.drawW, (v) => this.setDev(d.uid, 'drawW', parseFloat(v) || 0), 'number')),
           this.td(this.cell(d.poeBudgetW, (v) => this.setDev(d.uid, 'poeBudgetW', parseFloat(v) || 0), 'number')),
           this.td(this.cell(d.circuitA, (v) => this.setDev(d.uid, 'circuitA', parseFloat(v) || 0), 'number')),
           this.td(this.cell(d.budgetW, (v) => this.setDev(d.uid, 'budgetW', parseFloat(v) || 0), 'number')),
           this.td(this.cell(d.ru, (v) => this.setDev(d.uid, 'ru', parseInt(v, 10) || 0), 'number')),
-          this.td(h('button', { onClick: () => this.setState({ devices: s.devices.filter((x) => x.uid !== d.uid), cables: s.cables.filter((c) => (!c.a || c.a.dev !== d.uid) && (!c.b || c.b.dev !== d.uid)) }), style: { minHeight: 34, padding: '0 10px', background: this.T.critSurface, border: '1px solid ' + this.T.critBorder2 + '', borderRadius: 7, color: this.T.critInk, cursor: 'pointer', fontSize: 12 } }, 'Delete'))
+          this.td(h('button', { onClick: () => this.setState({ devices: s.devices.filter((x) => x.uid !== d.uid), cables: s.cables.filter((c) => (!c.a || c.a.dev !== d.uid) && (!c.b || c.b.dev !== d.uid)) }), style: { minHeight: 34, padding: '0 10px', background: this.T.critSurface, border: '1px solid ' + this.T.critBorder2 + '', borderRadius: 6, color: this.T.critInk, cursor: 'pointer', fontSize: 12 } }, 'Delete'))
         )))
       );
     }
@@ -2234,14 +2269,14 @@ class Component extends DCLogic {
       h('tbody', null, rows.map((c) => {
         const A = c.a && c.a.dev ? this.dev(c.a.dev) : null, B = c.b && c.b.dev ? this.dev(c.b.dev) : null;
         const bad = an.cableFlag[c.uid];
-        return h('tr', { key: c.uid, style: { background: bad === 'err' ? 'rgba(255,77,94,0.06)' : 'transparent' } },
+        return h('tr', { key: c.uid, style: { background: bad === 'err' ? 'rgba(232,121,249,0.06)' : 'transparent' } },
           this.td(this.cell(c.label, (v) => this.setCable(c.uid, 'label', v))),
           this.td(h('div', null,
             h('div', { style: { fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis' }, title: A ? A.name : '' }, A ? A.name : h('span', { style: { color: this.T.open } }, 'open end')),
-            h('div', { style: { fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, color: this.T.faint } }, c.a ? c.a.port : '—'))),
+            h('div', { style: { fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', fontSize: 9.5, color: this.T.faint } }, c.a ? c.a.port : '—'))),
           this.td(h('div', null,
             h('div', { style: { fontSize: 12.5, overflow: 'hidden', textOverflow: 'ellipsis' }, title: B ? B.name : '' }, B ? B.name : h('span', { style: { color: this.T.open } }, 'open end')),
-            h('div', { style: { fontFamily: 'IBM Plex Mono, monospace', fontSize: 9.5, color: this.T.faint } }, c.b ? c.b.port : '—'))),
+            h('div', { style: { fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', fontSize: 9.5, color: this.T.faint } }, c.b ? c.b.port : '—'))),
           this.td(this.sel(c.standard, stdOpts, (v) => this.setCable(c.uid, 'standard', v))),
           this.td(this.cell(c.category, (v) => this.setCable(c.uid, 'category', v))),
           this.td(this.cell(c.capacity, (v) => this.setCable(c.uid, 'capacity', v))),
@@ -2250,9 +2285,9 @@ class Component extends DCLogic {
           this.td(this.sel(c.status, [['planned', 'Planned'], ['installed', 'Installed']], (v) => this.setCable(c.uid, 'status', v))),
           this.td((() => {
             const lv = this.cableLive(c);
-            if (!lv) return h('span', { style: { color: this.T.quiet, fontFamily: 'IBM Plex Mono, monospace', fontSize: 10 } }, s.live.on ? 'no data' : 'offline');
-            if (!lv.link) return h('span', { style: { color: this.T.crit, fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5 } }, 'DOWN');
-            return h('div', { style: { fontFamily: 'IBM Plex Mono, monospace', fontSize: 10.5, lineHeight: 1.5 } },
+            if (!lv) return h('span', { style: { color: this.T.quiet, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', fontSize: 10 } }, s.live.on ? 'no data' : 'offline');
+            if (!lv.link) return h('span', { style: { color: this.T.crit, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', fontSize: 10.5 } }, 'DOWN');
+            return h('div', { style: { fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', fontSize: 10.5, lineHeight: 1.5 } },
               h('div', { style: { color: this.T.ok } }, 'UP · ' + lv.cap + ' G'),
               h('div', { style: { color: lv.util > 0.85 ? this.T.warn : this.T.dim } }, lv.tput.toFixed(2) + ' Gbps' + (lv.errors ? ' · ' + lv.errors + ' err' : '')));
           })()),
@@ -2260,15 +2295,17 @@ class Component extends DCLogic {
             h('input', { type: 'checkbox', checked: !!c.callout, onChange: (e) => this.setCable(c.uid, 'callout', e.target.checked), style: { width: 20, height: 20, accentColor: this.T.accent, flex: '0 0 auto' } }),
             this.cell(c.calloutText, (v) => this.setCable(c.uid, 'calloutText', v)))),
           this.td(this.cell(c.notes, (v) => this.setCable(c.uid, 'notes', v))),
-          this.td(h('button', { onClick: () => this.setState({ cables: s.cables.filter((x) => x.uid !== c.uid) }), style: { minHeight: 34, minWidth: 34, background: this.T.critSurface, border: '1px solid ' + this.T.critBorder2 + '', borderRadius: 7, color: this.T.critInk, cursor: 'pointer' } }, '✕'))
+          this.td(h('button', { onClick: () => this.setState({ cables: s.cables.filter((x) => x.uid !== c.uid) }), style: { minHeight: 34, minWidth: 34, background: this.T.critSurface, border: '1px solid ' + this.T.critBorder2 + '', borderRadius: 6, color: this.T.critInk, cursor: 'pointer' } }, '✕'))
         );
       }))
     );
   }
 
   // ---------- styles ----------
-  pill(active, light) {
-    return 'min-height:38px;padding:0 15px;border-radius:9px;border:none;font-size:13.5px;font-weight:' + (active ? '600' : '500') + ';cursor:pointer;background:' + (active ? (light ? this.T.onField : this.T.accent) : 'transparent') + ';color:' + (active ? (light ? this.T.accent700 : this.T.onField) : (light ? 'rgba(6,9,13,0.72)' : this.T.dim));
+  // One tab treatment everywhere (deck p. 19 button spec): ground text on an
+  // accent field when active, dim text on the chrome otherwise.
+  pill(active) {
+    return 'min-height:38px;padding:0 15px;border-radius:6px;border:none;font-size:13.5px;font-weight:' + (active ? '600' : '500') + ';cursor:pointer;background:' + (active ? this.T.accent : 'transparent') + ';color:' + (active ? this.T.onField : this.T.dim);
   }
 
   renderVals() {
@@ -2298,8 +2335,8 @@ class Component extends DCLogic {
         title: cm.editing ? 'Edit cable' : 'New cable',
         route: (A ? A.d.name + ' · ' + A.p.id + ' (' + A.p.groupLabel + ')' : 'open end') + '  →  ' + (B ? B.d.name + ' · ' + B.p.id + ' (' + B.p.groupLabel + ')' : 'open end'),
         check: msg.join(' '),
-        checkBg: lvl === 'err' ? 'rgba(255,77,94,0.09)' : 'rgba(34,184,240,0.07)',
-        checkBorder: lvl === 'err' ? 'rgba(255,77,94,0.45)' : 'rgba(34,184,240,0.3)',
+        checkBg: lvl === 'err' ? 'rgba(232,121,249,0.09)' : 'rgba(34,211,238,0.07)',
+        checkBorder: lvl === 'err' ? 'rgba(232,121,249,0.45)' : 'rgba(34,211,238,0.3)',
         checkColor: lvl === 'err' ? this.T.critInk : this.T.dim,
         canDelete: !!s.cables.find((x) => x.uid === cm.uid),
         canBulk: !cm.editing && (cm.maxBulk || 1) > 1,
@@ -2367,7 +2404,7 @@ class Component extends DCLogic {
       fitAll: () => this.fitAll(),
       hint: s.pending ? 'Now tap the port this cable lands on' : (s.tool === 'note' ? 'Tap the canvas to drop a label' : (s.tool === 'rack' ? 'Tap to place a rack' : (s.tool === 'select' ? 'Drag to marquee-select' : 'Tap a port to start a cable · drag to move · pinch to zoom'))),
       issueSummary: errs ? errs + ' over capacity' + (warns ? ' · ' + warns + ' warnings' : '') : (warns ? warns + ' warnings' : 'All within capacity'),
-      issueBtnStyle: 'min-height:44px;padding:0 16px;border-radius:13px;cursor:pointer;font-size:13px;font-weight:600;border:1px solid ' + (errs ? 'rgba(255,77,94,0.5)' : warns ? 'rgba(245,166,35,0.4)' : this.T.divider) + ';background:' + (errs ? 'rgba(255,77,94,0.12)' : warns ? 'rgba(245,166,35,0.09)' : 'rgba(14,21,29,0.94)') + ';color:' + (errs ? this.T.critInk : warns ? this.T.warn : this.T.faint),
+      issueBtnStyle: 'min-height:44px;padding:0 16px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;border:1px solid ' + (errs ? 'rgba(232,121,249,0.5)' : warns ? 'rgba(251,146,60,0.4)' : this.T.divider) + ';background:' + (errs ? 'rgba(232,121,249,0.12)' : warns ? 'rgba(251,146,60,0.09)' : 'var(--sn-surface, #0E141C)') + ';color:' + (errs ? this.T.critInk : warns ? this.T.warn : this.T.faint),
 
       liveOn: L.on, liveSource: L.source, liveUrl: L.url, liveDot: dot, liveMsg: L.msg || 'Waiting for the first frame.',
       liveStatusLabel: (L.status === 'live' ? 'LIVE ACTIVITY' : L.status.toUpperCase()),
@@ -2377,7 +2414,7 @@ class Component extends DCLogic {
       setLiveUrl: (e) => { const v = e.target.value; this.setState({ live: Object.assign({}, L, { url: v }) }, () => { if (L.on && L.source !== 'simulator') this.startLive(L.source, v); }); },
       toggleLive: () => { if (L.on) this.stopLive(); else this.startLive(); },
       liveLabel: L.on ? (L.status === 'live' ? 'LIVE' : L.status.toUpperCase()) : 'GO LIVE',
-      liveBtnStyle: 'display:flex;align-items:center;gap:7px;min-height:44px;padding:0 14px;border-radius:11px;cursor:pointer;font-family:IBM Plex Mono,monospace;font-size:11px;letter-spacing:0.1em;font-weight:600;border:1px solid ' + (L.on ? 'rgba(6,9,13,0.66)' : 'rgba(6,9,13,0.28)') + ';background:' + (L.on ? this.T.onField : 'rgba(6,9,13,0.14)') + ';color:' + (L.on ? (L.status === 'error' ? this.T.critInk : this.T.accent700) : this.T.onField),
+      liveBtnStyle: 'display:flex;align-items:center;gap:7px;min-height:44px;padding:0 14px;border-radius:8px;cursor:pointer;font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;font-weight:600;background:' + this.T.raised + ';border:1px solid ' + (L.on ? (L.status === 'error' ? this.T.critBorder : this.T.accent) : this.T.dividerStrong) + ';color:' + (L.on ? (L.status === 'error' ? this.T.critInk : this.T.accent) : this.T.dim),
 
       libOpen: s.libOpen, libQ: s.libQ, libResults: libResults, libAll: window.RW.DEVICES,
       openLibrary: () => this.setState({ libOpen: true, menu: false }), closeLibrary: () => this.setState({ libOpen: false }),
@@ -2417,7 +2454,7 @@ class Component extends DCLogic {
         { name: 'Print punch list', go: () => { this.printReport(); this.setState({ menu: false }); } },
         { name: 'Keyboard shortcuts', go: () => this.setState({ help: true, menu: false }) },
         { name: 'Fit to screen', go: () => { this.fitAll(); this.setState({ menu: false }); } },
-        { name: 'Clear plan', go: () => { if (confirm('Delete every device and cable?')) { this._geo = {}; this.setState({ devices: [], cables: [], racks: [], notes: [], sel: [], menu: false }); } } }
+        { name: 'Clear plan', go: () => { if (confirm('Delete all ' + this.state.devices.length + ' devices and ' + this.state.cables.length + ' cables? Undo restores the plan.')) { this._geo = {}; this.setState({ devices: [], cables: [], racks: [], notes: [], sel: [], menu: false }); } } }
       ],
 
       q: s.q, setQ: (e) => this.setState({ q: e.target.value }),
@@ -2470,11 +2507,11 @@ class Component extends DCLogic {
     };
   }
   iconBtn(on) {
-    return 'min-height:44px;min-width:40px;border-radius:11px;font-size:15px;cursor:' + (on ? 'pointer' : 'default') +
-      ';border:1px solid rgba(6,9,13,0.25);background:rgba(6,9,13,0.12);color:var(--sn-on-field, #06090D);opacity:' + (on ? '1' : '0.32');
+    return 'display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px;border-radius:8px;cursor:' + (on ? 'pointer' : 'default') +
+      ';border:1px solid var(--sn-divider-strong, #25303F);background:var(--sn-raised, #161F2A);color:var(--sn-dim, #8FA3BA);opacity:' + (on ? '1' : '0.4');
   }
   toolBtn(active) {
-    return 'min-height:44px;padding:0 14px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:' + (active ? 600 : 500) + ';border:1px solid ' + (active ? this.T.accent : this.T.dividerStrong) + ';background:' + (active ? 'rgba(34,184,240,0.14)' : this.T.raised) + ';color:' + (active ? this.T.accent700 : this.T.dim);
+    return 'min-height:44px;padding:0 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:' + (active ? 600 : 500) + ';border:1px solid ' + (active ? this.T.accent : this.T.dividerStrong) + ';background:' + (active ? 'rgba(34,211,238,0.14)' : this.T.raised) + ';color:' + (active ? this.T.accent700 : this.T.dim);
   }
 }
 </script>
