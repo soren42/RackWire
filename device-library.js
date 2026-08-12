@@ -63,7 +63,8 @@
   };
 
   // ---------- signal domains ----------
-  // net = blue, power = green, usb/serial = purple, other = orange
+  // Brand Standards v1.1 signal domains: network = cyan, power = amber,
+  // USB/serial = SuperSpeed blue, other = slate. Values live in index.html.
   var DOMAIN = { net: 'net', power: 'power', usb: 'usb', other: 'other' };
 
   // ---------- cable standards ----------
