@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>RackWire User Manual</title>
+  <style>
+    :root {
+      --rack-ink:#070A0E; --surface:#0E141C; --raised:#161F2A;
+      --ink:#EDF3F9; --dim:#8FA3BA; --faint:#798EA4;
+      --divider:#1E2937; --frame:#25303F; --cyan:#22D3EE;
+      --power:#FB923C; --usb:#2E6BE6; --other:#74889D; --open:#FFE04D;
+      --lighting:#E879F9; --audio:#A3E635;
+      --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      --mono:ui-monospace,"SF Mono","Cascadia Mono",Menlo,Consolas,monospace;
+    }
+    * { box-sizing:border-box }
+    html { scroll-behavior:smooth }
+    body { margin:0; background:var(--rack-ink); color:var(--ink); font:16px/1.65 var(--sans) }
+    a { color:var(--cyan) }
+    a:focus-visible { outline:2px solid var(--cyan); outline-offset:3px }
+    .masthead { border-bottom:1px solid var(--divider); background:var(--surface) }
+    .accent-rule { height:4px; background:var(--cyan) }
+    .masthead-inner,.layout { width:min(1120px,calc(100% - 48px)); margin:auto }
+    .masthead-inner { padding:48px 0 40px }
+    .lockup { display:block; width:260px; max-width:100%; height:auto; margin-bottom:40px }
+    .eyebrow,.kicker,th { color:var(--cyan); font:600 12px/1.4 var(--mono); letter-spacing:.12em; text-transform:uppercase }
+    h1 { margin:8px 0 16px; max-width:780px; font-size:clamp(40px,7vw,72px); line-height:1.02; letter-spacing:-.04em }
+    .lede { max-width:720px; margin:0; color:var(--dim); font-size:19px }
+    .layout { display:grid; grid-template-columns:224px minmax(0,1fr); gap:64px; padding:48px 0 96px }
+    nav { position:sticky; top:24px; align-self:start; border-left:1px solid var(--divider); padding-left:16px }
+    nav a { display:block; padding:8px 0; color:var(--dim); font:13px/1.4 var(--mono); text-decoration:none }
+    nav a:hover { color:var(--ink) }
+    main { min-width:0 }
+    section { padding:0 0 56px; scroll-margin-top:24px }
+    h2 { margin:0 0 16px; font-size:30px; line-height:1.2; letter-spacing:-.025em }
+    h3 { margin:32px 0 8px; font-size:19px }
+    p { max-width:74ch; margin:0 0 16px; color:var(--dim) }
+    strong { color:var(--ink) }
+    ol,ul { max-width:74ch; margin:16px 0; padding-left:24px; color:var(--dim) }
+    li+li { margin-top:8px }
+    code,kbd { font-family:var(--mono); font-size:.9em }
+    kbd { display:inline-block; min-width:32px; padding:0 8px; border:1px solid var(--frame); border-radius:4px; background:var(--raised); color:var(--ink); text-align:center }
+    .callout { max-width:74ch; margin:24px 0; padding:16px 24px; border:1px solid var(--frame); border-left:4px solid var(--cyan); background:var(--surface); color:var(--dim) }
+    .callout strong { display:block; margin-bottom:4px }
+    table { width:100%; border-collapse:collapse; margin:24px 0 32px; font-size:14px }
+    th,td { padding:16px; border-bottom:1px solid var(--divider); text-align:left; vertical-align:top }
+    td { color:var(--dim) }
+    .signal-field { margin:24px 0 32px; padding:24px; border:1px solid var(--frame); border-radius:8px; background:var(--rack-ink) }
+    .signal-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px 24px }
+    .signal { display:grid; grid-template-columns:64px 1fr auto; gap:16px; align-items:center; color:var(--dim); font:13px/1.4 var(--mono) }
+    .swatch { height:4px; border-radius:2px; background:var(--c) }
+    .hex { color:var(--faint) }
+    .meta { margin-top:64px; padding-top:24px; border-top:1px solid var(--divider); color:var(--faint); font:12px/1.6 var(--mono) }
+    @media (max-width:780px) {
+      .masthead-inner,.layout { width:min(100% - 32px,680px) }
+      .layout { display:block; padding-top:32px }
+      nav { position:static; margin-bottom:48px }
+      .signal-grid { grid-template-columns:1fr }
+    }
+    @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto } }
+    @media print {
+      @page { margin:18mm }
+      body { background:#fff; color:var(--rack-ink); font-size:11pt }
+      .masthead { background:var(--rack-ink); color:var(--ink); break-after:page }
+      .masthead-inner,.layout { width:100% }
+      .layout { display:block; padding:0 }
+      nav { display:none }
+      section { padding-bottom:32px }
+      h2,h3,strong { color:var(--rack-ink) }
+      p,ol,ul,td { color:#344454 }
+      .callout { background:#f4f7fa; border-color:#b1becc }
+      .signal-field { color:var(--ink); print-color-adjust:exact; -webkit-print-color-adjust:exact }
+      a { color:#075a78; text-decoration:none }
+      .meta { color:#4a5b6b }
+    }
+  </style>
+</head>
+<body>
+  <header class="masthead">
+    <div class="accent-rule"></div>
+    <div class="masthead-inner">
+      <img class="lockup" src="../styleguide/rackwire-lockup-horizontal.svg" alt="RackWire">
+      <div class="eyebrow">User Manual</div>
+      <h1>Plan the run. Read the signal. Catch the conflict.</h1>
+      <p class="lede">A field guide to RackWire’s logical map, connection data, capacity checks, snapshots, imports, exports, and optional live telemetry.</p>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav aria-label="Manual contents">
+      <a href="#start">Quick start</a>
+      <a href="#workspace">Workspace</a>
+      <a href="#devices">Devices and racks</a>
+      <a href="#connections">Connections</a>
+      <a href="#signals">Signal colors</a>
+      <a href="#issues">Issues and capacity</a>
+      <a href="#data">Data view</a>
+      <a href="#live">Live telemetry</a>
+      <a href="#save">Save and exchange</a>
+      <a href="#shortcuts">Shortcuts</a>
+      <a href="#offline">Offline and embedding</a>
+    </nav>
+
+    <main>
+      <section id="start">
+        <div class="kicker">01 · Quick start</div>
+        <h2>Build a useful plan in four moves</h2>
+        <ol>
+          <li>Select <strong>Add gear</strong>, search the library, and add a device.</li>
+          <li>On the Map, select one port and then the port where the run lands.</li>
+          <li>Choose the cable standard, length, status, and optional label.</li>
+          <li>Open <strong>Issues</strong> to resolve connector, length, power, and capacity conflicts.</li>
+        </ol>
+        <div class="callout"><strong>Safety boundary</strong>RackWire is a planning and documentation aid. Confirm cable ratings, electrical loads, PoE classes, equipment requirements, and site conditions before installation.</div>
+      </section>
+
+      <section id="workspace">
+        <div class="kicker">02 · Workspace</div>
+        <h2>Map for topology. Data for precision.</h2>
+        <p><strong>Map</strong> is the spatial planning surface. Drag empty space to pan, use the zoom controls or wheel to zoom, and select <strong>Fit</strong> to frame the plan. Use Move to arrange items, Select for multi-selection, Note for annotations, and Rack for rack outlines.</p>
+        <p><strong>Data</strong> exposes devices, connections, and issues as editable rows. Filters narrow the current list without changing the plan.</p>
+        <p>The application chrome can use a light or dark host theme. The planning canvas always remains <strong>Rack Ink #070A0E</strong>. This fixed field preserves the specified contrast and meaning of every cable hue.</p>
+      </section>
+
+      <section id="devices">
+        <div class="kicker">03 · Devices and racks</div>
+        <h2>Place gear, then describe the load</h2>
+        <p>The Gear library is searchable by name, model, or UPC. Adding an item creates a plan-owned snapshot of its device definition, so later library changes do not silently rewrite an existing plan.</p>
+        <p>Select a device to edit its name and planning values. Depending on the device, these include power draw, PoE budget, circuit capacity, a live telemetry key, and port mappings. Capacity badges on the map show planned values until live measurements are available.</p>
+        <h3>Barcode workflow</h3>
+        <p>Select <strong>Scan</strong> to use a camera or enter a code manually. Map a new code to a library device once; RackWire retains that mapping with the plan.</p>
+      </section>
+
+      <section id="connections">
+        <div class="kicker">04 · Connections</div>
+        <h2>Land each run deliberately</h2>
+        <p>Select a source port and a destination port. RackWire opens the cable editor after the second endpoint is chosen. Set the standard and length, mark the run Planned or Installed, and add a label or callout where useful.</p>
+        <p>An unconnected endpoint is intentionally bright yellow. It is not an error color and it is never reused for a cable domain.</p>
+      </section>
+
+      <section id="signals">
+        <div class="kicker">05 · Signal system</div>
+        <h2>Color states what a run carries</h2>
+        <p>Signal colors are fixed brand literals. A host theme may repaint controls and panels, but must never remap these meanings.</p>
+        <div class="signal-field" aria-label="RackWire signal color reference">
+          <div class="signal-grid">
+            <div class="signal"><span class="swatch" style="--c:var(--cyan)"></span><span>Network / data</span><span class="hex">#22D3EE</span></div>
+            <div class="signal"><span class="swatch" style="--c:var(--power)"></span><span>Power</span><span class="hex">#FB923C</span></div>
+            <div class="signal"><span class="swatch" style="--c:var(--usb)"></span><span>USB / serial</span><span class="hex">#2E6BE6</span></div>
+            <div class="signal"><span class="swatch" style="--c:var(--other)"></span><span>Other</span><span class="hex">#74889D</span></div>
+            <div class="signal"><span class="swatch" style="--c:var(--open)"></span><span>Unconnected end</span><span class="hex">#FFE04D</span></div>
+            <div class="signal"><span class="swatch" style="--c:var(--lighting)"></span><span>Lighting · Studio reserved</span><span class="hex">#E879F9</span></div>
+            <div class="signal"><span class="swatch" style="--c:var(--audio)"></span><span>Audio · Studio reserved</span><span class="hex">#A3E635</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="issues">
+        <div class="kicker">06 · Analysis</div>
+        <h2>Resolve the warning, then verify the field</h2>
+        <p>RackWire checks connector compatibility, negotiated link limits, cable length, PoE delivery and device budget, AC continuous load at an 80% planning derate, adapter loss, uplink oversubscription, missing power feeds, and double-landed ports.</p>
+        <p>Issue severity describes the plan model. It does not certify a physical installation. Correct the plan, then validate ratings and measurements against manufacturer and site documentation.</p>
+      </section>
+
+      <section id="data">
+        <div class="kicker">07 · Data view</div>
+        <h2>Edit and audit at row level</h2>
+        <p>Switch between Devices, Connections, and Issues. Use the filters to focus on a domain or installation state. Connection rows expose endpoints, cable standard, length, labels, status, and live values when present.</p>
+        <p>CSV export is useful for a punch list or spreadsheet review. CSV import updates supported tabular fields; JSON is the complete RackWire plan interchange format.</p>
+      </section>
+
+      <section id="live">
+        <div class="kicker">08 · Optional live telemetry</div>
+        <h2>Measurements overlay the plan</h2>
+        <p>Select <strong>Live</strong> and choose an available source. The built-in simulator is suitable for exercising the interface. HTTP polling and WebSocket sources require a compatible telemetry endpoint.</p>
+        <p>Live values are labeled as live and can show reachability, negotiated rate, throughput, errors, delivered PoE, device load, temperature, and CPU. Missing telemetry remains distinct from a zero measurement.</p>
+      </section>
+
+      <section id="save">
+        <div class="kicker">09 · Save and exchange</div>
+        <h2>Autosave locally; export intentionally</h2>
+        <p>The browser’s local storage is the standalone source of truth and is updated as the plan changes. Menu → <strong>Export plan (JSON)</strong> creates a portable backup; <strong>Import plan (JSON)</strong> replaces the current working plan with a RackWire export.</p>
+        <p>Snapshots preserve named restore points in the browser. When a compatible same-origin plan service is present, RackWire can also synchronize plans and versions through that integration.</p>
+        <div class="callout"><strong>Before clearing browser data</strong>Export a JSON copy. Browser privacy controls, storage cleanup, or changing origins can make a locally saved plan unavailable.</div>
+      </section>
+
+      <section id="shortcuts">
+        <div class="kicker">10 · Keyboard</div>
+        <h2>Common shortcuts</h2>
+        <table>
+          <thead><tr><th>Keys</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>⌘/Ctrl</kbd> + <kbd>Z</kbd></td><td>Undo</td></tr>
+            <tr><td><kbd>⌘/Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>Z</kbd></td><td>Redo</td></tr>
+            <tr><td><kbd>⌘/Ctrl</kbd> + <kbd>F</kbd> or <kbd>/</kbd></td><td>Find a device or port</td></tr>
+            <tr><td><kbd>⌘/Ctrl</kbd> + <kbd>S</kbd></td><td>Export the plan as JSON</td></tr>
+            <tr><td><kbd>Delete</kbd></td><td>Delete the selected item</td></tr>
+            <tr><td><kbd>Esc</kbd></td><td>Cancel the active operation or close a panel</td></tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="offline">
+        <div class="kicker">11 · Runtime</div>
+        <h2>Works from a file and without a CDN</h2>
+        <p>Open <code>index.html</code> directly for standalone use. The application, React runtime, and brand assets are stored in the repository, so core planning works offline. Camera access and live network sources remain subject to browser security and origin rules.</p>
+        <p>For a same-origin iframe integration, see <a href="CONTRACT-RW.md">the RackWire integration contract</a>. Runtime provenance and the verification procedure are documented in <a href="SUPPORT-RUNTIME.md">Support Runtime</a>.</p>
+        <div class="meta">User Manual · Brand Standards v1.1 color and application rules · Updated 2026-08-12<br>Brand Identity is a foundational source; RackWire Brand Standards v1.1 governs usage where guidance differs.</div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>

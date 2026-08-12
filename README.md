@@ -31,8 +31,10 @@ Home: `rackwire.studio` · App: `app.rackwire.studio`.
 | `index.html` | The whole app — open it in a browser. No build step. |
 | `device-library.js` | `window.RW` — port geometry, cable standards, seeded devices, layout engine. |
 | `live-adapter.js` | `window.RWLive` — telemetry transport layer; contract in the header comment. |
-| `support.js` | Vendored component-format runtime. Do not edit. |
+| `support.js` | Generated, pinned component-format runtime. Do not edit; see `docs/SUPPORT-RUNTIME.md`. |
 | `vendor/` | Vendored React, ReactDOM and Babel — no CDN at runtime. |
+| `docs/USER-MANUAL.html` | Canonical branded User Manual; opens locally and prints cleanly. |
+| `docs/SUPPORT-RUNTIME.md` | Runtime provenance, constraints, checksums and replacement procedure. |
 | `docs/HANDOFF.md` | Original design handoff: seams, host API, frame schema, theming. |
 | `docs/CONTRACT-RW.md` | SolariNet integration contract (embed, API, SoR schema). |
 | `styleguide/` | Brand authority: `RackWire-Brand-Standards.html` v1.1.0, identity sheet, logo assets. |

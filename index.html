@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#070A0E">
+<meta name="color-scheme" content="dark light">
+<title>RackWire</title>
 <!-- WP1 self-containment: point the dc-runtime resource hook at vendored copies
      (verified sha384 == the SRI pins in support.js) so the app boots with zero
      network requests, including under file:// where SRI+crossOrigin would fail. -->
@@ -50,13 +53,13 @@ window.__resources = Object.assign(window.__resources || {}, {
      NOT host tokens: a run's color states what it carries, and that meaning
      must survive any host retheme and any edition upgrade. They are specified
      against Rack Ink and are theme-invariant — the light theme does not
-     restate them; the plot field stays dark (or labels carry the relief). */
+     restate them; the plot field stays dark. */
   :root {
     --sn-bg: var(--bg, #070A0E); --sn-surface: var(--panel, #0E141C); --sn-raised: var(--panel-3, #161F2A); /* raised DERIVED: Surface ½-step toward Divider */
     --sn-ink: var(--ink, #EDF3F9); --sn-dim: var(--ink-dim, #8FA3BA); --sn-faint: var(--ink-faint, #798EA4); /* dim = deck secondary stroke; faint DERIVED dim↔Steel midpoint */
-    /* the host bridge has no fourth ink step; quiet collapses onto faint when a host palette is present.
-       Fallback is Frame Steel — chrome only, which is exactly what quiet text is */
-    --sn-quiet: var(--ink-faint, #63788F);
+    /* the host bridge has no fourth ink step; quiet collapses onto faint. The
+       fallback stays above Frame Steel so small chrome text retains contrast. */
+    --sn-quiet: var(--ink-faint, #798EA4);
     --sn-divider: var(--line, #1E2937); --sn-divider-strong: var(--line-2, #25303F); /* Divider / Frame Shadow */
     --sn-accent: var(--accent, #22D3EE);
     /* accent-700 is the app's "accent as text on the on-field chip"; the dark deck
@@ -79,6 +82,13 @@ window.__resources = Object.assign(window.__resources || {}, {
     --rw-cable-lighting: #E879F9; --rw-cable-audio: #A3E635;
     /* unconnected ends: a true yellow, held clear of the amber power/warn band so the two never blur */
     --rw-cable-open: #FFE04D;
+    /* The connection canvas is an instrument field, not application chrome.
+       These values never follow a host or light-theme override: the cable
+       palette's contrast and meaning are specified on Rack Ink. */
+    --rw-canvas: #070A0E; --rw-canvas-surface: #0E141C;
+    --rw-canvas-ink: #EDF3F9; --rw-canvas-dim: #8FA3BA; --rw-canvas-faint: #798EA4;
+    --rw-canvas-divider: #1E2937; --rw-canvas-frame: #25303F;
+    --rw-status-ok: #A3E635; --rw-status-warn: #FB923C; --rw-status-crit: #E879F9;
     /* Type is the system's own (deck p. 12): a webfont that fails to load
        changes every measurement, so nothing is allowed to fail to load */
     --font-display: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -108,7 +118,10 @@ window.__resources = Object.assign(window.__resources || {}, {
   a:hover { color: var(--sn-accent-700, #22D3EE); }
   input, select, textarea, button { font-family: inherit; font-size: inherit; color: inherit; }
   input, select, textarea { box-sizing: border-box; background: var(--sn-surface, #0E141C); border: 1px solid var(--sn-divider-strong, #25303F); border-radius: 6px; padding: 8px 10px; color: var(--sn-ink, #EDF3F9); }
-  input:focus, select:focus, textarea:focus { outline: none; border-color: var(--sn-accent, #22D3EE); }
+  button { transition: color var(--rw-motion-fast), background-color var(--rw-motion-fast), border-color var(--rw-motion-fast), opacity var(--rw-motion-fast); }
+  input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible, a:focus-visible {
+    outline: 2px solid var(--sn-accent, #22D3EE); outline-offset: 2px; border-color: var(--sn-accent, #22D3EE);
+  }
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-thumb { background: var(--sn-divider, #1E2937); border-radius: 5px; }
   @keyframes rw-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
@@ -117,7 +130,7 @@ window.__resources = Object.assign(window.__resources || {}, {
      rw-in elements land in their settled state; a dashed ghost or flow run keeps
      its dashes but stops marching. */
   @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+    *, *::before, *::after { animation-duration: 0ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0ms !important; scroll-behavior: auto !important; }
   }
 </style>
 <script src="device-library.js"></script>
@@ -128,10 +141,13 @@ window.__resources = Object.assign(window.__resources || {}, {
   <!-- Header is dark chrome (deck p. 21 application spec): Surface bar, Divider rule,
        signal reserved for the one primary action and the active tab — no filled field,
        no shadow, no radius. -->
-  <div style="flex:0 0 auto;display:{{ chromeDisplay }};align-items:center;gap:8px;padding:8px 16px;background:var(--sn-surface, #0E141C);color:var(--sn-ink, #EDF3F9);border-bottom:1px solid var(--sn-divider, #1E2937)">
-    <div style="display:flex;flex-direction:column;line-height:1;margin-right:8px">
-      <span style="font-size:17px;font-weight:600;letter-spacing:-0.02em">RackWire</span>
-      <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:var(--sn-faint, #798EA4)">CONNECTION PLANNER</span>
+  <div style="flex:0 0 auto;display:{{ chromeDisplay }};align-items:center;gap:8px;padding:8px 24px;background:var(--sn-surface, #0E141C);color:var(--sn-ink, #EDF3F9);border-bottom:1px solid var(--sn-divider, #1E2937)">
+    <div style="display:flex;align-items:center;gap:8px;margin-right:8px">
+      <span style="display:inline-flex;width:32px;height:32px;flex:0 0 32px;background:#070A0E;border-radius:4px"><img src="./styleguide/rackwire-mark.svg" alt="" width="32" height="32" /></span>
+      <span style="display:flex;flex-direction:column;line-height:1">
+        <span style="font-size:17px;font-weight:600;letter-spacing:-0.02em">RackWire</span>
+        <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:var(--sn-faint, #798EA4)">CONNECTION PLANNER</span>
+      </span>
     </div>
     <div style="display:flex;gap:4px;padding:3px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px">
       <button onClick="{{ goMap }}" style="{{ tabMapStyle }}">Map</button>
@@ -155,7 +171,7 @@ window.__resources = Object.assign(window.__resources || {}, {
 
     <sc-if value="{{ isMap }}" hint-placeholder-val="{{ true }}">
       <div style="position:relative;flex:1;min-width:0;overflow:hidden">
-        <div ref="{{ stageRef }}" onPointerDown="{{ onDown }}" onPointerMove="{{ onMove }}" onPointerUp="{{ onUp }}" onPointerCancel="{{ onUp }}" onWheel="{{ onWheel }}" onContextMenu="{{ noCtx }}" style="position:absolute;inset:0;touch-action:none;background:var(--sn-bg, #070A0E);cursor:crosshair">
+        <div ref="{{ stageRef }}" onPointerDown="{{ onDown }}" onPointerMove="{{ onMove }}" onPointerUp="{{ onUp }}" onPointerCancel="{{ onUp }}" onWheel="{{ onWheel }}" onContextMenu="{{ noCtx }}" style="position:absolute;inset:0;touch-action:none;background:var(--rw-canvas, #070A0E);cursor:crosshair">
           {{ world }}
         </div>
 
@@ -175,17 +191,17 @@ window.__resources = Object.assign(window.__resources || {}, {
 
         <div style="position:absolute;right:16px;top:16px;display:flex;flex-direction:column;gap:8px;align-items:flex-end">
           <button onClick="{{ goIssues }}" style="{{ issueBtnStyle }}">{{ issueSummary }}</button>
-          <div style="padding:10px 12px;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider, #1E2937);border-radius:10px;font-family:var(--font-mono);font-size:10px;line-height:1.9;color:var(--sn-dim, #8FA3BA)">
+          <div style="padding:10px 12px;background:var(--rw-canvas-surface, #0E141C);border:1px solid var(--rw-canvas-divider, #1E2937);border-radius:10px;font-family:var(--font-mono);font-size:10px;line-height:1.9;color:var(--rw-canvas-dim, #8FA3BA)">
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-net, #22D3EE)"></span>Network</div>
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-power, #FB923C)"></span>Power</div>
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-usb, #2E6BE6)"></span>USB / serial</div>
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-other, #74889D)"></span>Other</div>
             <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-cable-open, #FFE04D)"></span>Unconnected</div>
-            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--sn-crit, #E879F9)"></span>Over capacity</div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="width:18px;height:3px;border-radius:2px;background:var(--rw-status-crit, #E879F9)"></span>Over capacity</div>
             <sc-if value="{{ liveOn }}" hint-placeholder-val="{{ false }}">
-              <div style="margin-top:6px;padding-top:6px;border-top:1px solid var(--sn-divider, #1E2937)">
-                <div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--sn-ok, #A3E635);opacity:0.75"></span>Path to internet</div>
-                <div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--sn-warn, #FB923C);opacity:0.75"></span>On battery backup</div>
+              <div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--rw-canvas-divider, #1E2937)">
+                <div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--rw-status-ok, #A3E635);opacity:0.75"></span>Path to internet</div>
+                <div style="display:flex;align-items:center;gap:8px"><span style="width:12px;height:12px;border-radius:4px;border:2px solid var(--rw-status-warn, #FB923C);opacity:0.75"></span>On battery backup</div>
               </div>
             </sc-if>
           </div>
@@ -1381,7 +1397,7 @@ class Component extends DCLogic {
   }
 
   cableColor(c, cableFlag) {
-    if (cableFlag[c.uid] === 'err') return this.T.crit;
+    if (cableFlag[c.uid] === 'err') return this.T.plot.crit;
     if (cableFlag[c.uid] === 'open') return this.T.open;
     if (!c.a || !c.a.dev || !c.b || !c.b.dev) return this.T.open;
     return this.T.dom[this.std(c.standard).domain] || this.T.dom.other;
@@ -2022,6 +2038,13 @@ class Component extends DCLogic {
       critInk: g('crit-ink', '#ED94FA'), critSurface: g('crit-surface', '#22172A'), critBorder: g('crit-border', '#61366C'),
       critBorder2: g('crit-border', '#61366C')
     };
+    t.plot = {
+      bg: b('canvas', '#070A0E'), surface: b('canvas-surface', '#0E141C'),
+      ink: b('canvas-ink', '#EDF3F9'), dim: b('canvas-dim', '#8FA3BA'), faint: b('canvas-faint', '#798EA4'),
+      divider: b('canvas-divider', '#1E2937'), frame: b('canvas-frame', '#25303F'),
+      accent: b('cable-net', '#22D3EE'), ok: b('status-ok', '#A3E635'),
+      warn: b('status-warn', '#FB923C'), crit: b('status-crit', '#E879F9')
+    };
     // cable domain hues are brand literals (Brand Standards v1.1), deliberately outside
     // the --sn-* bridge: a host retheme may repaint the chrome but never a run's meaning.
     t.dom = { net: b('cable-net', '#22D3EE'), power: b('cable-power', '#FB923C'), usb: b('cable-usb', '#2E6BE6'), other: b('cable-other', '#74889D') };
@@ -2052,18 +2075,18 @@ class Component extends DCLogic {
   }
 
   renderWorld(an) {
-    const s = this.state, showLabels = this.props.showPortLabels !== false;
+    const s = this.state, P = this.T.plot, showLabels = this.props.showPortLabels !== false;
     const used = {};
     s.cables.forEach((c) => { [c.a, c.b].forEach((e) => { if (e && e.dev) used[e.dev + '|' + e.port] = c; }); });
 
     const racks = s.racks.map((r) => {
       const H = 40 + r.units * 78;
       return h('g', { key: r.uid, 'data-kind': 'rack', 'data-uid': r.uid, transform: 'translate(' + r.x + ',' + r.y + ')', style: { cursor: 'grab' } },
-        h('rect', { x: 0, y: 0, width: 560, height: H, rx: 8, fill: this.T.bg, stroke: s.sel.indexOf(r.uid) >= 0 ? this.T.accent : this.T.divider, strokeWidth: 1.5 }),
-        h('text', { x: 14, y: 24, fill: this.T.faint, fontSize: 12, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', letterSpacing: 1.5 }, r.name.toUpperCase() + ' · ' + r.units + 'U'),
+        h('rect', { x: 0, y: 0, width: 560, height: H, rx: 8, fill: P.bg, stroke: s.sel.indexOf(r.uid) >= 0 ? P.accent : P.divider, strokeWidth: 1.5 }),
+        h('text', { x: 14, y: 24, fill: P.dim, fontSize: 12, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', letterSpacing: 1.5 }, r.name.toUpperCase() + ' · ' + r.units + 'U'),
         Array.from({ length: r.units }).map((_, i) => h('g', { key: i },
-          h('line', { x1: 8, y1: 40 + i * 78, x2: 552, y2: 40 + i * 78, stroke: this.T.divider, strokeWidth: 1 }),
-          h('text', { x: 566, y: 44 + i * 78 + 34, fill: this.T.dividerStrong, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace' }, 'U' + (r.units - i))
+          h('line', { x1: 8, y1: 40 + i * 78, x2: 552, y2: 40 + i * 78, stroke: P.divider, strokeWidth: 1 }),
+          h('text', { x: 566, y: 44 + i * 78 + 34, fill: P.faint, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace' }, 'U' + (r.units - i))
         ))
       );
     });
@@ -2074,7 +2097,7 @@ class Component extends DCLogic {
       const g = this.geo(d);
       const selected = s.sel.indexOf(d.uid) >= 0;
       const err = an.devFlag[d.uid] === 'err';
-      const outline = selected ? this.T.accent : (err ? this.T.crit : this.T.ink);
+      const outline = selected ? P.accent : (err ? P.crit : P.ink);
       const meta = [];
       const ld = s.live.on ? this.liveDev(d) : null;
       if (ld) {
@@ -2091,8 +2114,8 @@ class Component extends DCLogic {
       else if (!ld && d.kind === 'adapter') meta.push(Math.round(this.effDraw(d, 0)) + '/' + d.budgetW + ' W');
       else if (!ld && d.drawW) meta.push(d.drawW + ' W');
       const states = [];
-      if (reach.online[d.uid]) states.push(this.T.ok);
-      if (reach.battery[d.uid]) states.push(this.T.warn);
+      if (reach.online[d.uid]) states.push(P.ok);
+      if (reach.battery[d.uid]) states.push(P.warn);
       const glow = [];
       if (states.length) {
         const paint = this.stripePaint(states, defs);
@@ -2104,39 +2127,39 @@ class Component extends DCLogic {
       }
       return h('g', { key: d.uid, transform: 'translate(' + d.x + ',' + d.y + ')' },
         glow,
-        h('rect', { 'data-kind': 'device', 'data-uid': d.uid, x: 0, y: 0, width: g.w, height: g.h, rx: 5, fill: this.T.surface, stroke: outline, strokeWidth: selected ? 2 : 1.4, style: { cursor: 'grab' } }),
-        h('text', { x: 12, y: 17, fill: this.T.ink, fontSize: 11.5, fontWeight: 600, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif', style: { pointerEvents: 'none' } }, d.name),
-        h('text', { x: g.w - 12, y: 17, textAnchor: 'end', fill: this.T.faint, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, d.model),
+        h('rect', { 'data-kind': 'device', 'data-uid': d.uid, x: 0, y: 0, width: g.w, height: g.h, rx: 5, fill: P.surface, stroke: outline, strokeWidth: selected ? 2 : 1.4, style: { cursor: 'grab' } }),
+        h('text', { x: 12, y: 17, fill: P.ink, fontSize: 11.5, fontWeight: 600, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif', style: { pointerEvents: 'none' } }, d.name),
+        h('text', { x: g.w - 12, y: 17, textAnchor: 'end', fill: P.faint, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, d.model),
         d.isInternet ? h('g', { style: { pointerEvents: 'none' } },
-          h('circle', { cx: -1, cy: -1, r: 8, fill: this.T.bg, stroke: this.T.ok, strokeWidth: 1.4 }),
-          h('circle', { cx: -1, cy: -1, r: 4.6, fill: 'none', stroke: this.T.ok, strokeWidth: 1 }),
-          h('line', { x1: -1, y1: -6.4, x2: -1, y2: 4.4, stroke: this.T.ok, strokeWidth: 1 }),
-          h('path', { d: 'M-6.4 -3.2 H4.4 M-6.4 1.2 H4.4', stroke: this.T.ok, strokeWidth: 1, fill: 'none' })) : null,
+          h('circle', { cx: -1, cy: -1, r: 8, fill: P.bg, stroke: P.ok, strokeWidth: 1.4 }),
+          h('circle', { cx: -1, cy: -1, r: 4.6, fill: 'none', stroke: P.ok, strokeWidth: 1 }),
+          h('line', { x1: -1, y1: -6.4, x2: -1, y2: 4.4, stroke: P.ok, strokeWidth: 1 }),
+          h('path', { d: 'M-6.4 -3.2 H4.4 M-6.4 1.2 H4.4', stroke: P.ok, strokeWidth: 1, fill: 'none' })) : null,
         (d.isBattery || g.ports.some((p) => p.batt)) ? h('g', { transform: 'translate(' + (d.isInternet ? 17 : -1) + ',-1)', style: { pointerEvents: 'none' } },
-          h('circle', { cx: 0, cy: 0, r: 8, fill: this.T.bg, stroke: this.T.warn, strokeWidth: 1.4 }),
-          h('rect', { x: -5, y: -3, width: 8.5, height: 6, rx: 1, fill: 'none', stroke: this.T.warn, strokeWidth: 1.1 }),
-          h('rect', { x: 4, y: -1.4, width: 1.6, height: 2.8, fill: this.T.warn }),
-          h('rect', { x: -3.6, y: -1.6, width: 3.4, height: 3.2, fill: this.T.warn })) : null,
+          h('circle', { cx: 0, cy: 0, r: 8, fill: P.bg, stroke: P.warn, strokeWidth: 1.4 }),
+          h('rect', { x: -5, y: -3, width: 8.5, height: 6, rx: 1, fill: 'none', stroke: P.warn, strokeWidth: 1.1 }),
+          h('rect', { x: 4, y: -1.4, width: 1.6, height: 2.8, fill: P.warn }),
+          h('rect', { x: -3.6, y: -1.6, width: 3.4, height: 3.2, fill: P.warn })) : null,
         this.props.showCapacityBadges === false || !meta.length ? null :
-          h('text', { x: 12, y: g.h - 7, fill: err ? this.T.crit : this.T.faint, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, meta.join('  ·  ')),
-        showLabels ? g.marks.map((m, i) => h('text', { key: 'm' + i, x: m.x, y: m.y, textAnchor: 'middle', fill: this.T.quiet, fontSize: 7.5, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, m.label)) : null,
+          h('text', { x: 12, y: g.h - 7, fill: err ? P.crit : P.faint, fontSize: 9, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, meta.join('  ·  ')),
+        showLabels ? g.marks.map((m, i) => h('text', { key: 'm' + i, x: m.x, y: m.y, textAnchor: 'middle', fill: P.faint, fontSize: 7.5, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace', style: { pointerEvents: 'none' } }, m.label)) : null,
         g.ports.map((p) => {
           const k = d.uid + '|' + p.id;
           const flag = an.portFlag[k];
           const conn = used[k];
           const pend = s.pending && s.pending.dev === d.uid && s.pending.port === p.id;
-          let stroke = this.T.ink;
+          let stroke = P.ink;
           if (conn) stroke = this.cableColor(conn, an.cableFlag);
           const lp = s.live.on ? this.livePort(d, p.id) : null;
           if (lp && lp.link && conn) stroke = this.T.dom[this.std(conn.standard).domain] || stroke;
-          if (lp && lp.link === false && conn) stroke = this.T.crit;
-          if (flag === 'err') stroke = this.T.crit;
-          if (flag === 'warn' && stroke === this.T.ink) stroke = this.T.warn;
-          if (pend) stroke = this.T.accent;
+          if (lp && lp.link === false && conn) stroke = P.crit;
+          if (flag === 'err') stroke = P.crit;
+          if (flag === 'warn' && stroke === P.ink) stroke = P.warn;
+          if (pend) stroke = P.accent;
           const hw = Math.max(34, p.gw + 12), hh = Math.max(30, p.gh + 12);
           return h('g', { key: p.id, transform: 'translate(' + p.x + ',' + p.y + ')' },
-            (flag === 'err' || flag === 'warn' || pend) ? h('rect', { x: -5, y: -5, width: p.gw + 10, height: p.gh + 10, rx: 4, fill: 'none', stroke: pend ? this.T.accent : (flag === 'err' ? this.T.crit : this.T.warn), strokeWidth: 1.2, strokeDasharray: '3 3' }) : null,
-            lp && lp.link ? h('circle', { cx: p.gw + 2, cy: -2, r: 2.4, fill: this.T.ok, opacity: 0.95 }) : null,
+            (flag === 'err' || flag === 'warn' || pend) ? h('rect', { x: -5, y: -5, width: p.gw + 10, height: p.gh + 10, rx: 4, fill: 'none', stroke: pend ? P.accent : (flag === 'err' ? P.crit : P.warn), strokeWidth: 1.2, strokeDasharray: '3 3' }) : null,
+            lp && lp.link ? h('circle', { cx: p.gw + 2, cy: -2, r: 2.4, fill: P.ok, opacity: 0.95 }) : null,
             h('g', { style: { pointerEvents: 'none' } }, this.glyphEls(p.glyph, stroke, 1.25)),
             h('rect', { 'data-kind': 'port', 'data-dev': d.uid, 'data-port': p.id, x: (p.gw - hw) / 2, y: (p.gh - hh) / 2, width: hw, height: hh, fill: 'transparent', style: { cursor: 'pointer' } })
           );
@@ -2155,12 +2178,12 @@ class Component extends DCLogic {
       const lv = this.cableLive(c);
       let flow = null, base = 4.5, dash = c.status === 'installed' ? null : '10 7';
       if (lv) {
-        if (!lv.link) { col = this.T.crit; dash = '4 6'; }
+        if (!lv.link) { col = P.crit; dash = '4 6'; }
         else {
           base = 3.2 + lv.util * 4;
           dash = null;
           const speed = Math.max(0.35, 2.4 - lv.util * 2.1);
-          flow = h('path', { d: dpath, fill: 'none', stroke: this.T.ink, strokeWidth: Math.max(1.6, base * 0.45), strokeLinecap: 'round', strokeDasharray: '3 26', opacity: 0.28 + lv.util * 0.5, style: { animation: 'rw-dash ' + speed.toFixed(2) + 's linear infinite' } });
+          flow = h('path', { d: dpath, fill: 'none', stroke: P.ink, strokeWidth: Math.max(1.6, base * 0.45), strokeLinecap: 'round', strokeDasharray: '3 26', opacity: 0.28 + lv.util * 0.5, style: { animation: 'rw-dash ' + speed.toFixed(2) + 's linear infinite' } });
         }
       }
       return h('g', { key: c.uid },
@@ -2174,8 +2197,8 @@ class Component extends DCLogic {
           const w = txt.length * 6.6 + 22, hh = 26;
           const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
           return h('g', { transform: 'translate(' + (mx - w / 2) + ',' + (my - hh / 2) + ')', style: { pointerEvents: 'none' } },
-            h('rect', { x: 0, y: 0, width: w, height: hh, rx: 7, fill: this.T.surface, stroke: col, strokeWidth: 1.4 }),
-            h('text', { x: w / 2, y: 17, textAnchor: 'middle', fill: this.T.ink, fontSize: 11.5, fontWeight: 500, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }, txt));
+            h('rect', { x: 0, y: 0, width: w, height: hh, rx: 7, fill: P.surface, stroke: col, strokeWidth: 1.4 }),
+            h('text', { x: w / 2, y: 17, textAnchor: 'middle', fill: P.ink, fontSize: 11.5, fontWeight: 500, fontFamily: 'system-ui, -apple-system, Segoe UI, Roboto, sans-serif' }, txt));
         })() : null
       );
     });
@@ -2187,20 +2210,20 @@ class Component extends DCLogic {
     }
 
     const notes = s.notes.map((n) => h('g', { key: n.uid, 'data-kind': 'note', 'data-uid': n.uid, transform: 'translate(' + n.x + ',' + n.y + ')', style: { cursor: 'grab' } },
-      h('rect', { x: 0, y: 0, width: Math.max(60, n.text.length * 7.4 + 20), height: 30, rx: 6, fill: 'rgba(251,146,60,0.08)', stroke: s.sel.indexOf(n.uid) >= 0 ? this.T.accent : 'rgba(251,146,60,0.5)', strokeWidth: 1.2 }),
-      h('text', { x: 10, y: 20, fill: this.T.warn, fontSize: 12, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace' }, n.text)
+      h('rect', { x: 0, y: 0, width: Math.max(60, n.text.length * 7.4 + 20), height: 30, rx: 6, fill: 'rgba(251,146,60,0.08)', stroke: s.sel.indexOf(n.uid) >= 0 ? P.accent : 'rgba(251,146,60,0.5)', strokeWidth: 1.2 }),
+      h('text', { x: 10, y: 20, fill: P.warn, fontSize: 12, fontFamily: 'ui-monospace, SF Mono, Cascadia Mono, Menlo, Consolas, monospace' }, n.text)
     ));
 
     return h('svg', { width: '100%', height: '100%', style: { display: 'block' } },
       h('defs', null,
         h('pattern', { id: 'rwg', width: 120, height: 120, patternUnits: 'userSpaceOnUse' },
-          h('path', { d: 'M120 0 L0 0 0 120', fill: 'none', stroke: this.T.divider, strokeWidth: 1 })),
+          h('path', { d: 'M120 0 L0 0 0 120', fill: 'none', stroke: P.divider, strokeWidth: 1 })),
         defs
       ),
       h('g', { transform: 'translate(' + s.panX + ',' + s.panY + ') scale(' + s.zoom + ')' },
         h('rect', { x: -8000, y: -8000, width: 20000, height: 20000, fill: 'url(#rwg)' }),
         racks, devices, cables, ghost, notes,
-        s.marquee ? h('rect', { x: s.marquee.x, y: s.marquee.y, width: s.marquee.w, height: s.marquee.h, fill: 'rgba(34,211,238,0.08)', stroke: this.T.accent, strokeWidth: 1, strokeDasharray: '4 4' }) : null
+        s.marquee ? h('rect', { x: s.marquee.x, y: s.marquee.y, width: s.marquee.w, height: s.marquee.h, fill: 'rgba(34,211,238,0.08)', stroke: P.accent, strokeWidth: 1, strokeDasharray: '4 4' }) : null
       )
     );
   }
