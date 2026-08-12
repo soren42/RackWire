@@ -12,12 +12,19 @@ has a defined seam. This document lists the seams, in priority order.
 
 | File | What it is |
 |---|---|
-| `Connection Planner.dc.html` | The whole app — template + logic class. Opens directly in a browser. |
+| `index.html` | The whole app — template + logic class. Opens directly in a browser. |
 | `device-library.js` | `window.RW` — port glyph geometry, cable standards, seeded device definitions, the layout engine. |
 | `live-adapter.js` | `window.RWLive` — telemetry transport layer. Contract documented at the top of the file. |
 | `support.js` | Runtime shim for the component format. Do not edit. |
+| `vendor/` | Vendored React, ReactDOM and Babel, wired through `support.js`'s resource override. |
 
-No build step, no dependencies, no network calls. Open the HTML file and it works.
+No build step, no CDN or runtime dependency on the network. The React/ReactDOM/
+Babel runtime is vendored in `vendor/` — nothing is fetched from unpkg or any
+CDN at runtime. Open the HTML file from disk (`file://`) and it works fully
+offline: in that mode the app makes no network calls at all. When served over
+HTTP it additionally talks — best-effort, failures silent — to the same-origin
+SoR endpoints (`/api/rackwire/library`, `/api/rackwire/plans` at startup) and,
+when the live overlay is enabled, polls a telemetry URL.
 
 ---
 
@@ -153,9 +160,20 @@ preserve that — the file is used directly from disk on an iPad.
 
 ## 5. Theming
 
-Everything reads SolariNet Rev 2 tokens off `:root`. Template inline styles use
-`var(--sn-x, #fallback)`; SVG (which cannot read `var()`) goes through a resolver in
-`tok()` that re-reads on `theme()`.
+Two token families, two jobs:
+
+- **`--sn-*` — the host-bridge intake.** An embed host pushes values into these
+  custom properties (via a bridge stylesheet or `theme()`) to retheme the chrome.
+  Template inline styles use `var(--sn-x, #fallback)`; SVG (which cannot read
+  `var()`) goes through a resolver in `tok()` that re-reads on `theme()`.
+  Standalone, the literal fallbacks are the RackWire brand palette
+  (Brand Standards v1.1.0): Rack Ink `#070A0E` ground, Surface `#0E141C`,
+  Type White `#EDF3F9` ink, Divider `#1E2937`, Frame Shadow `#25303F`,
+  Frame Steel `#63788F` (chrome only — never signal meaning), and light-theme
+  accent `#0B7FA8`.
+- **`--rw-*` — brand-invariant.** The frozen cable signal palette plus motion
+  durations (120/220/400ms, with `prefers-reduced-motion` honored). A host may
+  retheme the `--sn-*` chrome; it never repaints an `--rw-*` value.
 
 ```
 --sn-bg --sn-surface --sn-raised
@@ -173,7 +191,10 @@ Everything reads SolariNet Rev 2 tokens off `:root`. Template inline styles use
 > host may retheme the chrome but never a run's meaning. See the styleguide,
 > pages 09–10.
 
-Type is IBM Plex Sans throughout, IBM Plex Mono for all numerics, port IDs and status.
+Type is the system font stack throughout (IBM Plex is dropped — Brand Standards
+v1.1.0); anything measured — numerics, port IDs, status readouts — is set in the
+system mono stack. No shadows anywhere. Chrome icons are Lucide (1.75px stroke on
+a 24px grid).
 
 ---
 
