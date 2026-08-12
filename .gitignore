@@ -1,3 +1,16 @@
 .env
 *.zip
 .DS_Store
+
+# Python (discovery backend)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+venv/
+.venv/
+
+# Local discovery runtime state / secrets (never commit)
+*.db
+discovery.env
+/etc/rackwire/

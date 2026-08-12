@@ -1,0 +1,51 @@
+# RackWire discovery service — gunicorn WSGI app behind the Apache vhost.
+#
+# Runs as the dedicated unprivileged `rackwire` user, bound to localhost only
+# (Apache reverse-proxies /api/discovery/* to it). Secrets come from the
+# EnvironmentFile, never from this unit. Scanners are invoked as subprocesses;
+# raw-socket needs are granted narrowly on the tool binaries (see install.sh
+# setcap step), NOT by running this service as root.
+
+[Unit]
+Description=RackWire network discovery service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=rackwire
+Group=rackwire
+WorkingDirectory=/opt/rackwire
+EnvironmentFile=/etc/rackwire/discovery.env
+
+# One prod dependency (gunicorn) in a venv at /opt/rackwire/venv.
+#
+# EXACTLY ONE worker. The service keeps per-run state in process memory — the
+# in-flight scan-thread + cancel-flag registry (api/routes.py) and the single
+# SQLite connection. A second worker would own a separate registry, so a cancel
+# or status poll routed to the wrong worker would miss the run, and the two
+# processes would contend on the SQLite writer. A single worker with threaded
+# scans is the right model for a single-operator console; scale out only after
+# the run registry and store move to shared state.
+ExecStart=/opt/rackwire/venv/bin/gunicorn \
+    --workers 1 \
+    --threads 4 \
+    --bind 127.0.0.1:8785 \
+    --timeout 120 \
+    rackwire_discovery.wsgi:application
+
+Restart=on-failure
+RestartSec=3
+
+# Hardening: the service reads/writes only its data dir and needs no elevated
+# privilege of its own. NoNewPrivileges MUST stay false so the cap_net_raw file
+# capability set on arp-scan/nmap (install.sh) still takes effect across exec;
+# true would strip it and silently degrade arp/OS detection.
+NoNewPrivileges=false
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/var/lib/rackwire
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

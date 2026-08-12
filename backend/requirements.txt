@@ -1,0 +1,9 @@
+# RackWire Discovery — production dependencies.
+#
+# Deliberately minimal (engineering doctrine: default NO to dependencies).
+# Everything else is the Python standard library. The Claude API is called with
+# urllib; SQLite is stdlib sqlite3; scanners shell out to system binaries.
+gunicorn==23.0.0
+
+# Dev-only (not installed in production):
+#   pytest>=8   — unit tests under backend/tests/
