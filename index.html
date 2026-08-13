@@ -587,7 +587,7 @@ window.__resources = Object.assign(window.__resources || {}, {
       <sc-for list="{{ menuItems }}" as="m" hint-placeholder-count="5">
         <button onClick="{{ m.go }}" style="display:block;width:100%;text-align:left;min-height:44px;padding:0 12px;background:transparent;border:none;border-radius:8px;color:var(--sn-dim, #8FA3BA);font-size:14px;cursor:pointer" style-hover="background:var(--sn-raised, #161F2A)">{{ m.name }}</button>
       </sc-for>
-      <div style="padding:8px 12px 4px;font-family:var(--font-mono);font-size:9px;color:var(--sn-quiet, #63788F);letter-spacing:0.08em">{{ saveNote }}</div>
+      <div style="padding:8px 12px 4px;font-family:var(--font-mono);font-size:9px;color:var(--sn-quiet, #798EA4);letter-spacing:0.08em">{{ saveNote }}</div>
     </div>
   </sc-if>
 
@@ -2386,7 +2386,7 @@ class Component extends DCLogic {
     const b = (k, f) => (cs.getPropertyValue('--rw-' + k) || '').trim() || f;
     const t = {
       bg: g('bg', '#070A0E'), surface: g('surface', '#0E141C'), raised: g('raised', '#161F2A'),
-      ink: g('ink', '#EDF3F9'), dim: g('dim', '#8FA3BA'), faint: g('faint', '#798EA4'), quiet: g('quiet', '#63788F'),
+      ink: g('ink', '#EDF3F9'), dim: g('dim', '#8FA3BA'), faint: g('faint', '#798EA4'), quiet: g('quiet', '#798EA4'),
       divider: g('divider', '#1E2937'), dividerStrong: g('divider-strong', '#25303F'),
       accent: g('accent', '#22D3EE'), accent700: g('accent-700', '#22D3EE'), onField: g('on-field', '#070A0E'),
       ok: g('ok', '#A3E635'), warn: g('warn', '#FB923C'), crit: g('crit', '#E879F9'),
