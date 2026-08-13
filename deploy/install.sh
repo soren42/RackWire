@@ -26,17 +26,25 @@ if ! id rackwire >/dev/null 2>&1; then
     sudo useradd --system --home-dir "$OPT" --shell /usr/sbin/nologin rackwire
 fi
 
-# --- static web root: pristine planner at /, console under /discover/ ----
+# --- static web root: the planner at / ----------------------------------
+# Discovery is now a feature INSIDE the planner (the "Discover devices on the
+# network…" menu item drives /api/discovery directly); the standalone /discover/
+# console was retired, so nothing is published under $WWW/discover anymore. The
+# backend API is unchanged and still serves the planner's discovery client.
 echo "==> publishing static assets to $WWW"
-sudo install -d -m 0755 "$WWW" "$WWW/discover"
+sudo install -d -m 0755 "$WWW"
 # The planner is shipped byte-for-byte; its offline/same-origin contract holds.
+# index.html loads support.js AND device-library.js + live-adapter.js (the
+# latter two define window.RW — the device/cable library and live adapter);
+# all of them must be published or the planner crashes at render.
 sudo install -m 0644 "$REPO/index.html" "$WWW/index.html"
-[[ -f "$REPO/support.js" ]] && sudo install -m 0644 "$REPO/support.js" "$WWW/support.js"
+for asset in support.js device-library.js live-adapter.js; do
+    [[ -f "$REPO/$asset" ]] && sudo install -m 0644 "$REPO/$asset" "$WWW/$asset"
+done
 [[ -d "$REPO/vendor" ]] && sudo cp -r "$REPO/vendor" "$WWW/"
 [[ -d "$REPO/styleguide" ]] && sudo cp -r "$REPO/styleguide" "$WWW/"
-sudo install -m 0644 "$REPO/web/index.html"   "$WWW/discover/index.html"
-sudo install -m 0644 "$REPO/web/discover.js"  "$WWW/discover/discover.js"
-sudo install -m 0644 "$REPO/web/discover.css" "$WWW/discover/discover.css"
+# Remove any /discover/ tree left by an earlier deploy (idempotent retirement).
+sudo rm -rf "$WWW/discover"
 
 # --- backend code + venv -------------------------------------------------
 echo "==> installing backend to $OPT"
@@ -104,4 +112,4 @@ echo
 echo "==> done. Next:"
 echo "    1. Edit $ETC/discovery.env (RACKWIRE_ALLOWED_SUBNETS, RACKWIRE_SESSION_SECRET, ANTHROPIC_API_KEY)"
 echo "    2. Add 'rackwire IN CNAME xenon' to /etc/bind/zones/db.akoria.net, bump the SOA serial, rndc reload"
-echo "    3. Browse https://rackwire.akoria.net/discover/"
+echo "    3. Browse https://rackwire.akoria.net/ — open the menu ▸ 'Discover devices on the network…'"

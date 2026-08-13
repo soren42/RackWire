@@ -131,6 +131,54 @@ CREATE TABLE IF NOT EXISTS import_map (
     group_json  TEXT NOT NULL,
     imported_at TEXT NOT NULL
 );
+
+-- Durable link between a discovered device and the planner library definition
+-- selected by the operator. Re-association soft-deletes the former row so the
+-- audit trail remains available while the partial unique index guarantees one
+-- active association per discovered device.
+CREATE TABLE IF NOT EXISTS device_model_association (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    device_id      INTEGER NOT NULL REFERENCES device(id),
+    library_id     TEXT NOT NULL,
+    associated_at  TEXT NOT NULL,
+    associated_by  TEXT NOT NULL,
+    deleted_at     TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_device_model_association_active
+    ON device_model_association(device_id) WHERE deleted_at IS NULL;
+
+-- RackWire-owned gear library. This is the "gear database" the planner merges
+-- into window.RW.DEVICES: each row is a full device-library DEFINITION (the
+-- planner's device shape — id, vendor, name, model, kind, groups[]), NOT a
+-- single port group. A discovered+confirmed device becomes a row here when the
+-- operator commits its make/model, so it can be placed into a layout and reused
+-- across projects. Independent from SolariNet — this table is RackWire's own SoR
+-- for gear. Soft-deleted (deleted_at) and provenance-stamped (source, device_id)
+-- per the engineering doctrine.
+CREATE TABLE IF NOT EXISTS library (
+    id           TEXT PRIMARY KEY,
+    name         TEXT NOT NULL,
+    vendor       TEXT,
+    model        TEXT,
+    kind         TEXT,
+    ru           INTEGER,
+    draw_w       REAL,
+    poe_budget_w REAL,
+    note         TEXT,
+    -- The device's port groups, exactly as the planner group schema expects
+    -- them (k, label, glyph, count, rows, role, gbps, poe, domain, conn, ...).
+    groups_json  TEXT NOT NULL DEFAULT '[]',
+    -- Any additional planner device-def fields not broken out into columns
+    -- (budgetW, circuitA, circuitV, isBattery, upc). Kept as JSON so the shape
+    -- can grow without a migration.
+    extra_json   TEXT,
+    source       TEXT NOT NULL DEFAULT 'discovery',
+    device_id    INTEGER,
+    created_at   TEXT NOT NULL,
+    updated_at   TEXT NOT NULL,
+    deleted_at   TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_library_model ON library(vendor, model);
 """
 
 
@@ -523,3 +571,154 @@ class Store:
             "VALUES (?, ?, ?)",
             (deviceId, json.dumps(groupPayload), importedAt),
         )
+
+    # -- device ↔ library association -----------------------------------
+    def associateDevice(self, deviceId, libraryId, associatedAt, associatedBy):
+        """Persist the operator's selected library definition and make the
+        discovery row terminal. Repeating the same association is idempotent;
+        choosing another model preserves the old row as a soft-deleted audit
+        record. Returns the active association as a dict.
+        """
+        with self._lock:
+            active = self._conn.execute(
+                "SELECT * FROM device_model_association "
+                "WHERE device_id=? AND deleted_at IS NULL",
+                (deviceId,),
+            ).fetchone()
+            if active is None or active["library_id"] != libraryId:
+                if active is not None:
+                    self._conn.execute(
+                        "UPDATE device_model_association SET deleted_at=? "
+                        "WHERE id=?", (associatedAt, active["id"]),
+                    )
+                self._conn.execute(
+                    "INSERT INTO device_model_association "
+                    "(device_id, library_id, associated_at, associated_by) "
+                    "VALUES (?, ?, ?, ?)",
+                    (deviceId, libraryId, associatedAt, associatedBy),
+                )
+            self._conn.execute(
+                "UPDATE device SET status=? WHERE id=?",
+                (const.STATUS_IMPORTED, deviceId),
+            )
+            self._conn.commit()
+        return self.getDeviceAssociation(deviceId)
+
+    def getDeviceAssociation(self, deviceId):
+        rows = self._query(
+            "SELECT * FROM device_model_association "
+            "WHERE device_id=? AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
+            (deviceId,),
+        )
+        return dict(rows[0]) if rows else None
+
+    # -- gear library -----------------------------------------------------
+    def listLibrary(self):
+        """All non-deleted library models, each in the planner's device shape.
+
+        Output: list of dicts with keys id, vendor, name, model, kind, ru,
+        drawW, poeBudgetW, note, groups, source — the exact shape a
+        window.RW.DEVICES entry uses, so the planner can merge them directly.
+        Ordered by vendor+model for a stable pick list.
+        """
+        rows = self._query(
+            "SELECT * FROM library WHERE deleted_at IS NULL "
+            "ORDER BY vendor, model, id"
+        )
+        return [self._libraryRowToModel(r) for r in rows]
+
+    def getLibraryModel(self, modelId):
+        """One library model by id in planner shape, or None if absent/deleted."""
+        rows = self._query(
+            "SELECT * FROM library WHERE id=? AND deleted_at IS NULL",
+            (modelId,),
+        )
+        return self._libraryRowToModel(rows[0]) if rows else None
+
+    def upsertLibraryModel(self, model, now, deviceId=None):
+        """Insert or update a gear-library model, keyed by its id.
+
+        Input:  model (validated planner-shape dict: id, name, vendor, model,
+                kind, ru, drawW, poeBudgetW, note, groups[], plus any extra
+                device-def fields), now (ISO ts), deviceId (provenance: the
+                discovered device this came from, or None for a hand-authored
+                model).
+        Output: the model id.
+
+        Idempotent: committing the same id again updates the row in place and
+        advances updated_at while preserving created_at and the original
+        source/device provenance. Every value is bound, never interpolated.
+        """
+        modelId = model["id"]
+        # Split the planner-shape dict into first-class columns and the
+        # everything-else `extra` bag so the common fields stay queryable.
+        known = {"id", "name", "vendor", "model", "kind", "ru", "drawW",
+                 "poeBudgetW", "note", "groups", "source"}
+        extra = {k: v for k, v in model.items() if k not in known}
+        groupsJson = json.dumps(model.get("groups") or [])
+        extraJson = json.dumps(extra) if extra else None
+        source = model.get("source") or "discovery"
+
+        with self._lock:
+            existing = self._conn.execute(
+                "SELECT created_at, source, device_id FROM library WHERE id=?",
+                (modelId,),
+            ).fetchone()
+            if existing is not None:
+                # Preserve original provenance on update; only refresh content.
+                self._conn.execute(
+                    "UPDATE library SET name=?, vendor=?, model=?, kind=?, "
+                    "ru=?, draw_w=?, poe_budget_w=?, note=?, groups_json=?, "
+                    "extra_json=?, updated_at=?, deleted_at=NULL WHERE id=?",
+                    (
+                        model.get("name"), model.get("vendor"),
+                        model.get("model"), model.get("kind"),
+                        model.get("ru"), model.get("drawW"),
+                        model.get("poeBudgetW"), model.get("note"),
+                        groupsJson, extraJson, now, modelId,
+                    ),
+                )
+            else:
+                self._conn.execute(
+                    "INSERT INTO library (id, name, vendor, model, kind, ru, "
+                    "draw_w, poe_budget_w, note, groups_json, extra_json, "
+                    "source, device_id, created_at, updated_at) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (
+                        modelId, model.get("name"), model.get("vendor"),
+                        model.get("model"), model.get("kind"), model.get("ru"),
+                        model.get("drawW"), model.get("poeBudgetW"),
+                        model.get("note"), groupsJson, extraJson, source,
+                        deviceId, now, now,
+                    ),
+                )
+            self._conn.commit()
+        return modelId
+
+    def _libraryRowToModel(self, row):
+        """Map a `library` table row to the planner's device-def dict shape.
+
+        Reconstitutes the groups[] and any extra device-def fields from JSON and
+        drops SQL NULLs so the merged entry matches a hand-authored
+        window.RW.DEVICES record. Input: sqlite3.Row. Output: dict.
+        """
+        groups = json.loads(row["groups_json"]) if row["groups_json"] else []
+        extra = json.loads(row["extra_json"]) if row["extra_json"] else {}
+        model = {
+            "id": row["id"],
+            "name": row["name"],
+            "vendor": row["vendor"],
+            "model": row["model"],
+            "kind": row["kind"],
+            "ru": row["ru"],
+            "drawW": row["draw_w"],
+            "poeBudgetW": row["poe_budget_w"],
+            "note": row["note"],
+            "groups": groups,
+            "source": row["source"],
+        }
+        # Drop NULL scalars so the planner sees an absent key, not an explicit
+        # null (its merge treats "present + non-null" as authoritative).
+        model = {k: v for k, v in model.items() if v is not None}
+        model.update(extra)
+        return model

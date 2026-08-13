@@ -14,6 +14,8 @@ sys.path insert below keeps the file runnable from other cwds too.
 """
 
 import inspect
+import io
+import json
 import os
 import re
 import sys
@@ -474,6 +476,89 @@ def test_confirmDeviceExplicitOverrideWins(store):
     assert store.getDevice(devId)["confirmed_watts"] == 200
 
 
+def test_associationPersistsAndMakesQueueRowTerminal(store):
+    """Placement records the chosen library definition durably and advances
+    the discovery row out of the open review queue."""
+    from rackwire_discovery.api import routes
+    devId = store.upsertDevice(NOW1, {"mac": "00:1B:0D:11:22:44",
+                                      "ip": "10.0.0.9"})
+    ctx = {"store": store, "environ": {"REMOTE_USER": "tester"}}
+    match = re.match(r"(?P<id>\d+)", str(devId))
+
+    status, payload = routes.associateDevice(
+        ctx, match, {"libraryId": "core-switch-48"},
+    )
+    assert status == 200 and payload["status"] == "imported"
+    assert store.getDevice(devId)["status"] == "imported"
+    assert store.getDeviceAssociation(devId)["library_id"] == "core-switch-48"
+    assert store.getDeviceAssociation(devId)["associated_by"] == "tester"
+
+    status, detail = routes.getDevice(ctx, match, {})
+    assert status == 200 and detail["device"]["libraryId"] == "core-switch-48"
+    openIds = {d["id"] for d in store.listDevices()
+               if d["status"] in ("discovered", "confirmed")}
+    assert devId not in openIds
+
+
+def test_associationIsIdempotentAndReassociationIsAudited(store):
+    from rackwire_discovery.api import routes
+    devId = store.upsertDevice(NOW1, {"mac": "00:1B:0D:11:22:55"})
+    ctx = {"store": store, "environ": {}}
+    match = re.match(r"(?P<id>\d+)", str(devId))
+
+    routes.associateDevice(ctx, match, {"libraryId": "switch-a"})
+    first = store.getDeviceAssociation(devId)
+    routes.associateDevice(ctx, match, {"libraryId": "switch-a"})
+    assert store.getDeviceAssociation(devId)["id"] == first["id"]
+    routes.associateDevice(ctx, match, {"libraryId": "switch-b"})
+    assert store.getDeviceAssociation(devId)["library_id"] == "switch-b"
+    rows = store._query(
+        "SELECT library_id, deleted_at FROM device_model_association "
+        "WHERE device_id=? ORDER BY id", (devId,),
+    )
+    assert rows[0]["library_id"] == "switch-a" and rows[0]["deleted_at"]
+    assert rows[1]["library_id"] == "switch-b" and rows[1]["deleted_at"] is None
+
+
+def test_browserBackendAssociationRoundTrip(monkeypatch):
+    """Exercise the same HTTP transaction the planner uses: POST association,
+    reload detail, then reload the device list and apply the browser's open-row
+    predicate. The selected libId survives and the row does not reappear."""
+    monkeypatch.setenv("RACKWIRE_DB_PATH", ":memory:")
+    from rackwire_discovery.wsgi import App
+    app = App(config=Config(dbPath=":memory:", sessionSecret="test-secret"))
+    devId = app.store.upsertDevice(
+        NOW1, {"mac": "00:1B:0D:11:22:88", "ip": "10.0.0.12"},
+    )
+    token = app.issueCsrf()
+
+    def request(method, path, body=None):
+        raw = json.dumps(body or {}).encode("utf-8") if body is not None else b""
+        environ = {
+            "REQUEST_METHOD": method, "PATH_INFO": path, "QUERY_STRING": "",
+            "CONTENT_LENGTH": str(len(raw)), "wsgi.input": io.BytesIO(raw),
+            "HTTP_X_RACKWIRE_CSRF": token,
+        }
+        response = {}
+        data = b"".join(app(environ, lambda status, headers: response.update(
+            status=status, headers=headers,
+        )))
+        return int(response["status"].split()[0]), json.loads(data)
+
+    status, placed = request(
+        "POST", f"/api/discovery/devices/{devId}/associate",
+        {"libraryId": "core-switch-48"},
+    )
+    assert status == 200 and placed["libraryId"] == "core-switch-48"
+    _, detail = request("GET", f"/api/discovery/devices/{devId}")
+    assert detail["device"]["libraryId"] == "core-switch-48"
+    _, listing = request("GET", "/api/discovery/devices")
+    openRows = [d for d in listing["devices"]
+                if d["status"] in ("discovered", "confirmed")]
+    assert all(d["id"] != devId for d in openRows)
+    app.store.close()
+
+
 # ---------------------------------------------------------------------------
 # snmp enum / integer parsing
 # ---------------------------------------------------------------------------
@@ -520,3 +605,264 @@ def test_csrfTokenSignedAndTimeBounded(monkeypatch):
     forged = f"{nonce}.{issued}.{'0' * 64}"
     assert app.validCsrf(forged) is False
     app.store.close()
+
+
+# ---------------------------------------------------------------------------
+# gear library — store DAL, mapper.toLibraryModel, and the /library routes
+# ---------------------------------------------------------------------------
+
+def test_libraryUpsertRoundTrip(store):
+    """A committed model round-trips through the DAL in planner shape, updates
+    in place on re-commit, and preserves created_at / device provenance."""
+    model = {
+        "id": "disc-acme-sw24", "name": "ACME SW24", "vendor": "ACME",
+        "model": "SW24", "kind": "switch", "ru": 1, "drawW": 30,
+        "poeBudgetW": 180, "note": "discovered",
+        "groups": [{"k": "p1", "label": "24× 1 GbE", "count": 24, "gbps": 1,
+                    "domain": "net", "conn": "rj45"}],
+        # An extra device-def field not broken out into a column must survive.
+        "circuitA": 15,
+    }
+    modelId = store.upsertLibraryModel(model, NOW1, deviceId=42)
+    assert modelId == "disc-acme-sw24"
+
+    got = store.getLibraryModel(modelId)
+    assert got["name"] == "ACME SW24" and got["vendor"] == "ACME"
+    assert got["kind"] == "switch" and got["drawW"] == 30
+    assert got["groups"][0]["count"] == 24
+    assert got["circuitA"] == 15, "extra device-def fields survive the JSON bag"
+    assert got["source"] == "discovery"
+    # NULL scalars are dropped, not surfaced as explicit null.
+    assert "deleted_at" not in got
+
+    # listLibrary returns it; a second commit updates in place (no duplicate).
+    assert len(store.listLibrary()) == 1
+    model["drawW"] = 35
+    store.upsertLibraryModel(model, NOW2)
+    assert len(store.listLibrary()) == 1
+    assert store.getLibraryModel(modelId)["drawW"] == 35
+
+
+def test_toLibraryModelMeasuredPortsCoalesced():
+    """Measured ifTable ports collapse into groups by (speed, PoE); a full
+    device-def with a power group is produced from confirmed watts."""
+    device = {"id": 3, "mac": "00:1B:0D:AA:BB:CC", "ip": "10.0.0.5",
+              "hostname": "sw-lab", "vendor": "ACME",
+              "classification": "switch", "confirmed_watts": 30.0}
+    facts = {"ports": (
+        [{"speedMbps": 1000, "poe": True}] * 12
+        + [{"speedMbps": 1000, "poe": False}] * 4
+        + [{"speedMbps": 10000, "poe": False}] * 2
+    )}
+    lib = mapper.toLibraryModel(device, facts, {"modelGuess": "SW-18"})
+
+    assert lib["kind"] == "switch"
+    assert lib["model"] == "SW-18"
+    assert lib["id"] == "disc-acme-sw-18"
+    # 3 port groups (1G-PoE, 1G, 10G) + 1 power-in group.
+    portGroups = [g for g in lib["groups"] if g["domain"] == "net"]
+    powerGroups = [g for g in lib["groups"] if g["domain"] == "power"]
+    assert len(portGroups) == 3 and len(powerGroups) == 1
+    counts = sorted(g["count"] for g in portGroups)
+    assert counts == [2, 4, 12]
+    assert any(g.get("poe") == "poe+" for g in portGroups)
+    assert powerGroups[0]["watts"] == 30.0
+
+
+def test_toLibraryModelInferredDegradesWithoutClaude():
+    """With no ports measured and no Claude, the candidate degrades to the OUI
+    vendor + a single synthesized port group from the inferred count."""
+    device = {"id": 4, "ip": "10.0.0.6", "vendor": "Ubiquiti",
+              "hostname": "ap-attic", "classification": "ap"}
+    # Deterministic-only: inference carries no make/model, just a port guess.
+    lib = mapper.toLibraryModel(device, {"ports": []},
+                                {"portsGuess": 1, "gbps": 2.5, "poe": False})
+    assert lib["vendor"] == "Ubiquiti"
+    assert lib["model"] == "ap-attic"      # falls back to hostname
+    assert lib["kind"] == "ap"
+    netGroups = [g for g in lib["groups"] if g["domain"] == "net"]
+    assert len(netGroups) == 1 and netGroups[0]["count"] == 1
+    assert netGroups[0]["gbps"] == 2.5
+
+
+def test_claudeValidateMakeModel():
+    """_validate surfaces make/model/name and rejects the 'unknown'/empty
+    spellings a model emits when it cannot name a device."""
+    out = claude._validate({
+        "classification": "switch", "vendorGuess": "  Cisco ",
+        "modelGuess": "Catalyst 2960X", "nameGuess": "unknown",
+    })
+    assert out["vendorGuess"] == "Cisco"        # trimmed
+    assert out["modelGuess"] == "Catalyst 2960X"
+    assert out["nameGuess"] is None             # 'unknown' -> None
+
+
+def test_deviceCandidateAndCommitRoute(store):
+    """The candidate route recommends a library model from the latest inference;
+    committing it then makes a subsequent candidate report a match."""
+    from rackwire_discovery.api import routes
+    devId = store.upsertDevice(NOW1, {"mac": "00:1B:0D:11:22:33",
+                                      "ip": "10.0.0.2", "vendor": "ACME"})
+    store.setDeviceClassification(devId, "switch", "access", 0.9, "deterministic")
+    store.recordInference(
+        devId, "claude", "claude-sonnet-5", {},
+        {"classification": "switch", "vendorGuess": "ACME",
+         "modelGuess": "SW-24", "portsGuess": 24, "gbps": 1, "poe": True,
+         "watts": 30, "confidence": 0.8, "rationale": "24 GbE + LLDP"},
+        NOW1,
+    )
+    ctx = {"store": store, "environ": {}, "config": None}
+    match = re.match(r"(?P<id>\d+)", str(devId))
+
+    status, payload = routes.deviceCandidate(ctx, match, {})
+    assert status == 200
+    cand = payload["candidate"]
+    assert cand["vendor"] == "ACME" and cand["model"] == "SW-24"
+    assert cand["id"] == "disc-acme-sw-24"
+    assert payload["recommendation"]["source"] == "claude"
+    assert payload["match"] is None, "nothing committed yet"
+
+    # Commit the (validated) candidate, then re-request: now it matches.
+    body = dict(cand)
+    body["deviceId"] = devId
+    status, payload = routes.commitLibraryModel(ctx, None, body)
+    assert status == 200 and payload["model"]["id"] == "disc-acme-sw-24"
+
+    status, payload = routes.deviceCandidate(ctx, match, {})
+    assert payload["match"] == "disc-acme-sw-24"
+
+
+def test_selectionInferenceUsesFreshClaudeResult(store, monkeypatch):
+    """The selection transaction records deterministic + Claude and candidate
+    construction consumes the newest successful Claude row."""
+    from rackwire_discovery.api import routes
+    devId = store.upsertDevice(NOW1, {"mac": "00:1B:0D:11:22:66",
+                                      "ip": "10.0.0.10", "vendor": "Old"})
+    store.recordInference(devId, "claude", "old", {},
+                          {"vendorGuess": "Stale", "modelGuess": "S-1"}, NOW1)
+    fresh = {"classification": "switch", "vendorGuess": "Fresh",
+             "modelGuess": "F-24", "portsGuess": 24, "confidence": 0.9}
+    monkeypatch.setattr(routes.claudeInfer, "infer", lambda facts, cfg: fresh)
+    cfg = Config(claudeEnabled=True, anthropicApiKey="test", claudeModel="test")
+    ctx = {"store": store, "environ": {}, "config": cfg}
+    match = re.match(r"(?P<id>\d+)", str(devId))
+
+    status, result = routes.inferDevice(ctx, match, {"useClaude": True})
+    assert status == 200 and result["claude"] == fresh
+    rows = store.getInferences(devId)
+    assert [rows[0]["engine"], rows[1]["engine"]] == ["claude", "deterministic"]
+    _, payload = routes.deviceCandidate(ctx, match, {})
+    assert payload["candidate"]["vendor"] == "Fresh"
+    assert payload["candidate"]["model"] == "F-24"
+    assert payload["recommendation"]["source"] == "claude"
+
+
+def test_selectionInferenceFallsBackToFreshDeterministic(store, monkeypatch):
+    """A Claude failure never revives an older Claude make/model."""
+    from rackwire_discovery.api import routes
+    devId = store.upsertDevice(NOW1, {"mac": "00:1B:0D:11:22:77",
+                                      "ip": "10.0.0.11", "vendor": "Current"})
+    store.recordInference(devId, "claude", "old", {},
+                          {"vendorGuess": "Stale", "modelGuess": "S-1"}, NOW1)
+    monkeypatch.setattr(routes.claudeInfer, "infer", lambda facts, cfg: None)
+    cfg = Config(claudeEnabled=True, anthropicApiKey="test", claudeModel="test")
+    ctx = {"store": store, "environ": {}, "config": cfg}
+    match = re.match(r"(?P<id>\d+)", str(devId))
+
+    status, result = routes.inferDevice(ctx, match, {"useClaude": True})
+    assert status == 200 and result["claude"] is None
+    _, payload = routes.deviceCandidate(ctx, match, {})
+    assert payload["recommendation"]["source"] == "deterministic"
+    assert payload["candidate"]["vendor"] == "Current"
+    assert payload["candidate"]["model"] != "S-1"
+
+
+def test_commitLibraryModelRejectsAndSanitizes(store):
+    """commitLibraryModel requires a name + a group, drops unknown keys, and
+    derives a key-safe id when the client did not pin one."""
+    from rackwire_discovery.api import routes
+    ctx = {"store": store, "environ": {}, "config": None}
+
+    # Missing groups -> 400.
+    status, _ = routes.commitLibraryModel(ctx, None, {"name": "No Ports"})
+    assert status == 400
+
+    # Unknown top-level key and unknown group key are stripped; id derived.
+    status, payload = routes.commitLibraryModel(ctx, None, {
+        "name": "Widget", "vendor": "ACME", "model": "W1",
+        "evil": "DROP TABLE device", "drawW": "45",
+        "groups": [{"k": "p1", "label": "2× 1 GbE", "count": 2,
+                    "gbps": 1, "junk": "x"}],
+    })
+    assert status == 200
+    stored = payload["model"]
+    assert stored["id"] == "disc-acme-w1"
+    assert "evil" not in stored
+    assert stored["drawW"] == 45          # coerced from string
+    assert "junk" not in stored["groups"][0]
+
+    # Client identity is ignored; edited vendor/model own the derived id.
+    _, seedish = routes.commitLibraryModel(ctx, None, {
+        "id": "core-switch-48", "name": "Impostor", "vendor": "Safe",
+        "model": "Edited",
+        "groups": [{"k": "p1", "label": "1 GbE", "count": 1}],
+    })
+    assert seedish["model"]["id"] == "disc-safe-edited"
+    _, roundtrip = routes.commitLibraryModel(ctx, None, {
+        "id": "disc-stale-value", "name": "Catalyst", "vendor": "Cisco",
+        "model": "C9200",
+        "groups": [{"k": "p1", "label": "1 GbE", "count": 1}],
+    })
+    assert roundtrip["model"]["id"] == "disc-cisco-c9200"
+
+
+def test_commitLibraryModelCollisionReturns409(store):
+    """Distinct edited identities that slug to the same id never overwrite."""
+    from rackwire_discovery.api import routes
+    ctx = {"store": store, "environ": {}, "config": None}
+    group = [{"k": "p1", "label": "Ethernet", "count": 1}]
+    status, _ = routes.commitLibraryModel(ctx, None, {
+        "name": "First", "vendor": "AC-ME", "model": "SW 1", "groups": group,
+    })
+    assert status == 200
+    status, payload = routes.commitLibraryModel(ctx, None, {
+        "name": "Second", "vendor": "AC ME", "model": "SW-1", "groups": group,
+    })
+    assert status == 409 and payload["error"] == "library_id_collision"
+    assert store.getLibraryModel("disc-ac-me-sw-1")["name"] == "First"
+
+
+@pytest.mark.parametrize("field,value", [
+    ("count", 10_000_000), ("count", 0), ("count", 1.5),
+    ("rows", 3), ("gbps", 10_000_000), ("watts", 10_000_000),
+])
+def test_commitLibraryModelRejectsUnsafeGroupNumbers(store, field, value):
+    from rackwire_discovery.api import routes
+    group = {"k": "p1", "label": "Ethernet", "count": 2, field: value}
+    status, payload = routes.commitLibraryModel(
+        {"store": store, "environ": {}, "config": None}, None,
+        {"name": "Unsafe", "groups": [group]},
+    )
+    assert status == 400 and payload["error"] == "invalid_model"
+
+
+def test_commitLibraryModelAcceptsUpperSafePortBound(store):
+    from rackwire_discovery.api import routes
+    status, payload = routes.commitLibraryModel(
+        {"store": store, "environ": {}, "config": None}, None,
+        {"name": "Dense patch panel",
+         "groups": [{"k": "p1", "label": "Ports", "count": 512,
+                     "rows": 512}]},
+    )
+    assert status == 200 and payload["model"]["groups"][0]["count"] == 512
+
+
+def test_commitLibraryModelRejectsTooManyGroups(store):
+    from rackwire_discovery.api import routes
+    groups = [{"k": f"p{i}", "label": "Port", "count": 1}
+              for i in range(65)]
+    status, payload = routes.commitLibraryModel(
+        {"store": store, "environ": {}, "config": None}, None,
+        {"name": "Unsafe", "groups": groups},
+    )
+    assert status == 400 and "at most 64" in payload["detail"]
