@@ -29,7 +29,8 @@ Home: `rackwire.studio` · App: `app.rackwire.studio`.
 | Path | What it is |
 |---|---|
 | `index.html` | The whole app — open it in a browser. No build step. |
-| `device-library.js` | `window.RW` — port geometry, cable standards, seeded devices, layout engine. |
+| `device-library.js` | `window.RW` — the library engine: port geometry, cable standards, layout, and the search/index registry. Device data lives in `devices/*.js`. |
+| `devices/*.js` | Per-vendor catalog modules, each a static script calling `RW.addDevices([…])`. See `docs/HANDOFF.md` §6. |
 | `live-adapter.js` | `window.RWLive` — telemetry transport layer; contract in the header comment. |
 | `support.js` | Generated, pinned component-format runtime. Do not edit; see `docs/SUPPORT-RUNTIME.md`. |
 | `vendor/` | Vendored React, ReactDOM and Babel — no CDN at runtime. |
