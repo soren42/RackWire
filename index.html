@@ -736,6 +736,7 @@ class Component extends DCLogic {
     this._stage = null;
     this._wedge = '';
     this._wedgeT = 0;
+    this._discoReq = 0;
   }
 
   // ---------- persistence ----------
@@ -883,7 +884,7 @@ class Component extends DCLogic {
         if (this._wedge.length >= 6) this.handleCode(this._wedge.trim());
         this._wedge = '';
       } else if (e.key.length === 1) this._wedge += e.key;
-      if (e.key === 'Escape') { clearTimeout(this._discoT); this.setState({ pending: null, ghost: null, cm: null, menu: false, libOpen: false, scan: null, disco: null, search: null, help: false, versions: null }); }
+      if (e.key === 'Escape') { clearTimeout(this._discoT); this._discoReq += 1; this.setState({ pending: null, ghost: null, cm: null, menu: false, libOpen: false, scan: null, disco: null, search: null, help: false, versions: null }); }
       if ((e.key === 'Backspace' || e.key === 'Delete') && this.state.sel.length) { e.preventDefault(); this.deleteSelection(); }
     };
     window.addEventListener('keydown', this._kd);
@@ -1099,6 +1100,7 @@ class Component extends DCLogic {
     if (this._themeObs) this._themeObs.disconnect();
     clearTimeout(this._planT);
     clearTimeout(this._discoT);
+    this._discoReq += 1;
     if (window.RWLive) window.RWLive.stop();
   }
 
@@ -2033,16 +2035,19 @@ class Component extends DCLogic {
      rather than erroring. This reuses the existing addDevice()/library-merge
      machinery rather than inventing a second placement path. */
   discoPatch(patch) {
+    if (!this.state.disco) return;
     this.setState({ disco: Object.assign({}, this.state.disco, patch) });
   }
   async openDiscover() {
+    const req = ++this._discoReq;
     this.setState({ menu: false, disco: { open: true, msg: 'Checking the discovery service…', subnet: '', devices: [], sel: null, cand: null, rec: null, match: null, assocTo: '', scanning: false, busy: false } });
     if (!rwOnline()) { this.discoPatch({ online: false, msg: 'Discovery needs the hosted RackWire service; it is unavailable when the planner is opened from a file. Open https://rackwire.akoria.net/ instead.' }); return; }
     const h = await dxGet('/health');
+    if (req !== this._discoReq || !this.state.disco) return;
     if (!h) { this.discoPatch({ online: false, msg: 'The discovery service did not respond. It may be offline or this page is not served from the RackWire host.' }); return; }
     rwCsrf = h.csrf || '';
     this.discoPatch({ online: true, claude: !!h.claudeEnabled, msg: h.claudeEnabled ? 'Claude inference is on: models will be recommended automatically.' : 'Claude inference is off: devices are classified deterministically — set make/model by hand.' });
-    this.discoLoadDevices();
+    this.discoLoadDevices(req);
   }
   async discoScan() {
     const d = this.state.disco;
@@ -2067,8 +2072,9 @@ class Component extends DCLogic {
     this.discoPatch({ scanning: false, msg: run.status === 'done' ? 'Scan complete.' : ('Scan ' + run.status + (run.error ? ': ' + run.error : '') + '.') });
     this.discoLoadDevices();
   }
-  async discoLoadDevices() {
+  async discoLoadDevices(req = this._discoReq) {
     const j = await dxGet('/devices');
+    if (req !== this._discoReq || !this.state.disco) return;
     const devices = (j && j.devices) || [];
     // Surface everything not already rejected/imported; newest-seen first is not
     // available (ordered by ip server-side), which is a fine stable order.
@@ -2077,8 +2083,15 @@ class Component extends DCLogic {
     if (!open.length) this.discoPatch({ msg: 'No devices to review yet. Run a scan to find some.' });
   }
   async discoSelect(deviceId) {
+    const req = ++this._discoReq;
     this.discoPatch({ sel: deviceId, busy: true, cand: null, rec: null, match: null, assocTo: '' });
+    // Refresh inference at the moment the operator selects a row. Claude is
+    // requested explicitly when configured; a null response is intentionally
+    // non-fatal because /infer always records deterministic inference first.
+    await dxPost('/devices/' + deviceId + '/infer', { useClaude: true });
+    if (req !== this._discoReq || !this.state.disco || this.state.disco.sel !== deviceId) return;
     const j = await dxGet('/devices/' + deviceId + '/candidate');
+    if (req !== this._discoReq || !this.state.disco || this.state.disco.sel !== deviceId) return;
     if (!j || !j.candidate) { this.discoPatch({ busy: false, msg: 'Could not build a recommendation for that device.' }); return; }
     this.discoPatch({ busy: false, cand: j.candidate, rec: j.recommendation || {}, match: j.match || null, assocTo: j.match || '' });
   }
@@ -2109,8 +2122,11 @@ class Component extends DCLogic {
     if (!c) return;
     if (!c.name || !(c.groups || []).length) { this.discoPatch({ msg: 'A name and at least one port group are required.' }); return; }
     this.discoPatch({ busy: true, msg: 'Saving model to the gear library…' });
+    const req = ++this._discoReq;
     const body = Object.assign({}, c, { deviceId: d.sel });
+    delete body.id; // server derives identity from the operator-edited fields
     const j = await dxPost('/library', body);
+    if (req !== this._discoReq || !this.state.disco) return;
     if (!j || !j.model) { this.discoPatch({ busy: false, msg: 'Could not save the model to the library.' }); return; }
     // Merge the freshly-committed model into the in-memory library so addDevice
     // can resolve it. Mark the device reviewed BEFORE placing: /library upsert
@@ -2122,6 +2138,12 @@ class Component extends DCLogic {
       this.discoPatch({ busy: false, msg: 'Model saved, but marking the device reviewed failed — it stayed in the queue. Try placing it again.' });
       return;
     }
+    if (req !== this._discoReq || !this.state.disco) return;
+    if (d.sel && !(await dxPost('/devices/' + d.sel + '/associate', { libraryId: j.model.id }))) {
+      if (req === this._discoReq && this.state.disco) this.discoPatch({ busy: false, msg: 'Model saved, but recording its device association failed — it stayed in the queue. Try placing it again.' });
+      return;
+    }
+    if (req !== this._discoReq || !this.state.disco) return;
     this.discoPlace(j.model.id, d);
   }
   // Associate this discovered device with an EXISTING library model and place it.
@@ -2130,12 +2152,19 @@ class Component extends DCLogic {
     const libId = d.assocTo || d.match;
     if (!libId) { this.discoPatch({ msg: 'Pick a model to associate with first.' }); return; }
     this.discoPatch({ busy: true });
+    const req = ++this._discoReq;
     // Fail closed on confirm (see discoCommitNew): don't drop from the queue and
     // place unless the backend recorded the review.
     if (d.sel && !(await dxPost('/devices/' + d.sel + '/confirm', {}))) {
       this.discoPatch({ busy: false, msg: 'Could not mark the device reviewed — it stayed in the queue. Try again.' });
       return;
     }
+    if (req !== this._discoReq || !this.state.disco) return;
+    if (d.sel && !(await dxPost('/devices/' + d.sel + '/associate', { libraryId: libId }))) {
+      if (req === this._discoReq && this.state.disco) this.discoPatch({ busy: false, msg: 'Could not record the device association — it stayed in the queue. Try again.' });
+      return;
+    }
+    if (req !== this._discoReq || !this.state.disco) return;
     this.discoPlace(libId, d);
   }
   // Shared placement: add the device to the layout carrying its management IP as
@@ -2148,9 +2177,20 @@ class Component extends DCLogic {
   }
   async discoReject() {
     const d = this.state.disco;
-    if (d.sel) await dxPost('/devices/' + d.sel + '/reject', {});
+    const req = ++this._discoReq;
+    this.discoPatch({ busy: true });
+    if (d.sel && !(await dxPost('/devices/' + d.sel + '/reject', {}))) {
+      if (req === this._discoReq && this.state.disco) this.discoPatch({ busy: false, msg: 'Could not dismiss the device — it stayed in the queue. Try again.' });
+      return;
+    }
+    if (req !== this._discoReq || !this.state.disco) return;
     const rest = d.devices.filter((x) => x.id !== d.sel);
     this.discoPatch({ devices: rest, sel: null, cand: null, rec: null, match: null, msg: 'Device dismissed.' });
+  }
+  closeDiscover() {
+    clearTimeout(this._discoT);
+    this._discoReq += 1;
+    this.setState({ disco: null });
   }
   /* Summarize the candidate's network ports for the editor: the first net group
      is editable (count/speed/PoE); any extra measured net groups are noted so
@@ -2795,7 +2835,7 @@ class Component extends DCLogic {
       discoCand: s.disco && s.disco.cand,
       discoNetPorts: this.discoNetSummary(s.disco && s.disco.cand),
       discoBadge: this.discoBadge(s.disco),
-      discoClose: () => { clearTimeout(this._discoT); this.setState({ disco: null }); },
+      discoClose: () => this.closeDiscover(),
       discoSubnet: (e) => this.discoPatch({ subnet: e.target.value }),
       discoScanGo: () => this.discoScan(),
       discoName: (e) => this.discoField('name', e.target.value),

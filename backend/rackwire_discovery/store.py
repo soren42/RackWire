@@ -132,6 +132,21 @@ CREATE TABLE IF NOT EXISTS import_map (
     imported_at TEXT NOT NULL
 );
 
+-- Durable link between a discovered device and the planner library definition
+-- selected by the operator. Re-association soft-deletes the former row so the
+-- audit trail remains available while the partial unique index guarantees one
+-- active association per discovered device.
+CREATE TABLE IF NOT EXISTS device_model_association (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    device_id      INTEGER NOT NULL REFERENCES device(id),
+    library_id     TEXT NOT NULL,
+    associated_at  TEXT NOT NULL,
+    associated_by  TEXT NOT NULL,
+    deleted_at     TEXT
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_device_model_association_active
+    ON device_model_association(device_id) WHERE deleted_at IS NULL;
+
 -- RackWire-owned gear library. This is the "gear database" the planner merges
 -- into window.RW.DEVICES: each row is a full device-library DEFINITION (the
 -- planner's device shape — id, vendor, name, model, kind, groups[]), NOT a
@@ -556,6 +571,46 @@ class Store:
             "VALUES (?, ?, ?)",
             (deviceId, json.dumps(groupPayload), importedAt),
         )
+
+    # -- device ↔ library association -----------------------------------
+    def associateDevice(self, deviceId, libraryId, associatedAt, associatedBy):
+        """Persist the operator's selected library definition and make the
+        discovery row terminal. Repeating the same association is idempotent;
+        choosing another model preserves the old row as a soft-deleted audit
+        record. Returns the active association as a dict.
+        """
+        with self._lock:
+            active = self._conn.execute(
+                "SELECT * FROM device_model_association "
+                "WHERE device_id=? AND deleted_at IS NULL",
+                (deviceId,),
+            ).fetchone()
+            if active is None or active["library_id"] != libraryId:
+                if active is not None:
+                    self._conn.execute(
+                        "UPDATE device_model_association SET deleted_at=? "
+                        "WHERE id=?", (associatedAt, active["id"]),
+                    )
+                self._conn.execute(
+                    "INSERT INTO device_model_association "
+                    "(device_id, library_id, associated_at, associated_by) "
+                    "VALUES (?, ?, ?, ?)",
+                    (deviceId, libraryId, associatedAt, associatedBy),
+                )
+            self._conn.execute(
+                "UPDATE device SET status=? WHERE id=?",
+                (const.STATUS_IMPORTED, deviceId),
+            )
+            self._conn.commit()
+        return self.getDeviceAssociation(deviceId)
+
+    def getDeviceAssociation(self, deviceId):
+        rows = self._query(
+            "SELECT * FROM device_model_association "
+            "WHERE device_id=? AND deleted_at IS NULL ORDER BY id DESC LIMIT 1",
+            (deviceId,),
+        )
+        return dict(rows[0]) if rows else None
 
     # -- gear library -----------------------------------------------------
     def listLibrary(self):

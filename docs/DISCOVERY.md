@@ -113,7 +113,8 @@ the run is marked `done` (or `error` with the message recorded).
 **Scan authorization:** a requested subnet must fall inside
 `RACKWIRE_ALLOWED_SUBNETS` or the API returns `403 subnet_forbidden`. An
 omitted subnet defaults to the host's own interface network — never anything
-wider.
+wider — but that derived network must still be allowlisted. An empty allowlist
+denies all scans.
 
 ---
 
@@ -164,7 +165,8 @@ human confirms every classification before it can reach a plan (§5).
 A device's lifecycle: `discovered → confirmed | rejected → imported`.
 
 1. **Review.** The planner's Discover panel lists discovered devices. Selecting
-   one calls `GET /devices/{id}/candidate`, which returns a **recommended
+   one first calls `POST /devices/{id}/infer` and then
+   `GET /devices/{id}/candidate`, which returns a **recommended
    gear-library model** (make, model, kind, ports, draw) built by the mapper
    from the best available inference (Claude when enabled, else deterministic),
    plus a match against any existing library model and a provenance badge.
@@ -178,7 +180,10 @@ A device's lifecycle: `discovered → confirmed | rejected → imported`.
    with the discovered management IP attached as `mgmtIp`/`liveKey`. The device
    is marked `confirmed` (`POST /devices/{id}/confirm`).
    *Alternatively* the operator picks an existing library model to **associate**
-   with instead of saving a new one — same placement, no new definition.
+   with instead of saving a new one — same placement, no new definition. In
+   either path `POST /devices/{id}/associate` durably records the selected
+   library id with operator/timestamp provenance and advances the device to
+   terminal `imported`; placement fails closed if that write does not succeed.
 4. **Dismiss** (`POST /devices/{id}/reject`) — hidden from the queue, retained
    for audit (soft delete semantics; nothing is destroyed).
 
@@ -200,7 +205,7 @@ into a frozen `Config`. In production the variables live in the systemd
 | Variable | Default | Meaning |
 |---|---|---|
 | `RACKWIRE_DB_PATH` | `/var/lib/rackwire/discovery.db` | SQLite database location. |
-| `RACKWIRE_ALLOWED_SUBNETS` | *(empty)* | Comma-separated CIDR ranges the operator authorizes for scanning. Requests outside these are refused (403). Empty means "derive the default from the host's own interface" — never the whole internet. |
+| `RACKWIRE_ALLOWED_SUBNETS` | *(empty)* | Comma-separated CIDR ranges the operator authorizes for scanning. Requests outside these are refused (403). **Empty denies every scan**, including an omitted-subnet request whose host-local default was derived. Configure at least one range to enable discovery. |
 | `RACKWIRE_SNMP_COMMUNITY` | `public` | SNMP v2c read community. Secret — never logged. |
 | `RACKWIRE_SNMP_VERSION` | `2c` | SNMP version (`2c` or `3`). |
 | `RACKWIRE_SNMP_V3_USER` | *(empty)* | SNMPv3 username. |
@@ -299,11 +304,13 @@ List devices. Query: `?status=discovered|confirmed|rejected|imported`
 ### GET `/api/discovery/devices/{id}`
 
 Full detail: the device row plus `ports` (ifTable), `services` (nmap),
-`neighbors` (LLDP), and `inferences` (full audit history).
+`neighbors` (LLDP), `inferences` (full audit history), and the active durable
+`association`/`libraryId` when a model has been selected.
 
 ```
 200 {"device": {"id": 12, ..., "ports": [...], "services": [...],
-                "neighbors": [...], "inferences": [...]}}
+                "neighbors": [...], "inferences": [...],
+                "libraryId": "core-switch-48", "association": {...}}}
 404 {"error": "not_found", "detail": "device"}
 ```
 
@@ -346,6 +353,44 @@ POST /api/discovery/devices/12/confirm
 ```
 200 {"deviceId": 12, "status": "rejected"}
 ```
+
+### GET `/api/discovery/devices/{id}/candidate`
+
+Build the editable planner-library recommendation from the newest stored
+inference. The UI calls `/infer` immediately before this request, so this is a
+fresh Claude result when available and the fresh deterministic result when
+Claude is disabled or fails.
+
+```
+200 {"candidate": {"id": "disc-acme-sw-24", "vendor": "ACME",
+                    "model": "SW-24", "groups": [...]},
+     "recommendation": {"source": "claude", "confidence": 0.86, ...},
+     "match": null}
+```
+
+### POST `/api/discovery/devices/{id}/associate`
+
+Body: `{libraryId}`. Persist the operator-selected built-in or discovery
+library definition and mark the device `imported`. Repeating the same request
+is idempotent; choosing a different model soft-deletes the prior association
+for audit.
+
+```
+POST /api/discovery/devices/12/associate
+{"libraryId": "core-switch-48"}
+
+200 {"deviceId": 12, "libraryId": "core-switch-48", "status": "imported",
+     "association": {...}}
+```
+
+### GET/POST `/api/discovery/library`
+
+`GET` lists the server-backed planner definitions. `POST` validates and stores
+one. The server ignores any client-supplied `id`, derives
+`disc-<vendor-model>` from the edited identity, returns `409` if that slug is
+already owned by a different identity, and rejects unsafe port/power geometry
+with `400` (including group count outside `1..512`, rows outside `1..count`,
+or more than 64 groups).
 
 ### POST `/api/discovery/plan/build`
 
@@ -432,7 +477,8 @@ RACKWIRE_ALLOWED_SUBNETS=10.20.0.0/24,192.168.50.0/24
 
 then `sudo systemctl restart rackwire-discovery.service`. Only scan networks
 you own or administer — discovery enforces the allowlist, but the allowlist
-is your statement of authorization.
+is your statement of authorization. Leaving `RACKWIRE_ALLOWED_SUBNETS` empty
+is fail-closed: all scan requests are denied.
 
 ---
 

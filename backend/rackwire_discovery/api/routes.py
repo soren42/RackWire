@@ -39,6 +39,7 @@ def buildRoutes():
         ("GET", r(r"/api/discovery/devices/(?P<id>\d+)"), getDevice),
         ("POST", r(r"/api/discovery/devices/(?P<id>\d+)/infer"), inferDevice),
         ("POST", r(r"/api/discovery/devices/(?P<id>\d+)/confirm"), confirmDevice),
+        ("POST", r(r"/api/discovery/devices/(?P<id>\d+)/associate"), associateDevice),
         ("POST", r(r"/api/discovery/devices/(?P<id>\d+)/reject"), rejectDevice),
         ("POST", r(r"/api/discovery/plan/build"), buildPlan),
         ("GET", r(r"/api/discovery/topology"), topology),
@@ -187,6 +188,9 @@ def getDevice(ctx, match, body):
     dev["services"] = store.getServices(deviceId)
     dev["neighbors"] = store.getNeighbors(deviceId)
     dev["inferences"] = store.getInferences(deviceId)
+    association = store.getDeviceAssociation(deviceId)
+    dev["association"] = association
+    dev["libraryId"] = association["library_id"] if association else None
     return 200, {"device": dev}
 
 
@@ -308,6 +312,31 @@ def rejectDevice(ctx, match, body):
     return 200, {"deviceId": deviceId, "status": const.STATUS_REJECTED}
 
 
+def associateDevice(ctx, match, body):
+    """Persist the library definition chosen for a discovered device.
+
+    Association is the terminal step of planner placement: it records the
+    selected library id with provenance and advances the queue row to imported.
+    The library id may name either a built-in client definition or a
+    server-backed discovery definition, so existence is deliberately not
+    constrained to the server's library table.
+    """
+    store = ctx["store"]
+    deviceId = int(match.group("id"))
+    if not store.getDevice(deviceId):
+        return 404, {"error": "not_found", "detail": "device"}
+    libraryId = _cleanLibraryId((body or {}).get("libraryId"))
+    if libraryId is None:
+        return 400, {"error": "invalid_library_id",
+                     "detail": "libraryId must be a valid planner model id"}
+    association = store.associateDevice(
+        deviceId, libraryId, nowIso(), _identity(ctx),
+    )
+    return 200, {"deviceId": deviceId, "libraryId": libraryId,
+                 "status": const.STATUS_IMPORTED,
+                 "association": association}
+
+
 def buildPlan(ctx, match, body):
     """
     Build a planner payload from confirmed devices. Body: {deviceIds?} (default:
@@ -367,11 +396,11 @@ def deviceCandidate(ctx, match, body):
 
     facts = orchestrator.deviceFacts(store, deviceId)
 
-    # Prefer the Claude inference (it carries make/model); fall back to the
-    # latest of any engine so a deterministic-only deployment still gets a
-    # class-driven candidate. None is fine — the mapper degrades gracefully.
-    inferenceRow = (store.getLatestInference(deviceId, engine="claude")
-                    or store.getLatestInference(deviceId))
+    # Selection runs a fresh deterministic inference and, when available, a
+    # fresh Claude inference. The newest row is therefore the correct result:
+    # Claude when that call succeeded, deterministic when it failed. Preferring
+    # any historical Claude row here would resurrect stale recommendations.
+    inferenceRow = store.getLatestInference(deviceId)
     inference = _loadJson(inferenceRow.get("output_json")) if inferenceRow else {}
     engine = inferenceRow.get("engine") if inferenceRow else "none"
 
@@ -408,14 +437,17 @@ def listLibrary(ctx, match, body):
 def commitLibraryModel(ctx, match, body):
     """Commit a validated gear-library model (the human-in-the-loop gate).
 
-    Body: a planner device-def dict (id?, name, vendor, model, kind, ru, drawW,
+    Body: a planner device-def dict (name, vendor, model, kind, ru, drawW,
     poeBudgetW, note, groups[]) plus optional deviceId provenance. Every field
-    is sanitized here — this is a mutation endpoint reachable by any same-origin
-    client, so nothing from the body is trusted verbatim. Returns the stored
-    model in canonical shape.
+    is sanitized here and any client id is ignored — this is a mutation endpoint
+    reachable by any same-origin client, so nothing from the body is trusted
+    verbatim. Returns the stored model in canonical shape.
     """
     store = ctx["store"]
-    model = _sanitizeLibraryModel(body or {})
+    try:
+        model = _sanitizeLibraryModel(body or {})
+    except ValueError as exc:
+        return 400, {"error": "invalid_model", "detail": str(exc)}
     if model is None:
         return 400, {"error": "invalid_model",
                      "detail": "a name and at least one group are required"}
@@ -426,6 +458,10 @@ def commitLibraryModel(ctx, match, body):
             deviceId = int(rawDeviceId)
         except (TypeError, ValueError):
             deviceId = None
+    existing = store.getLibraryModel(model["id"])
+    if existing and not _sameLibraryIdentity(existing, model):
+        return 409, {"error": "library_id_collision",
+                     "detail": "vendor/model resolves to an existing different model"}
     modelId = store.upsertLibraryModel(model, nowIso(), deviceId=deviceId)
     return 200, {"model": store.getLibraryModel(modelId)}
 
@@ -434,7 +470,7 @@ def commitLibraryModel(ctx, match, body):
 
 # The device-def fields a client may set on a committed library model. Anything
 # outside this set is dropped — a mutation endpoint never trusts the body shape.
-_LIB_STR_FIELDS = ("id", "name", "vendor", "model", "kind", "note")
+_LIB_STR_FIELDS = ("name", "vendor", "model", "kind", "note")
 _LIB_NUM_FIELDS = ("ru", "drawW", "poeBudgetW", "budgetW", "circuitA", "circuitV")
 # The whitelisted keys of a single port group, with their coercion kind.
 _GROUP_STR_KEYS = ("k", "label", "glyph", "role", "domain", "conn", "poe")
@@ -442,18 +478,33 @@ _GROUP_NUM_KEYS = ("count", "rows", "gbps", "watts", "amps", "volts", "poeW",
                    "poeDrawW")
 _GROUP_BOOL_KEYS = ("batt",)
 
+_MODEL_NUM_LIMITS = {
+    "ru": (0, 100), "drawW": (0, 1_000_000),
+    "poeBudgetW": (0, 1_000_000), "budgetW": (0, 1_000_000),
+    "circuitA": (0, 10_000), "circuitV": (0, 10_000),
+}
+_GROUP_NUM_LIMITS = {
+    "count": (1, 512), "gbps": (0, 1_600),
+    "watts": (0, 1_000_000), "amps": (0, 10_000),
+    "volts": (0, 10_000), "poeW": (0, 1_000_000),
+    "poeDrawW": (0, 1_000_000),
+}
+_MAX_GROUPS = 64
+
 
 def _sanitizeLibraryModel(body):
     """Coerce an untrusted body into a safe library model, or None if invalid.
 
-    Enforces the whitelist above, derives a key-safe id from vendor+model when
-    the client did not supply one, and requires a name plus at least one
-    sanitized group (a model with no ports cannot be placed meaningfully).
+    Enforces the whitelist above, derives a key-safe id from vendor+model, and
+    requires a name plus at least one sanitized group (a model with no ports
+    cannot be placed meaningfully).
     """
     import re
     name = _cleanText(body.get("name"))
-    groups = [g for g in (_sanitizeGroup(x) for x in _asList(body.get("groups")))
-              if g is not None]
+    rawGroups = _asList(body.get("groups"))
+    if len(rawGroups) > _MAX_GROUPS:
+        raise ValueError(f"groups may contain at most {_MAX_GROUPS} entries")
+    groups = [g for g in (_sanitizeGroup(x) for x in rawGroups) if g is not None]
     if not name or not groups:
         return None
 
@@ -465,28 +516,18 @@ def _sanitizeLibraryModel(body):
         if val is not None:
             model[key] = val
     for key in _LIB_NUM_FIELDS:
-        val = _num(body.get(key))
+        val = _boundedNum(body.get(key), key, *_MODEL_NUM_LIMITS[key])
         if val is not None:
             model[key] = val
     if isinstance(body.get("isBattery"), bool):
         model["isBattery"] = body["isBattery"]
 
-    # Derive a stable id when the client did not pin one: 'disc-<vendor-model>'.
-    # Whether derived or client-pinned, the id is slugified AND locked into the
-    # 'disc-' namespace. This is a security boundary, not cosmetics: the planner
-    # merges library models over its built-in catalog by id (server wins for
-    # non-null fields), so a body that pinned id to a built-in device id (e.g.
-    # 'core-switch-48') would silently shadow that seed on the next load. Forcing
-    # the prefix means a committed model can only ever collide with another
-    # committed model. Re-slugging an already-'disc-' id is idempotent, so the
-    # candidate round-trip (getLibraryModel(candidate.id)) is unaffected.
-    pinned = model.get("id")
-    if pinned:
-        slug = re.sub(r"[^a-z0-9]+", "-", str(pinned).lower()).strip("-")
-    else:
-        basis = " ".join(p for p in (model.get("vendor"), model.get("model"))
-                         if p).strip() or name
-        slug = re.sub(r"[^a-z0-9]+", "-", basis.lower()).strip("-")
+    # The server owns identity: edited vendor/model determine the id. Ignoring
+    # a candidate's stale client id prevents the operator from changing fields
+    # while accidentally overwriting the originally suggested model.
+    basis = " ".join(p for p in (model.get("vendor"), model.get("model"))
+                     if p).strip() or name
+    slug = re.sub(r"[^a-z0-9]+", "-", basis.lower()).strip("-")
     slug = slug or "model"
     model["id"] = slug if slug.startswith("disc-") else "disc-" + slug
     return model
@@ -502,7 +543,9 @@ def _sanitizeGroup(raw):
         if val is not None:
             group[key] = val
     for key in _GROUP_NUM_KEYS:
-        val = _num(raw.get(key))
+        if key == "rows":
+            continue
+        val = _boundedNum(raw.get(key), key, *_GROUP_NUM_LIMITS[key])
         if val is not None:
             group[key] = val
     for key in _GROUP_BOOL_KEYS:
@@ -511,7 +554,43 @@ def _sanitizeGroup(raw):
     # A group must at least name itself and carry a count to render.
     if "count" not in group:
         group["count"] = 1
+    rows = _boundedNum(raw.get("rows"), "rows", 1, group["count"])
+    if rows is not None:
+        group["rows"] = rows
     return group if group.get("label") or group.get("k") else None
+
+
+def _boundedNum(value, field, minimum, maximum):
+    """Parse an optional finite number and reject values outside a field's
+    rendering-safe domain. count, rows, and ru must be whole numbers."""
+    num = _num(value)
+    if num is None:
+        if value is None:
+            return None
+        raise ValueError(f"{field} must be a finite number")
+    if num < minimum or num > maximum:
+        raise ValueError(f"{field} must be between {minimum} and {maximum}")
+    if field in ("count", "rows", "ru") and num != int(num):
+        raise ValueError(f"{field} must be a whole number")
+    return int(num) if field in ("count", "rows", "ru") else num
+
+
+def _sameLibraryIdentity(left, right):
+    """True when a derived-id collision refers to the same vendor/model."""
+    fields = ("vendor", "model") if (left.get("vendor") or right.get("vendor")
+                                      or left.get("model") or right.get("model")) else ("name",)
+    return all((left.get(k) or "").strip().casefold()
+               == (right.get(k) or "").strip().casefold() for k in fields)
+
+
+def _cleanLibraryId(value):
+    """Validate a planner definition id without changing its identity."""
+    if not isinstance(value, str):
+        return None
+    value = value.strip()
+    if not value or len(value) > 120:
+        return None
+    return value if re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._:-]*", value) else None
 
 
 def _asList(value):
