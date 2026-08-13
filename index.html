@@ -426,6 +426,100 @@ window.__resources = Object.assign(window.__resources || {}, {
     </div>
   </sc-if>
 
+  <!-- Network discovery: scan a subnet, review found devices, validate the
+       recommended make/model, then save it to the gear library AND drop it into
+       the layout with its management IP already attached. Replaces the retired
+       /discover/ subapp; the backend API (/api/discovery) is unchanged. -->
+  <sc-if value="{{ disco }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:51;display:flex;align-items:center;justify-content:center;padding:16px">
+      <div style="width:660px;max-width:100%;max-height:86vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
+        <div style="display:flex;align-items:center;gap:8px;padding:16px 16px 12px;border-bottom:1px solid var(--sn-raised, #161F2A)">
+          <div style="font-size:16px;font-weight:600">Discover devices on the network</div>
+          <div style="flex:1"></div>
+          <button onClick="{{ discoClose }}" style="min-width:36px;min-height:36px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
+        </div>
+        <div style="flex:1;overflow:auto;padding:16px">
+          <div style="font-size:12px;color:var(--sn-dim, #8FA3BA);line-height:1.55;margin-bottom:12px">{{ disco.msg }}</div>
+          <div style="display:flex;gap:8px;margin-bottom:16px">
+            <input value="{{ disco.subnet }}" onChange="{{ discoSubnet }}" placeholder="Subnet e.g. 10.1.0.0/24 (blank = default)" style="flex:1;min-height:44px;box-sizing:border-box;font-family:var(--font-mono)" />
+            <button onClick="{{ discoScanGo }}" style="min-height:44px;padding:0 18px;background:var(--sn-accent, #22D3EE);color:var(--sn-on-field, #070A0E);border:none;border-radius:8px;font-weight:600;cursor:pointer">Scan</button>
+          </div>
+
+          <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:6px">FOUND DEVICES</div>
+          <sc-for list="{{ discoDevices }}" as="dev" hint-placeholder-count="0">
+            <button onClick="{{ dev.go }}" style="display:block;width:100%;text-align:left;min-height:48px;padding:9px 12px;margin-bottom:5px;background:transparent;border:1px solid var(--sn-divider, #1E2937);border-radius:8px;cursor:pointer" style-hover="background:var(--sn-raised, #161F2A);border-color:var(--sn-accent, #22D3EE)">
+              <div style="font-size:13.5px;color:var(--sn-ink, #EDF3F9)">{{ dev.label }}</div>
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--sn-faint, #798EA4);margin-top:2px">{{ dev.sub }}</div>
+            </button>
+          </sc-for>
+
+          <sc-if value="{{ discoCand }}" hint-placeholder-val="{{ false }}">
+            <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--sn-divider, #1E2937)">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                <div style="font-size:13px;font-weight:600;color:var(--sn-ink, #EDF3F9)">Recommended model</div>
+                <div style="font-family:var(--font-mono);font-size:10px;letter-spacing:0.06em;color:{{ discoBadge.color }}">{{ discoBadge.text }}</div>
+              </div>
+
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:4px">NAME</div>
+              <input value="{{ discoCand.name }}" onChange="{{ discoName }}" placeholder="Display name" style="width:100%;min-height:44px;box-sizing:border-box;margin-bottom:10px" />
+
+              <div style="display:flex;gap:8px;margin-bottom:10px">
+                <div style="flex:1">
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:4px">VENDOR</div>
+                  <input value="{{ discoCand.vendor }}" onChange="{{ discoVendor }}" style="width:100%;min-height:44px;box-sizing:border-box" />
+                </div>
+                <div style="flex:1">
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:4px">MODEL</div>
+                  <input value="{{ discoCand.model }}" onChange="{{ discoModel }}" style="width:100%;min-height:44px;box-sizing:border-box" />
+                </div>
+              </div>
+
+              <div style="display:flex;gap:8px;margin-bottom:10px">
+                <div style="flex:1">
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:4px">KIND</div>
+                  <select value="{{ discoCand.kind }}" onChange="{{ discoKind }}" style="width:100%;min-height:44px;box-sizing:border-box">
+                    <sc-for list="{{ kindList }}" as="k" hint-placeholder-count="4">
+                      <option value="{{ k }}">{{ k }}</option>
+                    </sc-for>
+                  </select>
+                </div>
+                <div style="flex:1">
+                  <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:4px">DRAW (W)</div>
+                  <input value="{{ discoCand.drawW }}" onChange="{{ discoDraw }}" type="number" style="width:100%;min-height:44px;box-sizing:border-box" />
+                </div>
+              </div>
+
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:4px">PRIMARY PORTS</div>
+              <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">
+                <input value="{{ discoNetPorts.count }}" onChange="{{ discoPortCount }}" type="number" placeholder="Count" style="width:80px;min-height:44px;box-sizing:border-box" />
+                <span style="color:var(--sn-faint, #798EA4)">×</span>
+                <input value="{{ discoNetPorts.gbps }}" onChange="{{ discoPortGbps }}" type="number" placeholder="Gbps" style="width:90px;min-height:44px;box-sizing:border-box" />
+                <label style="display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--sn-dim, #8FA3BA);cursor:pointer;min-height:44px">
+                  <input type="checkbox" checked="{{ discoNetPorts.poe }}" onChange="{{ discoPortPoe }}" style="width:22px;height:22px;accent-color:var(--sn-accent, #22D3EE)" /> PoE
+                </label>
+              </div>
+              <div style="font-size:11px;color:var(--sn-warn, #FB923C);line-height:1.45;margin-bottom:14px">{{ discoNetPorts.note }}</div>
+
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:4px">OR ASSOCIATE WITH AN EXISTING MODEL</div>
+              <select value="{{ disco.assocTo }}" onChange="{{ discoAssocSel }}" style="width:100%;min-height:44px;box-sizing:border-box;margin-bottom:14px">
+                <option value="">— pick a library model —</option>
+                <sc-for list="{{ libAll }}" as="d" hint-placeholder-count="5">
+                  <option value="{{ d.id }}">{{ d.name }}</option>
+                </sc-for>
+              </select>
+
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <button onClick="{{ discoCommit }}" style="flex:1;min-width:180px;min-height:48px;background:var(--sn-accent, #22D3EE);color:var(--sn-on-field, #070A0E);border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">Save new model + place</button>
+                <button onClick="{{ discoAssoc }}" style="min-height:48px;padding:0 16px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-dim, #8FA3BA);cursor:pointer">Associate existing</button>
+                <button onClick="{{ discoSkip }}" style="min-height:48px;padding:0 16px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">Dismiss</button>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{ search }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.66);z-index:52;display:flex;align-items:flex-start;justify-content:center;padding:70px 16px 16px">
       <div style="width:540px;max-width:100%;max-height:72vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;overflow:hidden;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
@@ -561,6 +655,53 @@ async function rwFetch(path, body) {
   } catch (e) { return null; }
 }
 
+/* ── RackWire discovery seam (RackWire's OWN backend, not the SolariNet SoR) ───
+   The network-discovery service is mounted at /api/discovery on the standalone
+   vhost. It is independent of SolariNet and speaks a plain, purpose-named
+   envelope ({devices}, {library}, {candidate}, {model}) — NOT the {ok,data}
+   envelope rwFetch unwraps — and guards mutations with a signed CSRF token and
+   no session cookie: GET /health issues a token, every POST echoes it in the
+   X-RackWire-CSRF header. Everything here is additive and gated by rwOnline():
+   opened from disk (file://) every helper short-circuits to null, so the
+   planner's offline / same-origin contract is completely untouched. */
+const DISCOVERY_API = '/api/discovery';
+let rwCsrf = '';   // cached signed CSRF token from the most recent /health
+
+async function dxGet(path) {
+  if (!rwOnline()) return null;
+  try {
+    const r = await fetch(DISCOVERY_API + path, { headers: { Accept: 'application/json' } });
+    if (!r.ok) return null;
+    return await r.json();          // caller reads the named field (devices/library/…)
+  } catch (e) { return null; }
+}
+/* Refresh and cache a CSRF token from /health. Returns '' when offline or the
+   service is unreachable, in which case a mutation simply fails closed. */
+async function dxToken() {
+  const h = await dxGet('/health');
+  rwCsrf = (h && h.csrf) || '';
+  return rwCsrf;
+}
+async function dxPost(path, body) {
+  if (!rwOnline()) return null;
+  const send = async () => {
+    return fetch(DISCOVERY_API + path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-RackWire-CSRF': rwCsrf },
+      body: JSON.stringify(body || {})
+    });
+  };
+  try {
+    if (!rwCsrf) await dxToken();
+    let r = await send();
+    // A stale/expired token (or a worker that never saw ours) answers 403 — the
+    // signed-token scheme means one refresh + retry recovers it transparently.
+    if (r.status === 403) { await dxToken(); r = await send(); }
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (e) { return null; }
+}
+
 const GLYPH_NAMES = [
   ['rj45', 'RJ45'], ['sfp', 'SFP / SFP+'], ['usba', 'USB-A'], ['usbc', 'USB-C'], ['hdmi', 'HDMI'],
   ['microhdmi', 'micro-HDMI'], ['iec_in', 'IEC inlet'], ['iec_out', 'IEC outlet'], ['nema', 'NEMA outlet'],
@@ -578,7 +719,7 @@ class Component extends DCLogic {
       devices: [], cables: [], racks: [], notes: [], codeMap: {},
       zoom: 0.8, panX: 60, panY: 40,
       sel: [], pending: null, ghost: null,
-      libOpen: false, libQ: '', menu: false, scan: null, cm: null,
+      libOpen: false, libQ: '', menu: false, scan: null, disco: null, cm: null,
       q: '', fType: 'all', fStatus: 'all',
       npg: { label: 'Aux', glyph: 'rj45', role: 'data', count: 1, cap: '1' },
       /* Default source is the SolariNet REST poll (CONTRACT-RW §5.5); the url is
@@ -742,7 +883,7 @@ class Component extends DCLogic {
         if (this._wedge.length >= 6) this.handleCode(this._wedge.trim());
         this._wedge = '';
       } else if (e.key.length === 1) this._wedge += e.key;
-      if (e.key === 'Escape') this.setState({ pending: null, ghost: null, cm: null, menu: false, libOpen: false, scan: null, search: null, help: false, versions: null });
+      if (e.key === 'Escape') { clearTimeout(this._discoT); this.setState({ pending: null, ghost: null, cm: null, menu: false, libOpen: false, scan: null, disco: null, search: null, help: false, versions: null }); }
       if ((e.key === 'Backspace' || e.key === 'Delete') && this.state.sel.length) { e.preventDefault(); this.deleteSelection(); }
     };
     window.addEventListener('keydown', this._kd);
@@ -752,7 +893,9 @@ class Component extends DCLogic {
     // Server-backed boot, in dependency order: the library merge must land
     // before migrate() runs over a server plan, or backfill would consult the
     // static seed only. Both are no-ops off an HTTP origin.
-    this.mergeLibrary().then(() => this.loadRemote());
+    this.mergeLibrary()
+      .then(() => this.mergeDiscoveryLibrary())
+      .then(() => this.loadRemote());
   }
 
   /* ── theme (CONTRACT-RW §0 D9, §5.2) ──────────────────────────────────────
@@ -913,6 +1056,25 @@ class Component extends DCLogic {
      would silently break placement. Absent means absent, not zero. */
   async mergeLibrary() {
     const rows = await rwFetch('/library');
+    this.mergeDefs(rows);
+  }
+  /* ── RackWire gear-library merge (/api/discovery/library) ───────────────────
+     The discovery backend is RackWire's own gear database: a device the operator
+     confirmed and committed lives here as a full library definition. Merge it
+     over the static seed by the same rules as the SoR merge, so discovered gear
+     is placeable across projects. Independent of SolariNet; no-op off an HTTP
+     origin (dxGet short-circuits) so the from-disk library stays the seed. */
+  async mergeDiscoveryLibrary() {
+    const j = await dxGet('/library');
+    this.mergeDefs(j && j.library);
+  }
+  /* Merge server-supplied library rows over the in-memory window.RW.DEVICES by
+     id, server wins — but only for fields the row actually carries a value for.
+     A model with null drawW/&c. or an empty groups[] must not null out a seeded
+     definition (absent means absent, not zero), and a wholly-new model is only
+     pushed when it has port geometry, since one with no groups cannot be placed.
+     Shared by both the SoR merge and the discovery merge. */
+  mergeDefs(rows) {
     if (!rows || !rows.length) return;
     const lib = window.RW.DEVICES;
     rows.forEach((r) => {
@@ -936,6 +1098,7 @@ class Component extends DCLogic {
     if (this._onMsg) window.removeEventListener('message', this._onMsg);
     if (this._themeObs) this._themeObs.disconnect();
     clearTimeout(this._planT);
+    clearTimeout(this._discoT);
     if (window.RWLive) window.RWLive.stop();
   }
 
@@ -1860,6 +2023,160 @@ class Component extends DCLogic {
     }
   }
 
+  /* ── network discovery (RackWire discovery backend) ─────────────────────────
+     Scan the network, let the backend (Claude when enabled, deterministic
+     otherwise) recommend a make/model for each device, let the operator validate
+     it, then EITHER commit it as a new gear-library model or associate it with an
+     existing one — and place it into the current layout with its IP + model
+     already attached. The whole feature is gated by rwOnline(): every dx* helper
+     returns null from disk, so openDiscover simply reports the service is offline
+     rather than erroring. This reuses the existing addDevice()/library-merge
+     machinery rather than inventing a second placement path. */
+  discoPatch(patch) {
+    this.setState({ disco: Object.assign({}, this.state.disco, patch) });
+  }
+  async openDiscover() {
+    this.setState({ menu: false, disco: { open: true, msg: 'Checking the discovery service…', subnet: '', devices: [], sel: null, cand: null, rec: null, match: null, assocTo: '', scanning: false, busy: false } });
+    if (!rwOnline()) { this.discoPatch({ online: false, msg: 'Discovery needs the hosted RackWire service; it is unavailable when the planner is opened from a file. Open https://rackwire.akoria.net/ instead.' }); return; }
+    const h = await dxGet('/health');
+    if (!h) { this.discoPatch({ online: false, msg: 'The discovery service did not respond. It may be offline or this page is not served from the RackWire host.' }); return; }
+    rwCsrf = h.csrf || '';
+    this.discoPatch({ online: true, claude: !!h.claudeEnabled, msg: h.claudeEnabled ? 'Claude inference is on: models will be recommended automatically.' : 'Claude inference is off: devices are classified deterministically — set make/model by hand.' });
+    this.discoLoadDevices();
+  }
+  async discoScan() {
+    const d = this.state.disco;
+    const subnet = (d.subnet || '').trim();
+    // An empty subnet lets the backend derive the host-local one; a typo is
+    // caught server-side (403 out-of-range / 400 too-large), surfaced verbatim.
+    this.discoPatch({ scanning: true, msg: 'Starting scan' + (subnet ? ' of ' + subnet : '') + '…' });
+    const started = await dxPost('/scan', subnet ? { subnet: subnet } : {});
+    if (!started || !started.runId) { this.discoPatch({ scanning: false, msg: (started && started.detail) || 'Could not start the scan (check the subnet is within the authorized range).' }); return; }
+    this.discoPoll(started.runId);
+  }
+  async discoPoll(runId) {
+    const j = await dxGet('/scan/' + runId);
+    const run = j && j.scan;
+    if (!run) { this.discoPatch({ scanning: false, msg: 'Lost track of the scan run.' }); return; }
+    if (run.status === 'running') {
+      this.discoPatch({ msg: 'Scanning… (run ' + runId + ')' });
+      // Poll on a timer the component clears on unmount alongside the plan timer.
+      this._discoT = setTimeout(() => this.discoPoll(runId), 2000);
+      return;
+    }
+    this.discoPatch({ scanning: false, msg: run.status === 'done' ? 'Scan complete.' : ('Scan ' + run.status + (run.error ? ': ' + run.error : '') + '.') });
+    this.discoLoadDevices();
+  }
+  async discoLoadDevices() {
+    const j = await dxGet('/devices');
+    const devices = (j && j.devices) || [];
+    // Surface everything not already rejected/imported; newest-seen first is not
+    // available (ordered by ip server-side), which is a fine stable order.
+    const open = devices.filter((x) => x.status === 'discovered' || x.status === 'confirmed');
+    this.discoPatch({ devices: open });
+    if (!open.length) this.discoPatch({ msg: 'No devices to review yet. Run a scan to find some.' });
+  }
+  async discoSelect(deviceId) {
+    this.discoPatch({ sel: deviceId, busy: true, cand: null, rec: null, match: null, assocTo: '' });
+    const j = await dxGet('/devices/' + deviceId + '/candidate');
+    if (!j || !j.candidate) { this.discoPatch({ busy: false, msg: 'Could not build a recommendation for that device.' }); return; }
+    this.discoPatch({ busy: false, cand: j.candidate, rec: j.recommendation || {}, match: j.match || null, assocTo: j.match || '' });
+  }
+  // Edit a scalar field on the working candidate model.
+  discoField(key, value) {
+    if (!this.state.disco.cand) return;
+    this.discoPatch({ cand: Object.assign({}, this.state.disco.cand, { [key]: value }) });
+  }
+  /* Edit the primary network port group (count / speed / PoE). Discovery
+     synthesizes at most one net group when nothing was measured; when several
+     were measured they are shown read-only, so this targets the first net group
+     and creates one if the candidate has none. */
+  discoPort(key, value) {
+    const c = this.state.disco.cand;
+    if (!c) return;
+    const groups = (c.groups || []).map((g) => Object.assign({}, g));
+    let g = groups.find((x) => x.domain === 'net');
+    if (!g) { g = { k: 'p1', label: 'Ethernet', glyph: 'rj45', domain: 'net', conn: 'rj45', role: 'lan', count: 1, rows: 1 }; groups.unshift(g); }
+    if (key === 'count') { g.count = Math.max(1, parseInt(value, 10) || 1); g.rows = g.count > 6 ? 2 : 1; }
+    if (key === 'gbps') { const n = parseFloat(value); if (n > 0) g.gbps = n; else delete g.gbps; }
+    if (key === 'poe') { if (value) g.poe = 'poe+'; else delete g.poe; }
+    g.label = g.count + '× ' + (g.gbps ? (g.gbps + ' GbE') : 'Ethernet') + (g.poe ? ' PoE' : '');
+    this.discoPatch({ cand: Object.assign({}, c, { groups: groups }) });
+  }
+  // Commit the validated candidate as a new gear-library model, then place it.
+  async discoCommitNew() {
+    const d = this.state.disco, c = d.cand;
+    if (!c) return;
+    if (!c.name || !(c.groups || []).length) { this.discoPatch({ msg: 'A name and at least one port group are required.' }); return; }
+    this.discoPatch({ busy: true, msg: 'Saving model to the gear library…' });
+    const body = Object.assign({}, c, { deviceId: d.sel });
+    const j = await dxPost('/library', body);
+    if (!j || !j.model) { this.discoPatch({ busy: false, msg: 'Could not save the model to the library.' }); return; }
+    // Merge the freshly-committed model into the in-memory library so addDevice
+    // can resolve it. Mark the device reviewed BEFORE placing: /library upsert
+    // and /confirm are both idempotent, so failing closed here (leaving the
+    // device in the queue to retry) is safe and avoids the divergent state where
+    // the layout holds a device the backend still lists as unreviewed.
+    this.mergeDefs([j.model]);
+    if (d.sel && !(await dxPost('/devices/' + d.sel + '/confirm', {}))) {
+      this.discoPatch({ busy: false, msg: 'Model saved, but marking the device reviewed failed — it stayed in the queue. Try placing it again.' });
+      return;
+    }
+    this.discoPlace(j.model.id, d);
+  }
+  // Associate this discovered device with an EXISTING library model and place it.
+  async discoAssociate() {
+    const d = this.state.disco;
+    const libId = d.assocTo || d.match;
+    if (!libId) { this.discoPatch({ msg: 'Pick a model to associate with first.' }); return; }
+    this.discoPatch({ busy: true });
+    // Fail closed on confirm (see discoCommitNew): don't drop from the queue and
+    // place unless the backend recorded the review.
+    if (d.sel && !(await dxPost('/devices/' + d.sel + '/confirm', {}))) {
+      this.discoPatch({ busy: false, msg: 'Could not mark the device reviewed — it stayed in the queue. Try again.' });
+      return;
+    }
+    this.discoPlace(libId, d);
+  }
+  // Shared placement: add the device to the layout carrying its management IP as
+  // the live key (so telemetry can bind later) and drop it from the review list.
+  discoPlace(libId, d) {
+    const ip = (d.rec && d.rec.ip) || '';
+    this.addDevice(libId, ip ? { mgmtIp: ip, liveKey: ip, location: ip } : {});
+    const rest = d.devices.filter((x) => x.id !== d.sel);
+    this.discoPatch({ busy: false, devices: rest, sel: null, cand: null, rec: null, match: null, assocTo: '', msg: 'Placed into the layout.' });
+  }
+  async discoReject() {
+    const d = this.state.disco;
+    if (d.sel) await dxPost('/devices/' + d.sel + '/reject', {});
+    const rest = d.devices.filter((x) => x.id !== d.sel);
+    this.discoPatch({ devices: rest, sel: null, cand: null, rec: null, match: null, msg: 'Device dismissed.' });
+  }
+  /* Summarize the candidate's network ports for the editor: the first net group
+     is editable (count/speed/PoE); any extra measured net groups are noted so
+     the operator knows the geometry is richer than the single editor row. */
+  discoNetSummary(cand) {
+    const nets = ((cand && cand.groups) || []).filter((g) => g.domain === 'net');
+    const g = nets[0] || {};
+    return {
+      count: g.count || 1,
+      gbps: g.gbps || '',
+      poe: !!g.poe,
+      multi: nets.length > 1,
+      note: nets.length > 1 ? (nets.length + ' port groups measured — editing adjusts the first; fine-tune the rest after placing.') : ''
+    };
+  }
+  /* The provenance badge for the recommendation: which engine produced it and
+     how confident it was, so the operator weighs the guess appropriately. */
+  discoBadge(disco) {
+    const rec = disco && disco.rec;
+    if (!rec) return { text: '', color: this.T.faint };
+    const pct = (typeof rec.confidence === 'number') ? Math.round(rec.confidence * 100) + '%' : '';
+    if (rec.source === 'claude') return { text: ('Claude' + (pct ? ' · ' + pct : '')), color: this.T.accent };
+    if (rec.source === 'deterministic') return { text: ('Heuristic' + (pct ? ' · ' + pct : '')), color: this.T.dim };
+    return { text: 'Unclassified', color: this.T.faint };
+  }
+
   // ---------- import / export ----------
   exportJson() {
     const s = this.state;
@@ -2463,6 +2780,38 @@ class Component extends DCLogic {
       scanGo: () => this.scanGo(), scanCam: () => this.scanCam(),
       scanClose: () => { if (this._stream) this._stream.getTracks().forEach((t) => t.stop()); this.setState({ scan: null }); },
 
+      /* ── network discovery panel ──────────────────────────────────────────
+         `disco` is null until opened. The candidate (cand) is the working,
+         operator-editable library model; rec carries the raw recommendation and
+         its provenance for the badge; devices is the review queue. */
+      disco: s.disco,
+      discoDevices: ((s.disco && s.disco.devices) || []).map((x) => ({
+        id: x.id,
+        label: x.hostname || x.ip || x.mgmtIp || ('device ' + x.id),
+        sub: [x.ip || x.mgmtIp, x.vendor, x.status].filter(Boolean).join(' · '),
+        selected: !!(s.disco && s.disco.sel === x.id),
+        go: () => this.discoSelect(x.id)
+      })),
+      discoCand: s.disco && s.disco.cand,
+      discoNetPorts: this.discoNetSummary(s.disco && s.disco.cand),
+      discoBadge: this.discoBadge(s.disco),
+      discoClose: () => { clearTimeout(this._discoT); this.setState({ disco: null }); },
+      discoSubnet: (e) => this.discoPatch({ subnet: e.target.value }),
+      discoScanGo: () => this.discoScan(),
+      discoName: (e) => this.discoField('name', e.target.value),
+      discoVendor: (e) => this.discoField('vendor', e.target.value),
+      discoModel: (e) => this.discoField('model', e.target.value),
+      discoKind: (e) => this.discoField('kind', e.target.value),
+      discoDraw: (e) => this.discoField('drawW', parseFloat(e.target.value) || 0),
+      discoPortCount: (e) => this.discoPort('count', e.target.value),
+      discoPortGbps: (e) => this.discoPort('gbps', e.target.value),
+      discoPortPoe: (e) => this.discoPort('poe', e.target.checked),
+      discoAssocSel: (e) => this.discoPatch({ assocTo: e.target.value }),
+      discoCommit: () => this.discoCommitNew(),
+      discoAssoc: () => this.discoAssociate(),
+      discoSkip: () => this.discoReject(),
+      kindList: ['switch', 'gateway', 'router', 'ap', 'server', 'sbc', 'power', 'printer', 'camera', 'appliance', 'other'],
+
       menu: s.menu, openMenu: () => this.setState({ menu: !s.menu }), closeMenu: () => this.setState({ menu: false }),
       saveNote: 'Autosaved · ' + s.devices.length + ' devices · ' + s.cables.length + ' cables',
       menuItems: [
@@ -2472,6 +2821,7 @@ class Component extends DCLogic {
         { name: 'Import connections (CSV)', go: () => { this.importCsv(); this.setState({ menu: false }); } },
         { name: 'Export devices (CSV)', go: () => { this.exportDevicesCsv(); this.setState({ menu: false }); } },
         { name: 'Import devices (CSV)', go: () => { this.importDevicesCsv(); this.setState({ menu: false }); } },
+        { name: 'Discover devices on the network…', go: () => this.openDiscover() },
         { name: 'Save a snapshot…', go: () => { const n = prompt('Name this snapshot', 'Snapshot ' + new Date().toLocaleDateString()); if (n) this.saveVersion(n); this.setState({ menu: false }); } },
         { name: 'Snapshots (' + this.versions().length + ')', go: () => this.setState({ versions: true, menu: false }) },
         { name: 'Print punch list', go: () => { this.printReport(); this.setState({ menu: false }); } },

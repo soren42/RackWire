@@ -34,9 +34,13 @@ _API_URL = "https://api.anthropic.com/v1/messages"
 _ANTHROPIC_VERSION = "2023-06-01"
 
 # The exact output contract. Numeric fields are None when not inferable.
+# vendorGuess/modelGuess/nameGuess drive the gear-library RECOMMENDATION the
+# operator validates before a device becomes a library model; they are free
+# strings (a make/model, not a pinned vocabulary) and are None when the signals
+# do not support a specific guess.
 _OUTPUT_KEYS = (
-    "classification", "role", "portsGuess", "gbps", "watts", "amps", "poe",
-    "rationale", "confidence",
+    "classification", "role", "vendorGuess", "modelGuess", "nameGuess",
+    "portsGuess", "gbps", "watts", "amps", "poe", "rationale", "confidence",
 )
 
 
@@ -135,10 +139,18 @@ def _buildPrompt(facts):
         "  open services:",
         *(svcLines or ["    (none observed)"]),
         "",
+        "Identify the make and model where the signals support it (OUI vendor, "
+        "SNMP sysDescr/sysObjectID, service banners, hostname). Recommend the "
+        "single most likely specific model; the operator will confirm or correct "
+        "it. Use null for make/model when the evidence is too thin to name one.",
+        "",
         "Return this exact JSON shape (use null when unknown):",
         '{"classification": "switch|router|firewall|ap|server|host|printer|'
         'camera|pdu|ups|voip|iot|nas|appliance|unknown",',
         ' "role": "short role hint or null",',
+        ' "vendorGuess": "manufacturer name or null",',
+        ' "modelGuess": "specific model/part number or null",',
+        ' "nameGuess": "short human label for this device or null",',
         ' "portsGuess": <int physical port count or null>,',
         ' "gbps": <per-port link speed in Gbps or null>,',
         ' "watts": <typical power draw or null>,',
@@ -203,6 +215,11 @@ def _validate(obj):
     rawClass = str(obj.get("classification") or "unknown").strip().lower()
     out["classification"] = rawClass if rawClass in _ALLOWED_CLASSES else "unknown"
     out["role"] = obj.get("role") if obj.get("role") else None
+    # Make/model/name are free-text recommendations. Trim and clip defensively;
+    # an empty or over-long value becomes None rather than reaching the library.
+    out["vendorGuess"] = _cleanStr(obj.get("vendorGuess"))
+    out["modelGuess"] = _cleanStr(obj.get("modelGuess"))
+    out["nameGuess"] = _cleanStr(obj.get("nameGuess"))
     out["portsGuess"] = _numOrNone(obj.get("portsGuess"), asInt=True)
     out["gbps"] = _numOrNone(obj.get("gbps"))
     out["watts"] = _numOrNone(obj.get("watts"))
@@ -212,6 +229,18 @@ def _validate(obj):
     conf = _numOrNone(obj.get("confidence"))
     out["confidence"] = min(1.0, max(0.0, conf)) if conf is not None else 0.0
     return out
+
+
+def _cleanStr(value, limit=120):
+    """Normalize a free-text model/vendor field: strip, reject empties and the
+    literal 'null'/'unknown' spellings a model sometimes emits, and clip to a
+    sane length. Output: str or None."""
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    if not text or text.lower() in ("null", "none", "unknown", "n/a"):
+        return None
+    return text if len(text) <= limit else text[:limit].rstrip()
 
 
 def _asBool(value):

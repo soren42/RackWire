@@ -23,8 +23,16 @@ WSGI server) that:
    optionally via the Claude API for low-confidence unknowns.
 3. **Waits for a human.** Every device sits in `discovered` status until the
    operator confirms or rejects it. There is no auto-import path.
-4. **Maps** confirmed devices into planner group payloads that the discovery
-   console pushes into the embedded (pristine, unmodified) planner iframe.
+4. **Maps** each confirmed device into a full gear-library model (make, model,
+   kind, ports, draw) that the operator validates in the planner's **Discover
+   devices on the network…** panel; on save it is written to the gear library
+   and placed into the current layout with its management IP already attached.
+
+> **Architecture note (2026-08).** Discovery began as a separate `/discover/`
+> console that iframed the planner. That subapp was retired: discovery is now a
+> **feature inside the planner itself**, reached from the main menu, talking to
+> the backend over its own `/api/discovery` client. The backend HTTP API below
+> is unchanged; only the front end moved.
 
 ### 1.1 Independence constraint (hard rule)
 
@@ -47,9 +55,9 @@ find yourself wanting a SolariNet lookup, port the data instead.
                      rackwire.akoria.net  (Apache :443, SNI vhost on xenon)
                       │
         ┌─────────────┴──────────────┐
-   static (web/)                 /api/discovery/*  ──reverse proxy──▶  gunicorn (127.0.0.1:8785)
-   discovery console                                                   rackwire_discovery WSGI app
-   + planner iframe                                                        │
+   static planner                /api/discovery/*  ──reverse proxy──▶  gunicorn (127.0.0.1:8785)
+   index.html (Discover panel                                         rackwire_discovery WSGI app
+   calls /api/discovery directly)                                         │
                                                          ┌────────────────┼───────────────────┐
                                                       scan/            infer/               store.py
                                                   subprocess to     deterministic +        SQLite (stdlib)
@@ -67,9 +75,13 @@ Key properties:
 - **Subprocess discipline:** argv-list calls only, absolute tool paths from
   `const.py`, mandatory timeouts, graceful degradation when a tool is missing
   (logged warning + empty result, never a crash).
-- **The planner core is untouched.** The console embeds the single-file
-  planner `index.html` byte-for-byte in an iframe and drives it through the
-  documented `window.RackWire` / postMessage API only.
+- **The planner's public contracts are untouched.** Discovery now lives inside
+  `index.html` (a menu item, a modal, and a small `/api/discovery` client), so
+  the file is no longer byte-for-byte identical to the pristine planner — but
+  the three sacred surfaces are preserved unchanged: the `window.RackWire` host
+  API, the postMessage schema, and the `rackwire.project.v2` storage/CSV/schema
+  contract. The discovery client uses a **separate** envelope and CSRF scheme on
+  `/api/discovery`; it never touches the SolariNet SoR contract.
 
 Repo layout, table schemas, and module contracts are authoritative in
 `docs/DISCOVERY-DESIGN.md` §1–§4.
@@ -151,23 +163,31 @@ human confirms every classification before it can reach a plan (§5).
 
 A device's lifecycle: `discovered → confirmed | rejected → imported`.
 
-1. **Review.** The console lists discovered devices with classification, role,
-   confidence, and source (deterministic / claude / manual). Detail view shows
-   ports, services, neighbors, and the full inference history.
-2. **Confirm** (`POST /devices/{id}/confirm`) — the operator accepts the
-   classification, optionally overriding `classification`/`role` in the body
-   (overrides are recorded with source `manual`). Only confirmed devices are
-   eligible for import.
-3. **Reject** (`POST /devices/{id}/reject`) — hidden from import, retained for
-   audit (soft delete semantics; nothing is destroyed).
-4. **Import** (`POST /plan/build`) — the mapper converts each confirmed device
-   into a planner group payload (`{k, label, glyph, count, rows, role, gbps,
-   watts, amps, volts, poe, poeW, domain, conn}`); the console pushes the
-   result into the planner iframe via `RackWire.setPlan(...)` /
-   `RackWire.patch(...)`. Devices are marked `imported`. The backend never
-   touches the planner's localStorage or file.
+1. **Review.** The planner's Discover panel lists discovered devices. Selecting
+   one calls `GET /devices/{id}/candidate`, which returns a **recommended
+   gear-library model** (make, model, kind, ports, draw) built by the mapper
+   from the best available inference (Claude when enabled, else deterministic),
+   plus a match against any existing library model and a provenance badge.
+2. **Validate.** The operator edits the recommended name, vendor, model, kind,
+   draw, and primary port group in place — filling gaps the scan could not see.
+   When Claude is disabled the recommendation is deterministic and the operator
+   simply sets make/model by hand; the flow degrades gracefully.
+3. **Save + place** (`POST /library`) — the validated model is written to the
+   gear library (a full device definition, `disc-<vendor-model>` id), merged
+   into the in-memory library, and an instance is added to the current layout
+   with the discovered management IP attached as `mgmtIp`/`liveKey`. The device
+   is marked `confirmed` (`POST /devices/{id}/confirm`).
+   *Alternatively* the operator picks an existing library model to **associate**
+   with instead of saving a new one — same placement, no new definition.
+4. **Dismiss** (`POST /devices/{id}/reject`) — hidden from the queue, retained
+   for audit (soft delete semantics; nothing is destroyed).
 
-There is **no** auto-import path anywhere in the system.
+The backend never touches the planner's localStorage or file, and there is
+**no** auto-import path anywhere in the system.
+
+> The legacy `POST /plan/build` endpoint (bulk group payload for the retired
+> console) still exists and is unchanged; the in-planner flow uses the
+> per-device `/candidate` + `/library` endpoints instead.
 
 ---
 

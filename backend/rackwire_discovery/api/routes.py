@@ -42,6 +42,9 @@ def buildRoutes():
         ("POST", r(r"/api/discovery/devices/(?P<id>\d+)/reject"), rejectDevice),
         ("POST", r(r"/api/discovery/plan/build"), buildPlan),
         ("GET", r(r"/api/discovery/topology"), topology),
+        ("GET", r(r"/api/discovery/devices/(?P<id>\d+)/candidate"), deviceCandidate),
+        ("GET", r(r"/api/discovery/library"), listLibrary),
+        ("POST", r(r"/api/discovery/library"), commitLibraryModel),
     ]
 
 
@@ -343,7 +346,202 @@ def topology(ctx, match, body):
     return 200, {"nodes": nodes, "edges": edges}
 
 
+def deviceCandidate(ctx, match, body):
+    """Recommend a gear-library model for one discovered device.
+
+    Combines the observed facts with the most recent inference (Claude's
+    make/model recommendation when enabled; deterministic otherwise) into a
+    candidate window.RW.DEVICES entry the operator validates in the planner.
+    Also reports whether an equivalent model already exists in the RackWire
+    library, so the panel can offer "associate existing" instead of a duplicate.
+
+    Output: {candidate, recommendation, match}. `candidate` is the pre-filled
+    library model; `recommendation` is the raw guess + provenance for the UI
+    badge; `match` is an existing library id (or null).
+    """
+    store = ctx["store"]
+    deviceId = int(match.group("id"))
+    dev = store.getDevice(deviceId)
+    if not dev:
+        return 404, {"error": "not_found", "detail": "device"}
+
+    facts = orchestrator.deviceFacts(store, deviceId)
+
+    # Prefer the Claude inference (it carries make/model); fall back to the
+    # latest of any engine so a deterministic-only deployment still gets a
+    # class-driven candidate. None is fine — the mapper degrades gracefully.
+    inferenceRow = (store.getLatestInference(deviceId, engine="claude")
+                    or store.getLatestInference(deviceId))
+    inference = _loadJson(inferenceRow.get("output_json")) if inferenceRow else {}
+    engine = inferenceRow.get("engine") if inferenceRow else "none"
+
+    candidate = mapper.toLibraryModel(dev, facts, inference)
+
+    # Match against the already-committed library: same id (vendor+model slug)
+    # is the strongest signal an equivalent model is on file.
+    match_ = None
+    if store.getLibraryModel(candidate["id"]):
+        match_ = candidate["id"]
+
+    recommendation = {
+        "vendorGuess": inference.get("vendorGuess") or dev.get("vendor"),
+        "modelGuess": inference.get("modelGuess") or dev.get("hostname"),
+        "nameGuess": inference.get("nameGuess"),
+        "classification": dev.get("classification"),
+        "confidence": inference.get("confidence") if inference else dev.get("confidence"),
+        "rationale": inference.get("rationale"),
+        "source": engine,
+        "ip": dev.get("ip"),
+        "mac": dev.get("mac"),
+    }
+    return 200, {"candidate": candidate, "recommendation": recommendation,
+                 "match": match_}
+
+
+def listLibrary(ctx, match, body):
+    """All RackWire gear-library models, in window.RW.DEVICES shape. The planner
+    merges these into its built-in catalog at load so discovered gear is
+    placeable across projects."""
+    return 200, {"library": ctx["store"].listLibrary()}
+
+
+def commitLibraryModel(ctx, match, body):
+    """Commit a validated gear-library model (the human-in-the-loop gate).
+
+    Body: a planner device-def dict (id?, name, vendor, model, kind, ru, drawW,
+    poeBudgetW, note, groups[]) plus optional deviceId provenance. Every field
+    is sanitized here — this is a mutation endpoint reachable by any same-origin
+    client, so nothing from the body is trusted verbatim. Returns the stored
+    model in canonical shape.
+    """
+    store = ctx["store"]
+    model = _sanitizeLibraryModel(body or {})
+    if model is None:
+        return 400, {"error": "invalid_model",
+                     "detail": "a name and at least one group are required"}
+    deviceId = None
+    rawDeviceId = (body or {}).get("deviceId")
+    if rawDeviceId is not None:
+        try:
+            deviceId = int(rawDeviceId)
+        except (TypeError, ValueError):
+            deviceId = None
+    modelId = store.upsertLibraryModel(model, nowIso(), deviceId=deviceId)
+    return 200, {"model": store.getLibraryModel(modelId)}
+
+
 # -- helpers --------------------------------------------------------------
+
+# The device-def fields a client may set on a committed library model. Anything
+# outside this set is dropped — a mutation endpoint never trusts the body shape.
+_LIB_STR_FIELDS = ("id", "name", "vendor", "model", "kind", "note")
+_LIB_NUM_FIELDS = ("ru", "drawW", "poeBudgetW", "budgetW", "circuitA", "circuitV")
+# The whitelisted keys of a single port group, with their coercion kind.
+_GROUP_STR_KEYS = ("k", "label", "glyph", "role", "domain", "conn", "poe")
+_GROUP_NUM_KEYS = ("count", "rows", "gbps", "watts", "amps", "volts", "poeW",
+                   "poeDrawW")
+_GROUP_BOOL_KEYS = ("batt",)
+
+
+def _sanitizeLibraryModel(body):
+    """Coerce an untrusted body into a safe library model, or None if invalid.
+
+    Enforces the whitelist above, derives a key-safe id from vendor+model when
+    the client did not supply one, and requires a name plus at least one
+    sanitized group (a model with no ports cannot be placed meaningfully).
+    """
+    import re
+    name = _cleanText(body.get("name"))
+    groups = [g for g in (_sanitizeGroup(x) for x in _asList(body.get("groups")))
+              if g is not None]
+    if not name or not groups:
+        return None
+
+    model = {"name": name, "groups": groups, "source": "discovery"}
+    for key in _LIB_STR_FIELDS:
+        if key == "name":
+            continue
+        val = _cleanText(body.get(key))
+        if val is not None:
+            model[key] = val
+    for key in _LIB_NUM_FIELDS:
+        val = _num(body.get(key))
+        if val is not None:
+            model[key] = val
+    if isinstance(body.get("isBattery"), bool):
+        model["isBattery"] = body["isBattery"]
+
+    # Derive a stable id when the client did not pin one: 'disc-<vendor-model>'.
+    # Whether derived or client-pinned, the id is slugified AND locked into the
+    # 'disc-' namespace. This is a security boundary, not cosmetics: the planner
+    # merges library models over its built-in catalog by id (server wins for
+    # non-null fields), so a body that pinned id to a built-in device id (e.g.
+    # 'core-switch-48') would silently shadow that seed on the next load. Forcing
+    # the prefix means a committed model can only ever collide with another
+    # committed model. Re-slugging an already-'disc-' id is idempotent, so the
+    # candidate round-trip (getLibraryModel(candidate.id)) is unaffected.
+    pinned = model.get("id")
+    if pinned:
+        slug = re.sub(r"[^a-z0-9]+", "-", str(pinned).lower()).strip("-")
+    else:
+        basis = " ".join(p for p in (model.get("vendor"), model.get("model"))
+                         if p).strip() or name
+        slug = re.sub(r"[^a-z0-9]+", "-", basis.lower()).strip("-")
+    slug = slug or "model"
+    model["id"] = slug if slug.startswith("disc-") else "disc-" + slug
+    return model
+
+
+def _sanitizeGroup(raw):
+    """Whitelist-coerce one port group. Output: dict or None (dropped)."""
+    if not isinstance(raw, dict):
+        return None
+    group = {}
+    for key in _GROUP_STR_KEYS:
+        val = _cleanText(raw.get(key))
+        if val is not None:
+            group[key] = val
+    for key in _GROUP_NUM_KEYS:
+        val = _num(raw.get(key))
+        if val is not None:
+            group[key] = val
+    for key in _GROUP_BOOL_KEYS:
+        if isinstance(raw.get(key), bool):
+            group[key] = raw[key]
+    # A group must at least name itself and carry a count to render.
+    if "count" not in group:
+        group["count"] = 1
+    return group if group.get("label") or group.get("k") else None
+
+
+def _asList(value):
+    return value if isinstance(value, list) else []
+
+
+def _cleanText(value, limit=200):
+    """Trim a string field; None for empties/non-strings. Bounds length so a
+    hostile body cannot store an unbounded blob."""
+    if not isinstance(value, str):
+        return None
+    text = value.strip()
+    if not text:
+        return None
+    return text if len(text) <= limit else text[:limit].rstrip()
+
+
+def _num(value):
+    """Parse a finite, non-negative number; None otherwise. Rejects bools."""
+    import math
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return None
+    if not math.isfinite(num) or num < 0:
+        return None
+    return int(num) if num == int(num) else num
+
 
 def _subnetTooBig(subnet):
     """Return a human message if `subnet` enumerates more than the allowed host

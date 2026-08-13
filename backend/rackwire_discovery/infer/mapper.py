@@ -147,6 +147,199 @@ def toGroup(device, facts):
     }
 
 
+# Library `kind` vocabulary (matches the built-in window.RW.DEVICES entries).
+# Discovery classifications collapse onto these; anything unmapped stays as the
+# classification string so the operator can correct it rather than lose it.
+_KIND_BY_CLASS = {
+    "switch": "switch",
+    "router": "gateway",
+    "firewall": "gateway",
+    "ap": "ap",
+    "server": "server",
+    "host": "server",
+    "nas": "server",
+    "printer": "printer",
+    "camera": "camera",
+    "pdu": "power",
+    "ups": "power",
+    "voip": "appliance",
+    "iot": "appliance",
+    "appliance": "appliance",
+    "unknown": "other",
+}
+
+
+def _librarySlug(vendor, model, device):
+    """Stable, key-safe library id. Prefers vendor+model (so the same model
+    discovered twice collapses to one library entry), falling back to the
+    device slug when the model is unknown."""
+    basis = " ".join(p for p in (vendor, model) if p).strip()
+    if not basis:
+        return _slugFor(device)  # e.g. 'dev-<mac>' — unique per box, not per model
+    slug = re.sub(r"[^a-z0-9]+", "-", basis.lower()).strip("-")
+    return "disc-" + (slug or "model")
+
+
+def _dataPortGroups(device, facts, inference):
+    """Synthesize the planner port-group list for a discovered device.
+
+    Measured ifTable ports (grouped by speed+PoE) win; absent those, a single
+    group is built from the confirmed/inferred port count, link speed and PoE
+    flag. Returns a list of group dicts in the planner schema. Discovery sees
+    almost exclusively copper Ethernet, so the connector defaults to rj45 —
+    the operator corrects fibre/other in the validation panel.
+    """
+    ports = (facts or {}).get("ports") or []
+    groups = []
+
+    # Measured path: coalesce identical (speedMbps, poe) ports into one group so
+    # a 24-port switch becomes "24 × 1 GbE", not 24 singleton groups.
+    if ports:
+        buckets = {}
+        order = []
+        for port in ports:
+            speed = port.get("speedMbps")
+            gbps = (speed / 1000) if isinstance(speed, (int, float)) and speed > 0 else None
+            poe = bool(port.get("poe"))
+            key = (gbps, poe)
+            if key not in buckets:
+                buckets[key] = 0
+                order.append(key)
+            buckets[key] += 1
+        for idx, key in enumerate(order):
+            gbps, poe = key
+            groups.append(_portGroup(f"p{idx + 1}", buckets[key], gbps, poe))
+        return groups
+
+    # Inferred path: one group from the confirmed/inferred count + speed + PoE.
+    confPorts = _numOr(device.get("confirmed_ports"))
+    guessPorts = _numOr((inference or {}).get("portsGuess"))
+    count = int(confPorts or guessPorts or 0)
+    if count <= 0:
+        return groups  # nothing measured or guessed — leave ports for the operator
+    confGbps = _numOr(device.get("confirmed_gbps"))
+    guessGbps = _numOr((inference or {}).get("gbps"))
+    gbps = confGbps or guessGbps
+    confPoe = device.get("confirmed_poe")
+    poe = bool(confPoe) if confPoe is not None else bool((inference or {}).get("poe"))
+    groups.append(_portGroup("p1", count, gbps, poe))
+    return groups
+
+
+def _portGroup(key, count, gbps, poe):
+    """One Ethernet port group in the planner schema. gbps may be None (unknown
+    link rate); PoE is expressed as the planner's 'poe+' string when present."""
+    speedLabel = f"{_trimNum(gbps)} GbE" if gbps else "Ethernet"
+    label = f"{count}× {speedLabel}" + (" PoE" if poe else "")
+    group = {
+        "k": key,
+        "label": label,
+        "glyph": "rj45",
+        "count": count,
+        "rows": 2 if count > 6 else 1,
+        "role": "lan",
+        "domain": "net",
+        "conn": "rj45",
+    }
+    if gbps:
+        group["gbps"] = gbps
+    if poe:
+        group["poe"] = "poe+"
+    return group
+
+
+def _powerInGroup(watts):
+    """A single AC power-in group, added when a wattage is known so the plan's
+    power budget accounts for the device. glyph/conn mirror the built-in
+    library's IEC inlet convention."""
+    return {
+        "k": "pwr",
+        "label": f"Power IN{f' · {_trimNum(watts)} W' if watts else ''}",
+        "glyph": "iec_in",
+        "count": 1,
+        "rows": 1,
+        "role": "power-in",
+        "watts": watts,
+        "domain": "power",
+        "conn": "iec",
+    }
+
+
+def toLibraryModel(device, facts, inference=None):
+    """Build a full planner device-library DEFINITION from a discovered device.
+
+    Unlike toGroup (which emits ONE summary group for a plan), this emits the
+    complete window.RW.DEVICES entry — id, vendor, name, model, kind, ru, drawW,
+    poeBudgetW and a synthesized groups[] — so a confirmed device can be
+    committed to the gear library and reused. It is the CANDIDATE the operator
+    validates; nothing here is authoritative until they commit it.
+
+    device:    store device row (classification, vendor, hostname, ip, mac,
+               confirmed_* specs, id).
+    facts:     deviceFacts dict (facts["ports"] drives measured groups).
+    inference: the accepted/most-recent inference dict (vendorGuess, modelGuess,
+               nameGuess, portsGuess, gbps, watts, poe, ...), or None. Claude
+               fills make/model; without it the fields degrade to the OUI vendor
+               and hostname, and the operator types the rest.
+
+    Returns a dict in planner device-def shape.
+    """
+    inference = inference or {}
+    classification = (device.get("classification") or "").lower()
+
+    # Make/model/name: inference first (Claude's recommendation), then the
+    # observed OUI vendor / hostname, then a generic placeholder the operator
+    # overrides. This is a RECOMMENDATION — the panel lets the human correct it.
+    vendor = inference.get("vendorGuess") or device.get("vendor") or ""
+    model = inference.get("modelGuess") or device.get("hostname") or ""
+    name = (inference.get("nameGuess") or _libraryName(vendor, model, device))
+
+    watts = _numOr(device.get("confirmed_watts")) or _numOr(inference.get("watts"))
+
+    groups = _dataPortGroups(device, facts, inference)
+    if watts:
+        groups.append(_powerInGroup(watts))
+
+    poe = any(g.get("poe") for g in groups)
+
+    return {
+        "id": _librarySlug(vendor, model, device),
+        "vendor": vendor or None,
+        "name": name,
+        "model": model or None,
+        "kind": _KIND_BY_CLASS.get(classification, classification or "other"),
+        "ru": 0,  # discovery cannot measure rack units; operator sets it
+        "drawW": watts or 0,
+        "poeBudgetW": _numOr(inference.get("watts")) if poe else None,
+        "note": _libraryNote(device, inference),
+        "source": "discovery",
+        "groups": groups,
+    }
+
+
+def _libraryName(vendor, model, device):
+    """Human label for a library entry: 'Vendor Model', else the device label."""
+    parts = " ".join(p for p in (vendor, model) if p).strip()
+    return parts or _labelFor(device)
+
+
+def _libraryNote(device, inference):
+    """Provenance note: where it came from and (if any) the model's rationale."""
+    ip = device.get("ip") or "unknown"
+    rationale = (inference or {}).get("rationale") or ""
+    base = f"Discovered at {ip}"
+    return f"{base} · {rationale}" if rationale else base
+
+
+def _trimNum(value):
+    """Render a number without a trailing '.0' (1.0 -> '1', 2.5 -> '2.5')."""
+    try:
+        num = float(value)
+    except (TypeError, ValueError):
+        return str(value)
+    return str(int(num)) if num == int(num) else str(num)
+
+
 def _numOr(value):
     """Coerce a stored spec to a positive number, or None. Guards against the
     empty strings / junk a hand-edited DB row might carry."""

@@ -32,14 +32,23 @@ database.
                      rackwire.akoria.net  (Apache :443, SNI vhost on xenon)
                       │
         ┌─────────────┴──────────────┐
-   static (web/)                 /api/discovery/*   ──reverse proxy──▶  gunicorn (127.0.0.1:PORT)
-   discovery console                                                    rackwire_discovery WSGI app
-   + planner iframe                                                         │
+   static planner                /api/discovery/*   ──reverse proxy──▶  gunicorn (127.0.0.1:PORT)
+   index.html (Discover panel                                          rackwire_discovery WSGI app
+   → /api/discovery client)                                                │
                                                           ┌────────────────┼───────────────────┐
                                                        scan/            infer/               store.py
                                                    subprocess to     deterministic +        SQLite (stdlib)
                                                    system tools      Claude API (urllib)
 ```
+
+> **Architecture change (2026-08).** The original design (below, preserved as the
+> build contract for the backend) placed the front end in a separate `/discover/`
+> console under `web/` that iframed the planner. That console was **retired**:
+> discovery is now a feature **inside** `index.html` — a menu item and modal that
+> drive a dedicated `/api/discovery` client. The backend, its schema, and the
+> HTTP API in §5 are unchanged. Where this document says "console" or "iframe,"
+> read "the planner's in-app Discover panel." The `web/` tree is no longer built
+> or deployed.
 
 - **Backend language:** Python 3 (xenon has 3.14.4). Standard library only, plus
   **one** production dependency: `gunicorn` (WSGI server). No SDK: the Claude API
@@ -49,10 +58,13 @@ database.
   `nmap`, `snmpwalk`, `snmpget`, `arp-scan`, `ping`, `ip`. **Absent on xenon:**
   `fping`, `lldpctl` — do not use them. LLDP neighbor data is derived from SNMP
   **LLDP-MIB**, not from `lldpctl`.
-- **Frontend** is served static and embeds the **pristine** planner `index.html`
-  in an iframe, driving it through the documented `window.RackWire` /
-  postMessage API. The single-file offline planner core is **never modified** by
-  this feature.
+- **Frontend** (as built) lives inside the planner `index.html`: a menu item
+  opens a Discover modal that calls the `/api/discovery` endpoints directly.
+  The three sacred public contracts — `window.RackWire`, the postMessage schema,
+  and the `rackwire.project.v2` storage/CSV/schema surface — are preserved
+  unchanged; the file is no longer byte-identical to the pristine planner but its
+  external behavior is. *(Original plan: a separate `web/` console iframing the
+  planner. Retired — see the architecture-change note above.)*
 
 ### 1.1 Repo layout (authoritative)
 
@@ -89,10 +101,9 @@ deploy/
   install.sh                   # idempotent deploy helper (setcaps the scanners)
   gen-cert.sh                  # self-signed TLS cert for the vhost
   discovery.env.example        # environment template (secrets filled on host)
-web/
-  index.html            # discovery console shell (iframes the planner)
-  discover.js           # console logic (browser JS — permitted client-side)
-  discover.css
+index.html                     # the planner — hosts the in-app Discover panel
+                               # (the retired web/ console is gone; see the
+                               # architecture-change note in §1)
 docs/
   DISCOVERY-DESIGN.md   # this file
   DISCOVERY.md          # comprehensive user + operator documentation
@@ -361,8 +372,8 @@ Least privilege, conservative defaults, auditable. Concretely:
 
 - **DNS:** add `rackwire IN CNAME xenon` to `db.akoria.net`; bump the zone serial.
 - **Vhost:** `rackwire.akoria.net` Apache `:443` SNI vhost cloning
-  `solarinet.conf`: `DocumentRoot /var/www/rackwire` for static (`web/` + the
-  planner), `<LocationMatch "^/api/discovery/">` reverse-proxying to the gunicorn
+  `solarinet.conf`: `DocumentRoot /var/www/rackwire` serving the planner
+  `index.html`, `<LocationMatch "^/api/discovery/">` reverse-proxying to the gunicorn
   socket/port on 127.0.0.1. `Header always set X-Frame-Options "SAMEORIGIN"`.
 - **TLS:** certificate for `rackwire.akoria.net` (same mechanism as the dashboard
   cert under `/etc/ssl/`).
@@ -382,10 +393,14 @@ Discovery must not touch any of these in `index.html`:
 `window.RackWire` API surface (24 keys), the postMessage schema
 (`{source:'rackwire', cmd, args}`), the `rackwire.project.v2` localStorage key, CSV
 headers, `migrate()` / `DEV_FIELDS` / `GROUP_FIELDS`, and the device-library group
-schema. The console integrates **through** these, never around them. The planner's
-three-way contract (file:// offline, same-origin http, iframe embed) stays intact:
-the discovery console is a *new* page that embeds the planner; the planner file is
-shipped byte-for-byte as-is.
+schema. The in-app Discover panel integrates **through** these, never around them.
+The planner's three-way contract (file:// offline, same-origin http, iframe embed)
+stays intact. As built, discovery is added *into* `index.html` (menu item, modal,
+`/api/discovery` client) rather than a separate embedding page, so the file is no
+longer byte-identical to the pristine planner — but none of the protected surfaces
+above change, and the offline/same-origin/embed behaviors are preserved. The
+`/api/discovery` client uses its own envelope and CSRF token, entirely separate
+from the SolariNet SoR contract.
 
 ---
 
@@ -397,8 +412,10 @@ shipped byte-for-byte as-is.
    services / neighbors, and produces deterministic classifications.
 3. Claude inference exercised on at least one unknown device; result stored,
    auditable, and gated behind confirm.
-4. Console: scan → review → confirm → import round-trips a device into the planner
-   iframe via the host API, with the planner file unmodified (checksum unchanged).
+4. In-app Discover panel: scan → review → validate → save+place round-trips a
+   device into the gear library and the current layout via `/api/discovery`
+   (`/candidate` → `/library`), with all protected `index.html` surfaces
+   (`window.RackWire`, postMessage, storage/CSV/schema) unchanged.
 5. Cross-lab review (Codex/GPT) of all newly authored code, findings resolved.
 6. Deployed to `rackwire.akoria.net`, health endpoint green, TLS valid, smoke test
    passes.
