@@ -134,6 +134,18 @@ window.__resources = Object.assign(window.__resources || {}, {
   }
 </style>
 <script src="device-library.js"></script>
+<!-- Device library data modules — each calls window.RW.addDevices([...]).
+     Loaded after the core engine (device-library.js) and before the app.
+     Add one line per new vendor module; order among modules is irrelevant. -->
+<script src="devices/generic.js"></script>
+<script src="devices/ubiquiti.js"></script>
+<script src="devices/apple.js"></script>
+<script src="devices/samsung.js"></script>
+<script src="devices/raspberry-pi.js"></script>
+<script src="devices/qualcomm-arduino.js"></script>
+<script src="devices/m5stack.js"></script>
+<script src="devices/eos.js"></script>
+<script src="devices/minisforum.js"></script>
 <script src="live-adapter.js"></script>
 </helmet>
 <div style="display:flex;flex-direction:column;height:100vh;width:100vw;background:var(--sn-bg, #070A0E);color:var(--sn-ink, #EDF3F9);font-family:var(--font-display);overflow:hidden;touch-action:manipulation">
@@ -2724,8 +2736,11 @@ class Component extends DCLogic {
       });
     }
     const libQ = s.libQ.toLowerCase();
-    const libResults = window.RW.DEVICES.filter((d) => !libQ || (d.name + d.model + d.vendor + d.kind).toLowerCase().indexOf(libQ) >= 0).map((d) => {
-      const g = window.RW.layout({ groups: d.groups, name: d.name, model: d.model });
+    // RW.search uses the core's cached haystack (name/model/vendor/kind/upc) and
+    // RW.geom memoizes layout per def — so the picker no longer rescans or
+    // re-lays-out the whole library on every keystroke as it grows to thousands.
+    const libResults = window.RW.search(libQ).map((d) => {
+      const g = window.RW.geom(d);
       return Object.assign({}, d, {
         summary: d.groups.length ? d.groups.map((x) => x.count + '× ' + x.label.replace(/^[^·]*·\s*/, '')).join(' · ') : 'No ports yet — add your own',
         add: () => this.addDevice(d.id), _w: g.w
