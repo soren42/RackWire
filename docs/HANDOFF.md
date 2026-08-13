@@ -200,11 +200,28 @@ a 24px grid).
 
 ## 6. Device library
 
-`window.RW.DEVICES` is a plain array. Each entry:
+`window.RW.DEVICES` is a plain array at runtime, but it is **no longer authored as one
+literal**. `device-library.js` is now the *engine only* — glyph geometry, cable standards,
+`layout()`, and a registry. The device data lives in per-vendor modules under `devices/`
+(`generic.js`, `ubiquiti.js`, `apple.js`, `samsung.js`, `raspberry-pi.js`,
+`qualcomm-arduino.js`, `m5stack.js`, `eos.js`, `minisforum.js`), each a static
+`<script>` that calls `window.RW.addDevices([...])`. `index.html` loads the engine first,
+then the modules (order among modules is irrelevant), then the app. This keeps the
+no-build / offline / `file://` contract while letting the catalog scale — it now holds
+**244 curated devices** (was ~31) and grows continuously. Growing it is a permanent task
+with a fixed procedure — schema, glyph vocabulary, worked exemplars, the one-shot vendor
+recipe, and the validation gate all live in **`devices/SPEC.md`**; validate any change by
+opening **`devices/validate.html`** in a browser.
+
+Each entry:
 
 ```js
 {
   id, vendor, name, model, kind, ru, drawW, note,
+  flavor,           // vanilla | pro | studio — the LOWEST edition tier a device
+                    //   appears in (cumulative floor: pro⊇vanilla, studio⊇pro).
+                    //   LIBRARY-ONLY: deliberately NOT in DEV_FIELDS, so it is
+                    //   never snapshotted per-instance or written to CSV.
   budgetW,          // output rating for a power source; overrides circuit math
   circuitA, circuitV,
   poeBudgetW,
@@ -214,25 +231,49 @@ a 24px grid).
   groups: [{
     k,              // stable group key; migrations match on this
     label, glyph, count, rows,
-    role,           // lan wan uplink poe-in power-in power-out data video audio module passive gpio
+    role,           // lan wan uplink poe-in power-in power-out data video audio dmx module passive gpio
     gbps, watts, amps, volts,
     poe, poeW,      // what this port delivers
     poeDrawW,       // what this device draws when powered over ethernet
     batt,           // outlet is on battery
-    domain,         // net power usb other
-    conn            // rj45 sfp usba usbc hdmi iec barrel audio any
+    domain,         // net power usb other   (exactly one; closed set)
+    conn            // connector token, equality-matched for mate-compatibility
   }]
 }
 ```
 
+`glyph` is a **closed set** (drives rendering — an unknown glyph has no art):
+`rj45 sfp usba usbc hdmi microhdmi iec_in iec_out nema barrel audio xlr bnc sd pcie
+gpio csi db9 lc rj11`.
+
+`conn` is an **open, equality-matched** field: two ports are connector-compatible when
+their `conn` strings are equal or either is `any`, and a mismatch raises a plan issue.
+Tokens in use today: `rj45 sfp usba usbc hdmi iec barrel audio xlr sd db9 any`. Reuse an
+existing token whenever the physical connector matches; only coin a new one for a genuinely
+new connector family (and use it on both ends that should mate).
+
 `RW.layout({groups, name, model})` turns that into positioned ports and a device box size.
 Glyphs are simplified line art in `RW.GLYPHS`; add new ones as arrays of rect/circle/line/path.
 
-Currently seeded: Ubiquiti UDM-Pro-Max, USW-Pro-Max-16-PoE, USW-Ultra, U7 Pro, U7 Pro XGS;
-Raspberry Pi 5; Mac mini M4 Pro; Minisforum MS-R1; Google Fiber Jack GOXP330C; four power
-units (Sabrent VOLTIK, SuperDanny strip, CyberPower CP1500AVRLCD, APC BE1050G3); three
-SFP+ to RJ45 transceivers; seven power adapters; and generic PDU, outlet, UPS, patch panel,
-display, NAS, injector, blank.
+**Registry API** (built at load, self-healing when `DEVICES` mutates — e.g. the discovery
+`mergeDefs` path — so callers never reindex by hand):
+
+```js
+RW.search(q)      // case-insensitive match over name/model/vendor/kind/upc; ''→all
+RW.geom(d)        // memoized layout() geometry for a library def (content-keyed)
+RW.byVendor       // { vendor: [def,…] }   RW.byKind, RW.byFlavor likewise
+RW.vendors()      // sorted vendor names    RW.kinds()   RW.flavors() → ['vanilla','pro','studio']
+RW.addDevices([]) // append + index a module's entries
+```
+
+The gear picker uses `RW.search()` + `RW.geom()` rather than rescanning and
+re-laying-out the whole catalog per keystroke.
+
+Catalog composition (by flavor floor): **vanilla 62** (Raspberry Pi, Arduino/Qualcomm,
+generic power/passive/service) · **pro 86** (Ubiquiti UniFi, M5Stack, Minisforum,
+transceivers, NAS) · **studio 96** (Apple, Samsung, ETC Eos + Net3/Response DMX,
+generic display). These floors line up with the edition caps in `README.md`: vanilla
+alone → Home; vanilla+pro (148) → Pro; all 244 → Studio.
 
 ### Migration matters
 
@@ -240,7 +281,9 @@ Devices are **snapshots** of a library definition taken when placed. `migrate()`
 load, JSON import and `setPlan()`, backfilling any field an instance is missing from its
 definition — device-level flags and per-group keys matched by `k`. User-edited values are
 never overwritten, only absent ones are filled. **If you add a field to the library, add it
-to `DEV_FIELDS` or `GROUP_FIELDS` in `migrate()`** or existing plans will not see it.
+to `DEV_FIELDS` or `GROUP_FIELDS` in `migrate()`** or existing plans will not see it. Note
+`flavor` is intentionally *excluded* from both — it selects an edition at the library level
+and must never travel with a placed instance.
 
 ---
 
