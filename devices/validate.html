@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RackWire — Device Catalog Validator</title>
+<!--
+  Device-catalog validator (authoring tool, NOT part of the shipped app).
+  Open this file directly in a browser (file:// is fine). It loads the library
+  engine, every devices/*.js module in the SAME order as index.html, then the
+  shared checker (validate-core.js), and renders a pass/fail report.
+
+  Keep the <script> list below in lock-step with index.html: when you add a
+  vendor module, add its tag in BOTH files. See devices/SPEC.md.
+-->
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #070A0E; color: #E6EDF3;
+         font: 15px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  main { max-width: 900px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 18px; letter-spacing: .04em; margin: 0 0 4px; }
+  .sub { color: #74889D; margin: 0 0 24px; }
+  .banner { padding: 18px 20px; border-radius: 10px; font-size: 20px; font-weight: 700;
+            letter-spacing: .02em; margin: 0 0 24px; }
+  .pass { background: #0d2a17; color: #A3E635; border: 1px solid #1f5b32; }
+  .fail { background: #2c0f12; color: #ff6b74; border: 1px solid #6b1f26; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+           gap: 12px; margin: 0 0 24px; }
+  .card { background: #0d1219; border: 1px solid #1b2531; border-radius: 8px; padding: 12px 14px; }
+  .card .k { color: #74889D; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .card .v { font-size: 22px; font-weight: 700; color: #22D3EE; }
+  h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: #74889D;
+       margin: 24px 0 8px; }
+  ul.errs { list-style: none; margin: 0; padding: 0; }
+  ul.errs li { background: #17090b; border-left: 3px solid #ff6b74; padding: 6px 12px;
+               margin: 0 0 4px; border-radius: 0 4px 4px 0; white-space: pre-wrap; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid #1b2531; }
+  th { color: #74889D; font-weight: 600; }
+  td.n { text-align: right; color: #22D3EE; }
+</style>
+</head>
+<body>
+<main>
+  <h1>RackWire · Device Catalog Validator</h1>
+  <p class="sub">Loads the library exactly as the app does, then audits every device against the schema. Authoring tool — not shipped.</p>
+  <div id="out">Loading…</div>
+</main>
+
+<!-- Library engine, then each vendor module in index.html order, then the checker. -->
+<script src="../device-library.js"></script>
+<script src="generic.js"></script>
+<script src="ubiquiti.js"></script>
+<script src="apple.js"></script>
+<script src="samsung.js"></script>
+<script src="raspberry-pi.js"></script>
+<script src="qualcomm-arduino.js"></script>
+<script src="m5stack.js"></script>
+<script src="eos.js"></script>
+<script src="minisforum.js"></script>
+<script src="validate-core.js"></script>
+
+<script>
+/* Render the RW.validate() result into the page and mirror it to the console. */
+(function () {
+  var out = document.getElementById('out');
+  var esc = function (s) { return String(s).replace(/[&<>]/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); };
+
+  if (!window.RW || typeof window.RW.validate !== 'function') {
+    out.innerHTML = '<div class="banner fail">Could not load the library — check the &lt;script&gt; paths.</div>';
+    return;
+  }
+
+  var r = window.RW.validate();
+  var s = r.stats;
+
+  var vendorsRows = Object.keys(s.vendors).sort().map(function (v) {
+    return '<tr><td>' + esc(v) + '</td><td class="n">' + s.vendors[v] + '</td></tr>';
+  }).join('');
+
+  var html = '';
+  html += '<div class="banner ' + (r.ok ? 'pass' : 'fail') + '">' +
+          (r.ok ? '✓ ALL CHECKS PASSED' : '✗ ' + r.errors.length + ' VALIDATION ERROR(S)') + '</div>';
+
+  html += '<div class="stats">' +
+    '<div class="card"><div class="k">Total devices</div><div class="v">' + s.total + '</div></div>' +
+    '<div class="card"><div class="k">Vanilla</div><div class="v">' + s.flavors.vanilla + '</div></div>' +
+    '<div class="card"><div class="k">Pro (+)</div><div class="v">' + s.flavors.pro + '</div></div>' +
+    '<div class="card"><div class="k">Studio (+)</div><div class="v">' + s.flavors.studio + '</div></div>' +
+    '</div>';
+
+  if (!r.ok) {
+    html += '<h2>Errors</h2><ul class="errs">' +
+      r.errors.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>';
+  }
+
+  html += '<h2>Vendors</h2><table><thead><tr><th>Vendor</th><th class="n">Devices</th></tr></thead><tbody>' +
+          vendorsRows + '</tbody></table>';
+
+  html += '<h2>Kinds</h2><p class="sub">' + esc(s.kinds.join(', ')) + '</p>';
+
+  out.innerHTML = html;
+
+  /* Console mirror, so a headless/DevTools run gets the same verdict. */
+  if (r.ok) { console.log('ALL CHECKS PASSED — ' + s.total + ' devices'); }
+  else { console.error(r.errors.length + ' validation error(s):'); r.errors.forEach(function (e) { console.error('  - ' + e); }); }
+})();
+</script>
+</body>
+</html>

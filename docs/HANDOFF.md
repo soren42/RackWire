@@ -208,7 +208,10 @@ literal**. `device-library.js` is now the *engine only* — glyph geometry, cabl
 `<script>` that calls `window.RW.addDevices([...])`. `index.html` loads the engine first,
 then the modules (order among modules is irrelevant), then the app. This keeps the
 no-build / offline / `file://` contract while letting the catalog scale — it now holds
-**244 curated devices** (was ~31) and grows continuously. See §11 for how to add gear.
+**244 curated devices** (was ~31) and grows continuously. Growing it is a permanent task
+with a fixed procedure — schema, glyph vocabulary, worked exemplars, the one-shot vendor
+recipe, and the validation gate all live in **`devices/SPEC.md`**; validate any change by
+opening **`devices/validate.html`** in a browser.
 
 Each entry:
 
@@ -233,14 +236,21 @@ Each entry:
     poe, poeW,      // what this port delivers
     poeDrawW,       // what this device draws when powered over ethernet
     batt,           // outlet is on battery
-    domain,         // net power usb other   (exactly one)
-    conn            // rj45 sfp usba usbc hdmi iec barrel audio xlr bnc lc db9 any
+    domain,         // net power usb other   (exactly one; closed set)
+    conn            // connector token, equality-matched for mate-compatibility
   }]
 }
 ```
 
-Allowed `glyph` values (closed set): `rj45 sfp usba usbc hdmi microhdmi iec_in iec_out
-nema barrel audio xlr bnc sd pcie gpio csi db9 lc rj11`.
+`glyph` is a **closed set** (drives rendering — an unknown glyph has no art):
+`rj45 sfp usba usbc hdmi microhdmi iec_in iec_out nema barrel audio xlr bnc sd pcie
+gpio csi db9 lc rj11`.
+
+`conn` is an **open, equality-matched** field: two ports are connector-compatible when
+their `conn` strings are equal or either is `any`, and a mismatch raises a plan issue.
+Tokens in use today: `rj45 sfp usba usbc hdmi iec barrel audio xlr sd db9 any`. Reuse an
+existing token whenever the physical connector matches; only coin a new one for a genuinely
+new connector family (and use it on both ends that should mate).
 
 `RW.layout({groups, name, model})` turns that into positioned ports and a device box size.
 Glyphs are simplified line art in `RW.GLYPHS`; add new ones as arrays of rect/circle/line/path.
