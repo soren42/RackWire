@@ -20,10 +20,14 @@ reference set** and the two never touch on disk.
 - **Data is browser JavaScript only.** No Node APIs, no `import`/`export`, no `fetch` at load.
 - **A module only calls `window.RW.addDevices([...])`.** It never touches the DOM, the app
   state, the network, or another module. Load order among modules is irrelevant.
-- **Reference data must be real.** Source every spec from the vendor's own tech-spec sheet.
-  If a SKU or a port count can't be confirmed, leave it out — do **not** synthesise a
-  plausible model. (We once removed an invented `RSN-DMX8-O`; the ETC Response Mk2 line is
-  only 1/2/4-port. Unverifiable reference data is worse than a smaller catalog.)
+- **Reference data must be real — fetch it, don't recall it.** Open the vendor's own
+  tech-spec sheet for **each** model and read every value off the page. Specs recalled from
+  training memory are plausible and *wrong*: a cross-lab review of one memory-authored vendor
+  found errors in **22 of 35** entries — invented internal PSUs, guessed adapter ratings,
+  mistyped SKUs. A value you did not read off a datasheet is a defect, not a placeholder. If a
+  SKU or a port count can't be confirmed, leave it out — do **not** synthesise a plausible
+  model. (We once removed an invented `RSN-DMX8-O`; the ETC Response Mk2 line is only
+  1/2/4-port. Unverifiable reference data is worse than a smaller catalog.)
 
 ---
 
@@ -225,8 +229,10 @@ Load order among data modules does not matter, but the two files must list the s
 ## 10. The one-shot vendor recipe
 
 Adding a vendor is one delegated task. Hand a research-capable agent this packet (fill the
-brackets); it returns a single `devices/<vendor>.js` file, which you then wire (§9) and
-validate (§8).
+brackets); it returns a single `devices/<vendor>.js` file **plus a citations table**, which
+you then wire (§9) and validate (§8). The agent must have live web access — an agent that
+cannot fetch datasheets cannot author a module (see §0; it would author from memory, which is
+the one failure this recipe exists to prevent).
 
 ```
 OBJECTIVE   Author devices/<vendor>.js: a curated set of <Vendor>'s <product lines>,
@@ -235,14 +241,36 @@ IN-SCOPE    Only the new file devices/<vendor>.js. Emit the whole file.
 OUT-SCOPE   index.html, other modules, the engine, any app code. Do not wire it up.
 GOVERNED-BY devices/SPEC.md — schema §2/§6, closed vocab §4/§6, flavor §3, hard rules §0.
 FLAVOR      All entries flavor: '<vanilla|pro|studio>' unless a model clearly belongs lower.
-SOURCING    Vendor tech-spec sheets only. Omit any model whose ports/SKU can't be confirmed.
-            Never invent a SKU or a port count.
+SOURCING    MANDATORY per-device datasheet fetch. For EACH model, retrieve the vendor's own
+            spec sheet / product page (web fetch or search — NOT memory) and read every value
+            off it. Populate no field from recall: remembered specs are plausible and wrong
+            (a memory-authored vendor once failed review 22/35). Omit any model you cannot
+            open and confirm. Never invent a SKU or a port count.
+VERIFY-EACH Confirm these traps against the sheet, per device — this is where memory lies:
+            · Exact SKU incl. generational suffix (GS724T vs GS724Tv6); a redesign may be a
+              wholly different SKU (M4300-8X8F is XSM4316S, not GSM4328S).
+            · Power interface TYPE — internal AC (iec_in) vs external DC adapter (barrel).
+              Small/PoE switches and APs are usually external DC; check, never assume.
+            · Adapter rating (volts/watts) read off the PSU/adapter spec, not guessed.
+            · Supplies: how many PSUs SHIP vs are optional (redundant ≠ two included).
+            · Combo/shared SFP ports counted correctly (a shared pair is count 2).
+            · PoE — per-port class + total budget (switch); published PoE draw (AP).
 FORMAT      One window.RW.addDevices([...]) call; the two exemplars in SPEC §7 are the style.
+SELF-AUDIT  Before returning, re-read the whole table against the fetched sheets; fix or drop
+            any entry you cannot fully stand behind, and state which (if any) you could not
+            fully confirm.
 ACCEPTANCE  node --check passes; every device satisfies SPEC §2/§6; ids globally unique;
             glyph ∈ closed set; domain ∈ {net,power,usb,other}; the file drops into
             validate.html green.
-RETURN      The complete devices/<vendor>.js, plus a one-line count of devices by kind.
+RETURN      (1) The complete devices/<vendor>.js. (2) A citations table — one row per device:
+            id · exact model · the source URL(s) actually opened. This table is the proof of
+            sourcing and the reviewer's checklist; a device with no citation is not done.
+            (3) A one-line count of devices by kind.
 ```
 
-Fan out one such agent per vendor to expand several at once; route review cross-lab per
-house policy (the author model does not validate its own catalog).
+Fan out one such agent per vendor to expand several at once; route review cross-lab per house
+policy (the author model does not validate its own catalog). The cross-lab pass is
+**spec-accuracy, not schema** — the validator (§8) already guarantees schema, so the reviewer
+re-fetches datasheets and checks the numbers against the citations table. A review returning
+more than a couple of FIXes is a signal the author skipped the per-device fetch above — treat
+it as a failed authoring pass to re-source, not a handful of values to patch.
