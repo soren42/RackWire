@@ -1,7 +1,9 @@
 # RackWire — Handoff to Claude Code
 
-A browser-based planner for cabling servers, network gear, power and peripherals.
-Two views: a logical connection map and a data table. Everything runs client-side today.
+A browser-based planner for network, power, and interconnect systems across a
+site. Rack layouts are one optional view; plans also cover distributed gear,
+circuits, and links between supported devices. Two views: a logical connection
+map and a data table. Everything runs client-side today.
 
 **Nothing here needs a rewrite to become real.** Every place that wants live data already
 has a defined seam. This document lists the seams, in priority order.
@@ -28,7 +30,7 @@ when the live overlay is enabled, polls a telemetry URL.
 
 ---
 
-## 2. What is real and what is stubbed
+## 2. Current integration state
 
 **Real and complete**
 
@@ -42,14 +44,28 @@ when the live overlay is enabled, polls a telemetry URL.
   path-to-internet and on-battery glows, live faults in the punch list
 - Host API and postMessage bridge for embedding
 
-**Stubbed — needs you**
+**Integrated when embedded in SolariNet**
 
-| Seam | Where | What it needs |
+| Seam | Where | What it does |
 |---|---|---|
-| Telemetry source | `live-adapter.js` | Point `solarinet-ws` / `solarinet-rest` at real endpoints |
-| Barcode lookup | `handleCode()` in the logic class | A UPC/model lookup service |
-| Device library | `window.RW.DEVICES` in `device-library.js` | Serve from inventory instead of a static array |
-| Persistence | `load()` / `persist()` | Swap localStorage for a backend if plans must be shared |
+| Telemetry | `solarinet-rest` in `live-adapter.js` | Polls `/api/rackwire/telemetry` for plan device keys, using the same-origin dashboard session |
+| Barcode lookup | `handleCode()` in `index.html` | Calls the operator-gated SoR inventory endpoint with the dashboard session cookie and `X-Solari-CSRF`; refreshes and retries once after a stale token |
+| Device library | `mergeLibrary()` in `index.html` | Merges SoR hardware models and saved port groups over the static offline seed without dropping seeded values when SoR fields are null |
+| Plan persistence | `load()` / `persist()` in `index.html` | Loads and saves shared plans through the SoR API, with localStorage fallback for file/offline use or API unavailability |
+| Network discovery | embedded host bridge | Navigates to SolariNet Discovery; scan admission and candidate adoption stay in the dashboard workflow |
+
+The integration does not require a separate RackWire login or duplicate
+inventory database. The browser session and SoR remain authoritative for
+embedded online operations.
+
+**Standalone behavior and remaining service work**
+
+Opening `index.html` from disk makes no network requests and keeps plans in
+localStorage. The static device seed and local code-binding flow remain usable
+offline. The `solarinet-ws` adapter can speak to a compatible WebSocket service,
+but this candidate does not provide or configure a RackWire WebSocket endpoint.
+Any separately hosted RackWire backend still needs its own authentication and
+CSRF contract before it accepts mutations.
 
 ---
 
@@ -60,9 +76,13 @@ when the live overlay is enabled, polls a telemetry URL.
 A **source** is a factory `function(ctx) -> { start(), stop() }` where `ctx` gives you
 `getPlan()`, `emit(frame)`, `setStatus(state, msg)` and `config`.
 
-Three sources are registered: `simulator` (working demo), `solarinet-ws` and
-`solarinet-rest`. The latter two are written end to end — auth frame, asset subscribe,
-exponential-backoff reconnect, bearer-token polling — and only need a URL that exists.
+Three adapters are registered: `simulator`, `solarinet-ws`, and `solarinet-rest`.
+The simulator runs offline. In the SolariNet embed, REST polls the plan-specific
+`/api/rackwire/telemetry?keys=…` endpoint every five seconds and uses the existing
+same-origin dashboard session; its response envelope is normalized before the
+planner maps monitoring interface names to RackWire port IDs. The WebSocket
+adapter supports an auth frame, asset subscription, and reconnect backoff for a
+compatible service, but no WebSocket endpoint is configured in this candidate.
 
 ### Frame schema
 
@@ -289,25 +309,59 @@ and must never travel with a placed instance.
 
 ## 7. Barcode lookup
 
-`handleCode(code)` currently: checks the user's saved code→model bindings, then matches
-normalised model and name against the local library, then offers a bind dialog.
+In the SolariNet embed, `handleCode(code)` checks saved local code→model bindings,
+then asks the existing operator-gated SoR inventory endpoint to resolve a scanned
+asset. RackWire obtains the session-bound `X-Solari-CSRF` token from the dashboard
+identity endpoint and refreshes/retries once if the token expired. A resolved unit
+supplies its model and asset identity to the plan. If the scan is unknown, the
+service is unavailable, or the planner is offline, local model/name matching and
+the bind dialog remain available.
 
 A USB or Bluetooth reader already works anywhere in the app — a keystroke buffer catches
 the scan and fires on Enter. Camera scanning uses `BarcodeDetector` where the browser has
 it; **iOS Safari does not ship one**, so on an iPad the hardware reader is the path.
 
-To make lookup real, replace the middle of `handleCode()` with a call to your service and
-have it return a library-shaped device definition. The bind UI and the code map behind it
-can stay as the fallback for unrecognised codes.
+The SolariNet integration deliberately does not add a second barcode service. A
+separate hosted RackWire product may use another provider, but it must define its
+own authentication, authorization, and CSRF behavior before sending scans to a
+backend.
 
 ---
 
 ## 8. Known limits
 
-- Plans live in one localStorage key (`rackwire.project.v2`), snapshots in
-  `rackwire.project.v2.versions`, capped at 25. No multi-user, no conflict resolution.
+- In the SolariNet embed, shared plans and snapshots use the SoR API. LocalStorage
+  (`rackwire.project.v2` and `rackwire.project.v2.versions`, capped at 25) is the
+  offline/failure fallback and is local to that browser; it does not synchronize
+  concurrent edits or resolve conflicts.
+- The standalone discovery service remains independent of the SolariNet SoR. The
+  SolariNet embed routes scan requests to the dashboard's bounded Discovery workflow.
 - No cable slack or physical distance modelling. Deliberate — the map is logical, not spatial.
 - No rack elevation view. Racks exist as containers with U slots but are not drawn as a front face.
 - Curve routing is a heuristic over eight candidate control-point pairs, not a real router.
   Dense plans will still cross.
 - The simulator invents plausible numbers. It is for demoing the live view, not for tests.
+- The SolariNet REST telemetry path and browser-to-Discovery handoff have local
+  integration acceptance coverage; deployed host behavior and live monitor delivery
+  remain unverified until the candidate is staged.
+
+## 9. Current integration verification
+
+This section records the SolariNet integration candidate based on the published
+RackWire revision `5f29f59`; it is not a deployed release.
+
+- `node tests/dashboard/test_rackwire_ui.js`: **51 passed**. Covers the embedded
+  host bridge, navigation into SolariNet Discovery and Inventory, barcode action,
+  same-origin CSRF handling, and token bridge behavior.
+- `php tests/dashboard/test_rackwire_api.php`: **58 passed**. Covers SoR-backed
+  plans, ownership, snapshots, library profiles, and commit classification.
+- The standalone browser acceptance passed with pinned Playwright 1.64.1 and the
+  cached Chromium headless shell. It covers offline boot, modal focus behavior,
+  local save/reload, map/table navigation, and the mobile toolbar.
+- SolariNet browser acceptance additionally covers scanner-ingest JSON → SoR
+  inventory → RackWire model profile/barcode/plan → bounded Discovery scan against
+  disposable databases. That flow and the worker lifecycle are recorded in the
+  parent integration workflow; neither represents deployed service behavior.
+
+The user and developer manuals are single-file HTML with paired US Letter PDFs.
+They distinguish local acceptance from live-host and public-release evidence.

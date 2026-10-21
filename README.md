@@ -1,7 +1,9 @@
 # RackWire
 
-A browser-based planner for cabling servers, network gear, power and peripherals.
-Two views: a logical connection map and a data table. Opens from a local file and
+A browser-based planner for network, power, and interconnect systems across a
+site. Rack layouts are one optional view; plans also cover distributed gear,
+circuits, and links between supported devices. Two views: a logical connection
+map and a data table. Opens from a local file and
 completes its core work with the network unplugged — the React runtime is vendored,
 so `file://` works fully offline.
 

@@ -1,8 +1,9 @@
 # CONTRACT-RW v1.0 — RackWire backend integration
 
-Authoritative design contract for integrating RackWire (browser-based connection
-planner, see `RackWire/HANDOFF.md`) into SolariNet. All work packages build against
-this document. Deviations require Lead approval.
+Authoritative design contract for integrating RackWire (browser-based network,
+power, and interconnect planner; see `RackWire/HANDOFF.md`) into SolariNet. Rack
+layouts are one optional planning surface. All work packages build against this
+document. Deviations require Lead approval.
 
 Worktree: `.claude/worktrees/rackwire`, branch `feat/rackwire` (off main).
 **Never edit files in `/home/jason/Code/Solarinet` proper — that tree serves the
@@ -20,10 +21,10 @@ live PHP API.**
 | D4 | Plan persistence = new SoR tables (`rw_plans`, `rw_plan_versions`) on cesium via `Sor::db()` (authoritative, 503 when unreachable), with client-side localStorage fallback for file:// / offline. | Plans are human-curated infra records; SoR replicates to benzene; commit-to-SoR then shares one DB/txn. |
 | D5 | Power modeling extends the existing SoR shape rather than a parallel domain: power inlets/outlets are `interfaces` rows (new `if_kind` values), power cords are `interconnects` (new `link_kind 'power'`), plus a new `power_circuits` table hanging off `locations`. | SoR brief §2/§8: reuse existing structures, no new edge tables. |
 | D6 | Committing a plan to SoR writes `interconnects` (asserted_kind='human', a dedicated `sources` row for RackWire) and `locations` racks/positions. Machine `lldp_adjacency` rows are read-only context, never treated as planned cables — filter on `link_kind` + `asserted_kind`. | SoR brief §2, §4. |
-| D7 | Barcode lookup = existing `POST /api/inventory/codes/lookup` (operator-gated; writes an audit scan row). No new barcode service. | Migration 015 anticipated this. |
+| D7 | Barcode lookup = existing `POST /api/inventory/codes/lookup` (operator-gated, session cookie + `X-Solari-CSRF`; writes an audit scan row). No new barcode service. | Migration 015 anticipated this; RackWire refreshes and retries one expired dashboard CSRF token. |
 | D8 | Device library served from SoR `hardware_models` (+ optional per-unit rows), merged client-side over the static `RW.DEVICES` seed. Port-geometry (`groups`) not in SoR yet → new `rw_model_groups` JSON column/table in migration 020 keyed to `hardware_models`. | Library must round-trip the `groups` schema in HANDOFF §6. |
 | D9 | Theming: token bridge stylesheet mapping `--sn-*` → dashboard tokens (`--sn-accent: var(--accent)` etc.), scoped in the rackwire app; SVG `tok()` re-resolves on a `MutationObserver` of `documentElement[data-theme]` (iframe inherits by copying parent's data-theme via bridge or reading `localStorage["solari-theme"]`). Cable domain colors are brand literals (`--rw-cable-*`, Brand Standards v1.1) outside the bridge — a host retheme never repaints a run's meaning (supersedes the original `--sn-signal-other`/`--sn-signal-open` literals). Standalone-from-disk keeps the existing `var(--sn-x, #fallback)` fallbacks. *(Amendment, brand-integration: the `--sn-*` names and bridge mechanics are unchanged, but the literal fallbacks are now RackWire brand values per Brand Standards v1.1.0 — Rack Ink `#070A0E`, Surface `#0E141C`, Type White `#EDF3F9`, Divider `#1E2937`, Frame Shadow `#25303F`, Frame Steel `#63788F` chrome-only, light accent `#0B7FA8`. `--rw-*` additionally carries the brand motion durations 120/220/400ms with reduced-motion honored; all `--rw-*` tokens are brand-invariant.)* | Dashboard brief §6: `--sn-*` does not exist dashboard-side. |
-| D10 | No CSRF tokens (house style — session cookie SameSite=Lax + JSON body); all mutations `Operator::requireOperator()`. Flagged to operator as a known repo-wide gap. *(Amendment, standalone-product conversion: this remains true and remains a known gap — acceptable inside SolariNet's house style, **not** acceptable for RackWire as a shipped standalone product. Any hosted RackWire backend (`app.rackwire.studio`) must add CSRF protection before shipping; this decision does not carry over.)* | Dashboard brief §3. |
+| D10 | SolariNet-hosted RackWire writes use the dashboard session cookie, operator authorization, and session-bound `X-Solari-CSRF`; JSON content type and `SameSite=Lax` are not treated as CSRF defenses. The static `file://` app makes no backend writes. Any separately hosted RackWire backend must provide authentication and CSRF protection before accepting mutations. | Dashboard routes validate session, role, and CSRF; the iframe obtains the token from `/api/auth/whoami` and refreshes/retries once when it expires. |
 
 ## 1. Migration 020 — `netdb/sor/migrations/020_rackwire.sql`
 
@@ -75,6 +76,9 @@ DO fire CDC — acceptable, appliers diff before acting.
   `live_flag`).
 - (v1.1 note: names above reflect the landed migration 020, ratified as-built;
   M2 API code was verified against the real DDL.)
+- RackWire's product scope is network, power, and interconnect planning across
+  supported devices; rack layouts are optional. The migration 020 `sources`
+  display name below is a legacy database label, not the product definition.
 - Sources row: `INSERT IGNORE INTO sources (slug, display_name, kind, endpoint)
   VALUES ('rackwire', 'RackWire connection planner', 'human',
   'https://dashboard.akoria.net/rackwire/')`. API resolves via
@@ -143,8 +147,9 @@ transaction.
 3. Persistence adapter: `load()`/`persist()` try `/api/rackwire/plans` first
    (same-origin fetch), fall back to localStorage on network/401/file:// —
    standalone offline must keep working byte-for-byte.
-4. `handleCode()` middle swapped for `POST /api/inventory/codes/lookup`; bind
-   dialog stays as fallback for unknown codes.
+4. `handleCode()` middle swapped for `POST /api/inventory/codes/lookup` with the
+   dashboard session cookie and session-bound `X-Solari-CSRF`; bind dialog stays
+   as fallback for unknown codes.
 5. Live preset: settings default source `solarinet-rest`, url
    `/api/rackwire/telemetry?keys=…` (keys recomputed from plan on start), no token.
    `config.transform` maps `key|ifName` → `key|portId` using per-device `ifMap`
