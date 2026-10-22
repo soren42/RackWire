@@ -132,6 +132,11 @@ window.__resources = Object.assign(window.__resources || {}, {
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 0ms !important; scroll-behavior: auto !important; }
   }
+  @media (max-width:600px) {
+    .rw-toolbar { flex-wrap:wrap; justify-content:flex-start; gap:6px !important; padding:6px 8px !important; }
+    .rw-toolbar-spacer { display:none !important; }
+    .rw-toolbar-subtitle { display:none !important; }
+  }
 </style>
 <script src="device-library.js"></script>
 <!-- Device library data modules — each calls window.RW.addDevices([...]).
@@ -155,19 +160,19 @@ window.__resources = Object.assign(window.__resources || {}, {
   <!-- Header is dark chrome (deck p. 21 application spec): Surface bar, Divider rule,
        signal reserved for the one primary action and the active tab — no filled field,
        no shadow, no radius. -->
-  <div style="flex:0 0 auto;display:{{ chromeDisplay }};align-items:center;gap:8px;padding:8px 24px;background:var(--sn-surface, #0E141C);color:var(--sn-ink, #EDF3F9);border-bottom:1px solid var(--sn-divider, #1E2937)">
+  <div class="rw-toolbar" style="flex:0 0 auto;display:{{ chromeDisplay }};align-items:center;gap:8px;padding:8px 24px;background:var(--sn-surface, #0E141C);color:var(--sn-ink, #EDF3F9);border-bottom:1px solid var(--sn-divider, #1E2937)">
     <div style="display:flex;align-items:center;gap:8px;margin-right:8px">
       <span style="display:inline-flex;width:32px;height:32px;flex:0 0 32px;background:#070A0E;border-radius:4px"><img src="./styleguide/rackwire-mark.svg" alt="" width="32" height="32" /></span>
       <span style="display:flex;flex-direction:column;line-height:1">
         <span style="font-size:17px;font-weight:600;letter-spacing:-0.02em">RackWire</span>
-        <span style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:var(--sn-faint, #798EA4)">CONNECTION PLANNER</span>
+        <span class="rw-toolbar-subtitle" style="font-family:var(--font-mono);font-size:9px;letter-spacing:0.14em;color:var(--sn-faint, #798EA4)">NETWORK · POWER · INTERCONNECT PLANNING</span>
       </span>
     </div>
     <div style="display:flex;gap:4px;padding:3px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider, #1E2937);border-radius:8px">
       <button onClick="{{ goMap }}" style="{{ tabMapStyle }}">Map</button>
       <button onClick="{{ goTable }}" style="{{ tabTableStyle }}">Data</button>
     </div>
-    <div style="flex:1"></div>
+    <div class="rw-toolbar-spacer" style="flex:1"></div>
     <button onClick="{{ openLibrary }}" style="display:flex;align-items:center;gap:7px;min-height:44px;padding:0 16px;background:var(--sn-accent, #22D3EE);color:var(--sn-on-field, #070A0E);border:none;border-radius:8px;font-weight:600;font-size:14px;cursor:pointer">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M12 5v14"></path></svg> Add gear
     </button>
@@ -338,14 +343,14 @@ window.__resources = Object.assign(window.__resources || {}, {
     <div onClick="{{ closeLibrary }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40"></div>
   </sc-if>
   <sc-if value="{{ libOpen }}" hint-placeholder-val="{{ false }}">
-    <div style="position:fixed;left:0;top:0;bottom:0;width:390px;max-width:88vw;background:var(--sn-surface, #0E141C);border-right:1px solid var(--sn-divider, #1E2937);z-index:41;display:flex;flex-direction:column;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
+    <div role="dialog" aria-modal="true" aria-labelledby="rw-library-title" tabindex="-1" style="position:fixed;left:0;top:0;bottom:0;width:390px;max-width:88vw;background:var(--sn-surface, #0E141C);border-right:1px solid var(--sn-divider, #1E2937);z-index:41;display:flex;flex-direction:column;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
       <div style="padding:16px;border-bottom:1px solid var(--sn-raised, #161F2A)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-          <div style="font-size:15px;font-weight:600">Gear library</div>
+          <div id="rw-library-title" style="font-size:15px;font-weight:600">Gear library</div>
           <div style="flex:1"></div>
-          <button onClick="{{ closeLibrary }}" style="min-width:36px;min-height:36px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
+          <button onClick="{{ closeLibrary }}" aria-label="Close gear library" style="min-width:36px;min-height:36px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
         </div>
-        <input value="{{ libQ }}" onChange="{{ setLibQ }}" placeholder="Name, model or UPC…" style="width:100%;min-height:44px;box-sizing:border-box" />
+        <input value="{{ libQ }}" onChange="{{ setLibQ }}" aria-label="Search gear library" placeholder="Name, model or UPC…" style="width:100%;min-height:44px;box-sizing:border-box" />
       </div>
       <div style="flex:1;overflow:auto;padding:10px">
         <sc-for list="{{ libResults }}" as="d" hint-placeholder-count="6">
@@ -364,8 +369,8 @@ window.__resources = Object.assign(window.__resources || {}, {
 
   <sc-if value="{{ cm }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px">
-      <div style="width:520px;max-width:100%;max-height:92vh;overflow:auto;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
-        <div style="font-size:16px;font-weight:600;margin-bottom:4px">{{ cm.title }}</div>
+      <div role="dialog" aria-modal="true" aria-labelledby="rw-cable-title" tabindex="-1" style="width:520px;max-width:100%;max-height:92vh;overflow:auto;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
+        <div id="rw-cable-title" style="font-size:16px;font-weight:600;margin-bottom:4px">{{ cm.title }}</div>
         <div style="font-family:var(--font-mono);font-size:11px;color:var(--sn-accent, #22D3EE);margin-bottom:16px;line-height:1.6">{{ cm.route }}</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
           <label style="grid-column:span 2;font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em">CABLE TYPE / STANDARD
@@ -414,10 +419,10 @@ window.__resources = Object.assign(window.__resources || {}, {
 
   <sc-if value="{{ scan }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px">
-      <div style="width:440px;max-width:100%;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
-        <div style="font-size:16px;font-weight:600;margin-bottom:6px">Scan or type a code</div>
+      <div role="dialog" aria-modal="true" aria-labelledby="rw-scan-title" tabindex="-1" style="width:440px;max-width:100%;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
+        <div id="rw-scan-title" style="font-size:16px;font-weight:600;margin-bottom:6px">Scan or type a code</div>
         <div style="font-size:12px;color:var(--sn-dim, #8FA3BA);line-height:1.55;margin-bottom:12px">{{ scan.msg }}</div>
-        <input ref="{{ scanRef }}" value="{{ scan.code }}" onChange="{{ scanChange }}" onKeyDown="{{ scanKey }}" placeholder="UPC / EAN / model" style="width:100%;min-height:48px;box-sizing:border-box;font-family:var(--font-mono)" />
+        <input ref="{{ scanRef }}" value="{{ scan.code }}" onChange="{{ scanChange }}" onKeyDown="{{ scanKey }}" aria-label="UPC, EAN, or model code" placeholder="UPC / EAN / model" style="width:100%;min-height:48px;box-sizing:border-box;font-family:var(--font-mono)" />
         <sc-if value="{{ scan.showBind }}" hint-placeholder-val="{{ false }}">
           <div style="margin-top:12px">
             <div style="font-family:var(--font-mono);font-size:9px;color:var(--sn-faint, #798EA4);letter-spacing:0.1em;margin-bottom:5px">BIND THIS CODE TO</div>
@@ -446,7 +451,7 @@ window.__resources = Object.assign(window.__resources || {}, {
        /discover/ subapp; the backend API (/api/discovery) is unchanged. -->
   <sc-if value="{{ disco }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.72);z-index:51;display:flex;align-items:center;justify-content:center;padding:16px">
-      <div style="width:660px;max-width:100%;max-height:86vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
+      <div role="dialog" aria-modal="true" aria-label="Discover devices on the network" tabindex="-1" style="width:660px;max-width:100%;max-height:86vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
         <div style="display:flex;align-items:center;gap:8px;padding:16px 16px 12px;border-bottom:1px solid var(--sn-raised, #161F2A)">
           <div style="font-size:16px;font-weight:600">Discover devices on the network</div>
           <div style="flex:1"></div>
@@ -536,10 +541,10 @@ window.__resources = Object.assign(window.__resources || {}, {
 
   <sc-if value="{{ search }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.66);z-index:52;display:flex;align-items:flex-start;justify-content:center;padding:70px 16px 16px">
-      <div style="width:540px;max-width:100%;max-height:72vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;overflow:hidden;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
+      <div role="dialog" aria-modal="true" aria-label="Find a device or port" tabindex="-1" style="width:540px;max-width:100%;max-height:72vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;overflow:hidden;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
         <div style="display:flex;align-items:center;gap:8px;padding:12px">
-          <input ref="{{ searchRef }}" value="{{ search.q }}" onChange="{{ setSearch }}" placeholder="Find a device or port…" style="flex:1;min-height:46px;font-size:15px" />
-          <button onClick="{{ closeSearch }}" style="min-width:44px;min-height:44px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
+          <input ref="{{ searchRef }}" value="{{ search.q }}" onChange="{{ setSearch }}" aria-label="Find a device or port" placeholder="Find a device or port…" style="flex:1;min-height:46px;font-size:15px" />
+          <button onClick="{{ closeSearch }}" aria-label="Close device search" style="min-width:44px;min-height:44px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
         </div>
         <div style="padding:0 14px 8px;font-family:var(--font-mono);font-size:9.5px;letter-spacing:0.1em;color:var(--sn-faint, #798EA4)">{{ searchCount }}</div>
         <div style="flex:1;overflow:auto;padding:0 8px 10px">
@@ -556,8 +561,8 @@ window.__resources = Object.assign(window.__resources || {}, {
 
   <sc-if value="{{ help }}" hint-placeholder-val="{{ false }}">
     <div onClick="{{ closeHelp }}" style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:52;display:flex;align-items:center;justify-content:center;padding:16px">
-      <div style="width:430px;max-width:100%;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
-        <div style="font-size:15px;font-weight:600;margin-bottom:12px">Keyboard shortcuts</div>
+      <div role="dialog" aria-modal="true" aria-labelledby="rw-help-title" tabindex="-1" style="width:430px;max-width:100%;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
+        <div id="rw-help-title" style="font-size:15px;font-weight:600;margin-bottom:12px">Keyboard shortcuts</div>
         <div style="display:grid;grid-template-columns:auto 1fr;gap:7px 16px;align-items:baseline">
           <sc-for list="{{ shortcuts }}" as="row" hint-placeholder-count="6">
             <span style="font-family:var(--font-mono);font-size:11px;color:var(--sn-accent, #22D3EE);white-space:nowrap">{{ row.keys }}</span>
@@ -571,11 +576,11 @@ window.__resources = Object.assign(window.__resources || {}, {
 
   <sc-if value="{{ versionsOpen }}" hint-placeholder-val="{{ false }}">
     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:52;display:flex;align-items:center;justify-content:center;padding:16px">
-      <div style="width:480px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
+      <div role="dialog" aria-modal="true" aria-labelledby="rw-versions-title" tabindex="-1" style="width:480px;max-width:100%;max-height:80vh;display:flex;flex-direction:column;background:var(--sn-surface, #0E141C);border:1px solid var(--sn-divider-strong, #25303F);border-radius:10px;padding:16px;animation:rw-in var(--rw-motion-base) cubic-bezier(.2,.8,.2,1)">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-          <div style="font-size:15px;font-weight:600;flex:1">Snapshots</div>
+          <div id="rw-versions-title" style="font-size:15px;font-weight:600;flex:1">Snapshots</div>
           <button onClick="{{ saveVersionNow }}" style="min-height:40px;padding:0 14px;background:var(--sn-accent, #22D3EE);color:var(--sn-on-field, #070A0E);border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px">Save current</button>
-          <button onClick="{{ closeVersions }}" style="min-width:40px;min-height:40px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
+          <button onClick="{{ closeVersions }}" aria-label="Close snapshots" style="min-width:40px;min-height:40px;background:var(--sn-raised, #161F2A);border:1px solid var(--sn-divider-strong, #25303F);border-radius:8px;color:var(--sn-faint, #798EA4);cursor:pointer">✕</button>
         </div>
         <div style="flex:1;overflow:auto;display:flex;flex-direction:column;gap:8px">
           <sc-for list="{{ versionList }}" as="v" hint-placeholder-count="2">
@@ -618,16 +623,44 @@ const KEY = 'rackwire.project.v2';
    file://, every helper short-circuits, and no request is ever attempted.
 
    When the page is served same-origin from the dashboard the same helpers layer
-   the REST API on top — the session cookie rides along on fetch's default
-   `credentials: "same-origin"`, so there is no token to configure and a 401
+   the REST API on top — the session cookie rides along on same-origin fetches,
+   and writes use the dashboard's session-bound X-Solari-CSRF token. A 401
    (logged out) degrades to exactly the offline path rather than erroring. */
 const API = '/api/rackwire';
 const PLAN_ID_KEY = KEY + '.planId';       // which rw_plans row this browser is bound to
 const PLAN_NAME_KEY = KEY + '.planName';
 const REMOTE_VERSIONS_KEY = KEY + '.versions.remote';  // id/name/at cache, so versions() stays sync
+let rwPlanCsrf = '';
+let rwPlanCsrfPromise = null;
 
 /* file:// (and anything else without an HTTP origin) is permanently offline. */
 function rwOnline() { return location.protocol === 'http:' || location.protocol === 'https:'; }
+
+/* RackWire lives in its own document and cannot reuse api.jsx's private token
+   cache. Read the same authenticated identity envelope the dashboard uses;
+   coalesce simultaneous writes so a burst needs only one whoami request. */
+async function rwSessionCsrf(refresh) {
+  if (!rwOnline()) return '';
+  if (refresh) rwPlanCsrf = '';
+  if (rwPlanCsrf) return rwPlanCsrf;
+  if (rwPlanCsrfPromise && !refresh) return rwPlanCsrfPromise;
+  const pending = (async () => {
+    try {
+      const r = await fetch('/api/auth/whoami', {
+        headers: { Accept: 'application/json' }, credentials: 'same-origin'
+      });
+      if (!r.ok) return '';
+      const j = await r.json();
+      const token = j && j.ok && j.data && typeof j.data.csrfToken === 'string'
+        ? j.data.csrfToken : '';
+      if (token) rwPlanCsrf = token;
+      return token;
+    } catch (e) { return ''; }
+  })();
+  rwPlanCsrfPromise = pending;
+  try { return await pending; }
+  finally { if (rwPlanCsrfPromise === pending) rwPlanCsrfPromise = null; }
+}
 
 /* ── postMessage peer pinning (HANDOFF §4 bridge) ────────────────────────────
    Embedded, this frame has exactly one legitimate correspondent: the dashboard
@@ -640,6 +673,7 @@ function rwOnline() { return location.protocol === 'http:' || location.protocol 
    is skipped and posts stay wildcarded, exactly as before. That costs nothing —
    a page opened from disk is not embedded, so it never posts at all. */
 const RW_EMBEDDED = (() => { try { return !!window.parent && window.parent !== window; } catch (e) { return false; } })();
+const RW_SOLARINET_EMBED = new URLSearchParams(location.search).get('solarinet') === '1';
 const RW_ORIGIN = rwOnline() ? location.origin : null;
 const RW_TARGET = RW_ORIGIN || '*';
 function rwFromHost(e) {
@@ -656,15 +690,26 @@ function rwFromHost(e) {
 async function rwFetch(path, body) {
   if (!rwOnline()) return null;
   try {
-    const opt = { headers: { Accept: 'application/json' } };
+    const opt = { headers: { Accept: 'application/json' }, credentials: 'same-origin' };
     if (body !== undefined) {
+      const token = await rwSessionCsrf(false);
+      if (!token) return null;
       opt.method = 'POST';
       opt.headers['Content-Type'] = 'application/json';
+      opt.headers['X-Solari-CSRF'] = token;
       opt.body = JSON.stringify(body);
     }
-    const r = await fetch(API + path, opt);
+    let r = await fetch(API + path, opt);
+    let j = await r.json();
+    if (r.status === 403 && body !== undefined && j && j.error &&
+        j.error.message === 'Missing or invalid CSRF token.') {
+      const token = await rwSessionCsrf(true);
+      if (!token) return null;
+      opt.headers['X-Solari-CSRF'] = token;
+      r = await fetch(API + path, opt);
+      j = await r.json();
+    }
     if (!r.ok) return null;
-    const j = await r.json();
     return j && j.ok ? j.data : null;
   } catch (e) { return null; }
 }
@@ -751,6 +796,8 @@ class Component extends DCLogic {
     this._wedge = '';
     this._wedgeT = 0;
     this._discoReq = 0;
+    this._activeDialog = null;
+    this._dialogReturnFocus = null;
   }
 
   // ---------- persistence ----------
@@ -857,6 +904,7 @@ class Component extends DCLogic {
     this.refreshVersions();
   }
   componentDidUpdate() {
+    this.syncDialogFocus();
     this.persist();
     const s = this.state, p = this._prev || {};
     const changed = p.devices && (p.devices !== s.devices || p.cables !== s.cables || p.racks !== s.racks || p.notes !== s.notes);
@@ -872,9 +920,51 @@ class Component extends DCLogic {
       try { window.parent.postMessage({ source: 'rackwire', event: 'select', payload: s.sel }, RW_TARGET); } catch (e) {}
     }
   }
+  syncDialogFocus() {
+    const dialog = document.querySelector('[role="dialog"][aria-modal="true"]');
+    if (dialog === this._activeDialog) return;
+    if (dialog) {
+      if (!this._activeDialog) this._dialogReturnFocus = document.activeElement;
+      this._activeDialog = dialog;
+      const first = dialog.querySelector('button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),a[href],[tabindex]:not([tabindex="-1"])');
+      (first || dialog).focus();
+      return;
+    }
+    if (this._activeDialog) {
+      this._activeDialog = null;
+      const previous = this._dialogReturnFocus;
+      this._dialogReturnFocus = null;
+      if (previous && previous.isConnected && typeof previous.focus === 'function') previous.focus();
+    }
+  }
   componentDidMount() {
     this._kd = (e) => {
       const inField = e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName);
+      const dialog = document.querySelector('[role="dialog"][aria-modal="true"]');
+      if (e.key === 'Escape' && (dialog || !inField)) {
+        clearTimeout(this._discoT);
+        this._discoReq += 1;
+        this.setState({ pending: null, ghost: null, cm: null, menu: false, libOpen: false, scan: null, disco: null, search: null, help: false, versions: null });
+        return;
+      }
+      if (e.key === 'Tab' && dialog) {
+        const focusable = Array.from(dialog.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'))
+          .filter((el) => el.getAttribute('aria-hidden') !== 'true' && el.getClientRects().length > 0);
+        if (!focusable.length) {
+          e.preventDefault();
+          dialog.focus();
+          return;
+        }
+        const first = focusable[0], last = focusable[focusable.length - 1], active = document.activeElement;
+        if (e.shiftKey && (active === first || !dialog.contains(active))) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && (active === last || !dialog.contains(active))) {
+          e.preventDefault();
+          first.focus();
+        }
+        return;
+      }
       const mod = e.metaKey || e.ctrlKey;
       if (mod && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); return e.shiftKey ? this.redo() : this.undo(); }
       if (mod && (e.key === 'y' || e.key === 'Y')) { e.preventDefault(); return this.redo(); }
@@ -898,7 +988,6 @@ class Component extends DCLogic {
         if (this._wedge.length >= 6) this.handleCode(this._wedge.trim());
         this._wedge = '';
       } else if (e.key.length === 1) this._wedge += e.key;
-      if (e.key === 'Escape') { clearTimeout(this._discoT); this._discoReq += 1; this.setState({ pending: null, ghost: null, cm: null, menu: false, libOpen: false, scan: null, disco: null, search: null, help: false, versions: null }); }
       if ((e.key === 'Backspace' || e.key === 'Delete') && this.state.sel.length) { e.preventDefault(); this.deleteSelection(); }
     };
     window.addEventListener('keydown', this._kd);
@@ -990,6 +1079,7 @@ class Component extends DCLogic {
         if (config && config.url != null) this.setState({ live: Object.assign({}, this.state.live, { url: config.url }) });
         this.startLive(source, config && config.url);
       },
+      openScan: () => this.setState({ scan: { code: '', msg: 'Scan with a USB or Bluetooth reader, type a model number, or try the camera.', showBind: false, cta: 'Look up', cam: false }, menu: false }),
       select: (uids) => this.setState({ sel: [].concat(uids || []) }),
       focus: (uid) => {
         const d = this.dev(uid);
@@ -1975,7 +2065,8 @@ class Component extends DCLogic {
   }
   /* POST /api/inventory/codes/lookup — the existing operator-gated barcode
      registry (CONTRACT-RW D7); the call also writes the audit scan row, which
-     is why it is a POST and why it is skipped entirely when offline. A hit on a
+     is why it is a POST and why it is skipped entirely when offline. It uses
+     RackWire's cached session-bound CSRF token. A hit on a
      hardware_units row resolves to that unit's hardware_model, which is exactly
      the id the /api/rackwire/library merge keys RW.DEVICES by — so a scan lands
      the real model whether or not it exists in the static seed. Its asset tag
@@ -1988,11 +2079,23 @@ class Component extends DCLogic {
     if (!rwOnline()) return null;
     let j = null;
     try {
-      const r = await fetch('/api/inventory/codes/lookup', {
+      const send = async (token) => fetch('/api/inventory/codes/lookup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Solari-CSRF': token },
         body: JSON.stringify({ code: code })
       });
+      let token = await rwSessionCsrf(false);
+      if (!token) return null;
+      let r = await send(token);
+      if (r.status === 403) {
+        const failure = await r.clone().json().catch(() => null);
+        if (failure && failure.error && failure.error.message === 'Missing or invalid CSRF token.') {
+          token = await rwSessionCsrf(true);
+          if (!token) return null;
+          r = await send(token);
+        }
+      }
       if (!r.ok) return null;
       j = await r.json();
     } catch (e) { return null; }
@@ -2053,6 +2156,10 @@ class Component extends DCLogic {
     this.setState({ disco: Object.assign({}, this.state.disco, patch) });
   }
   async openDiscover() {
+    if (RW_SOLARINET_EMBED && RW_EMBEDDED) {
+      try { window.parent.postMessage({ source: 'rackwire', event: 'navigate', payload: { route: 'discovery' } }, RW_TARGET); } catch (e) {}
+      return;
+    }
     const req = ++this._discoReq;
     this.setState({ menu: false, disco: { open: true, msg: 'Checking the discovery service…', subnet: '', devices: [], sel: null, cand: null, rec: null, match: null, assocTo: '', scanning: false, busy: false } });
     if (!rwOnline()) { this.discoPatch({ online: false, msg: 'Discovery needs the hosted RackWire service; it is unavailable when the planner is opened from a file. Open https://rackwire.akoria.net/ instead.' }); return; }

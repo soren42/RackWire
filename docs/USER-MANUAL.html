@@ -61,30 +61,84 @@
     }
     @media (prefers-reduced-motion:reduce) { html { scroll-behavior:auto } }
     @media print {
-      @page { margin:18mm }
-      body { background:#fff; color:var(--rack-ink); font-size:11pt }
-      .masthead { background:var(--rack-ink); color:var(--ink); break-after:page }
+      @page { size:Letter; margin:14mm }
+      body { background:#fff; color:var(--rack-ink); font-size:10pt; line-height:1.42 }
+      .masthead { background:var(--rack-ink); color:var(--ink); break-after:page; min-height:8.8in; display:block; padding-top:1.6in }
+      .accent-rule { display:none }
+      .masthead .lede { color:#CBD7E3 }
       .masthead-inner,.layout { width:100% }
       .layout { display:block; padding:0 }
       nav { display:none }
-      section { padding-bottom:32px }
+      section { padding-bottom:16px }
       h2,h3,strong { color:var(--rack-ink) }
       p,ol,ul,td { color:#344454 }
-      .callout { background:#f4f7fa; border-color:#b1becc }
-      .signal-field { color:var(--ink); print-color-adjust:exact; -webkit-print-color-adjust:exact }
+      .callout { background:#f4f7fa; border-color:#b1becc; color:#344454 }
+      .signal-field { color:var(--rack-ink); -webkit-print-color-adjust:exact }
+      .signal-grid,.signal { display:block }
+      .signal { margin:8px 0; break-inside:avoid }
+      .signal .swatch { display:inline-block; width:45px; vertical-align:middle; margin-right:12px }
+      .signal .hex { float:right }
       a { color:#075a78; text-decoration:none }
       .meta { color:#4a5b6b }
     }
   </style>
+  <style>
+    .print-actions { max-width:1120px; margin:10px auto; padding:0 32px; text-align:right }
+    .print-actions button { min-height:40px; padding:8px 13px; border:1px solid #9fb0be; border-radius:6px; background:#173f54; color:#fff; font:600 13px system-ui,sans-serif; cursor:pointer }
+    .print-actions button:focus-visible { outline:3px solid #1da5bf; outline-offset:2px }
+    @media print { .print-actions { display:none } }
+  </style>
 </head>
 <body>
+  <div class="print-actions"><button id="print-guide" type="button">Print or save as PDF</button></div>
   <header class="masthead">
     <div class="accent-rule"></div>
     <div class="masthead-inner">
-      <img class="lockup" src="../styleguide/rackwire-lockup-horizontal.svg" alt="RackWire">
+      <svg class="lockup" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" width="920" height="300" role="img" aria-label="RackWire">
+  <title>RackWire</title>
+  <defs>
+    <linearGradient id="frb" gradientUnits="userSpaceOnUse" x1="96" y1="56" x2="424" y2="456">
+      <stop offset="0" stop-color="#63788F"/><stop offset="1" stop-color="#25303F"/>
+    </linearGradient>
+    <linearGradient id="cob" gradientUnits="userSpaceOnUse" x1="200" y1="212" x2="312" y2="300">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="0.34" stop-color="#E879F9"/>
+      <stop offset="0.67" stop-color="#FB923C"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <linearGradient id="wmb" gradientUnits="userSpaceOnUse" x1="362" y1="0" x2="648" y2="100">
+      <stop offset="0" stop-color="#22D3EE"/><stop offset="1" stop-color="#A3E635"/>
+    </linearGradient>
+    <clipPath id="cpb"><circle cx="256.00" cy="100.00" r="30"/></clipPath>
+    <filter id="glb" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="5.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <g transform="translate(24.0,6.6) scale(0.56)"><g>
+      <g><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 120.90,378.00 L 120.90,134.00" fill="none" stroke="#FB923C" stroke-width="30.0" stroke-linecap="round" filter="url(#glb)"/></g>
+      <g><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 294.11,434.00 L 82.79,312.00" fill="none" stroke="url(#frb)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 429.21,312.00 L 217.89,434.00" fill="none" stroke="#E879F9" stroke-width="30.0" stroke-linecap="round" filter="url(#glb)"/></g>
+      <g><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 391.10,134.00 L 391.10,378.00" fill="none" stroke="url(#frb)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <g><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 217.89,78.00 L 429.21,200.00" fill="none" stroke="#22D3EE" stroke-width="30.0" stroke-linecap="round" filter="url(#glb)"/></g>
+      <g clip-path="url(#cpb)"><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="#070A0E" stroke-width="36.0" stroke-linecap="round"/><path d="M 82.79,200.00 L 294.11,78.00" fill="none" stroke="url(#frb)" stroke-width="30.0" stroke-linecap="round"/></g>
+      <path d="M 256.00,178.00 L 323.55,217.00 L 323.55,295.00 L 256.00,334.00 L 188.45,295.00 L 188.45,217.00 Z" fill="#070A0E"/>
+      <path d="M 256.00,198.00 L 306.23,227.00 L 306.23,285.00 L 256.00,314.00 L 205.77,285.00 L 205.77,227.00 Z" fill="url(#cob)" filter="url(#glb)"/>
+      <path d="M 256.00,230.00 L 278.52,243.00 L 278.52,269.00 L 256.00,282.00 L 233.48,269.00 L 233.48,243.00 Z" fill="#070A0E"/>
+    </g></g>
+  <g transform="translate(350.7,108.0) scale(0.84)">
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(0.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 32,0 L 64,100 M 13,68 L 51,68" transform="translate(95.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 62,20 A 39,39 0 1 0 62,80" transform="translate(184.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100 M 58,0 L 4,55 M 20,42 L 60,100" transform="translate(277.0,0)" fill="none" stroke="#EDF3F9" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 16,100 L 34,34 L 52,100 L 68,0" transform="translate(362.0,0)" fill="none" stroke="url(#wmb)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,0 L 0,100" transform="translate(455.0,0)" fill="none" stroke="url(#wmb)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 0,100 L 0,0 L 40,0 A 26,26 0 0 1 40,52 L 0,52 M 40,52 L 70,100" transform="translate(485.0,0)" fill="none" stroke="url(#wmb)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M 56,0 L 0,0 L 0,100 L 56,100 M 0,50 L 44,50" transform="translate(580.0,0)" fill="none" stroke="url(#wmb)" stroke-width="13.0" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>
       <div class="eyebrow">User Manual</div>
-      <h1>Plan the run. Read the signal. Catch the conflict.</h1>
-      <p class="lede">A field guide to RackWire’s logical map, connection data, capacity checks, snapshots, imports, exports, and optional live telemetry.</p>
+      <h1>Plan the system. Connect its parts. Catch the conflict.</h1>
+      <p class="lede">RackWire plans network, power, and other interconnects across supported devices. Rack layouts are optional. This guide covers the logical map, capacity checks, snapshots, imports, exports, and live telemetry.</p>
     </div>
   </header>
 
@@ -97,10 +151,12 @@
       <a href="#signals">Signal colors</a>
       <a href="#issues">Issues and capacity</a>
       <a href="#data">Data view</a>
+      <a href="#discovery">Network discovery</a>
       <a href="#live">Live telemetry</a>
       <a href="#save">Save and exchange</a>
       <a href="#shortcuts">Shortcuts</a>
       <a href="#offline">Offline and embedding</a>
+      <a href="#help">Troubleshooting</a>
     </nav>
 
     <main>
@@ -119,7 +175,7 @@
       <section id="workspace">
         <div class="kicker">02 · Workspace</div>
         <h2>Map for topology. Data for precision.</h2>
-        <p><strong>Map</strong> is the spatial planning surface. Drag empty space to pan, use the zoom controls or wheel to zoom, and select <strong>Fit</strong> to frame the plan. Use Move to arrange items, Select for multi-selection, Note for annotations, and Rack for rack outlines.</p>
+        <p><strong>Map</strong> is the spatial planning surface. Drag empty space to pan, use the zoom controls or wheel to zoom, and select <strong>Fit</strong> to frame the plan. Use Move to arrange items, Select for multi-selection, Note for annotations, and Rack for optional rack outlines. A plan can cover a whole site or connect devices that are not in one rack.</p>
         <p><strong>Data</strong> exposes devices, connections, and issues as editable rows. Filters narrow the current list without changing the plan.</p>
         <p>The application chrome can use a light or dark host theme. The planning canvas always remains <strong>Rack Ink #070A0E</strong>. This fixed field preserves the specified contrast and meaning of every cable hue.</p>
       </section>
@@ -127,7 +183,7 @@
       <section id="devices">
         <div class="kicker">03 · Devices and racks</div>
         <h2>Place gear, then describe the load</h2>
-        <p>The Gear library ships with a curated catalog of several hundred real devices spanning the whole environment — not only rack equipment, but routers and switches, servers and single-board computers, workstations, tablets and phones, displays and televisions, appliances, and audio and lighting hardware. Search matches on name, model, vendor, kind, or UPC, so typing a maker (<em>ubiquiti</em>, <em>apple</em>) or a category (<em>switch</em>, <em>display</em>) narrows the list as quickly as a model number does. Adding an item creates a plan-owned snapshot of its device definition, so later library changes do not silently rewrite an existing plan.</p>
+        <p>The Gear library ships with a curated catalog of 244 devices at the reviewed catalog revision spanning the whole environment — not only rack equipment, but routers and switches, servers and single-board computers, workstations, tablets and phones, displays and televisions, appliances, and audio and lighting hardware. Search matches on name, model, vendor, kind, or UPC, so typing a maker (<em>ubiquiti</em>, <em>apple</em>) or a category (<em>switch</em>, <em>display</em>) narrows the list as quickly as a model number does. Adding an item creates a plan-owned snapshot of its device definition, so later library changes do not silently rewrite an existing plan.</p>
         <p>Select a device to edit its name and planning values. Depending on the device, these include power draw, PoE budget, circuit capacity, a live telemetry key, and port mappings. Capacity badges on the map show planned values until live measurements are available.</p>
         <h3>Barcode workflow</h3>
         <p>Select <strong>Scan</strong> to use a camera or enter a code manually. Map a new code to a library device once; RackWire retains that mapping with the plan.</p>
@@ -171,23 +227,36 @@
         <p>CSV export is useful for a punch list or spreadsheet review. CSV import updates supported tabular fields; JSON is the complete RackWire plan interchange format.</p>
       </section>
 
+      <section id="discovery">
+        <div class="kicker">08 · Network discovery</div>
+        <h2>Scan, review, confirm, then place</h2>
+        <p>Choose <strong>Discover devices on the network…</strong> from the main menu when RackWire is served with its optional discovery backend. In the SolariNet dashboard embed, the same action opens SolariNet’s bounded, queued network discovery screen, where an operator can review results and adopt hosts into monitoring. This network discovery path is separate from scanner-ingest: scanner-ingest captures physical inventory, and its reviewed import writes to the shared SoR inventory and barcode registry. RackWire can resolve those barcodes when the SoR model has a RackWire device profile. Configure or update that profile from <strong>Inventory → Components → RackWire device profiles</strong>; verify each port group against the hardware specification before planning. Adopting a discovered host adds it to monitoring and does not create physical inventory. A local <code>file://</code> copy retains the planner but cannot call hosted services.</p>
+        <ol>
+          <li>Check that the discovery service is available. Its subnet allowlist must include the network you administer; an empty allowlist denies every scan.</li>
+          <li>Start a scan and follow its progress. The service combines available ARP, ping, port, SNMP, and LLDP observations; missing system tools yield less evidence.</li>
+          <li>Review each candidate. Confirm or reject it, edit uncertain make/model/ports, then associate it with an existing library entry or save a validated new model and place it in the plan.</li>
+        </ol>
+        <p>The optional Claude inference path may suggest details for uncertain devices; deterministic evidence and the operator's confirmation remain authoritative. No discovered device is imported automatically. RackWire discovery has its own SQLite database and does not read or write SolariNet's SoR.</p>
+        <div class="callout"><strong>Hosted service boundary</strong>The current discovery backend is intended for a single-operator intranet deployment. It requires an authorized subnet, uses a CSRF header for writes, and still needs full multi-user authentication and scan rate limits before public deployment.</div>
+      </section>
+
       <section id="live">
-        <div class="kicker">08 · Optional live telemetry</div>
+        <div class="kicker">09 · Optional live telemetry</div>
         <h2>Measurements overlay the plan</h2>
         <p>Select <strong>Live</strong> and choose an available source. The built-in simulator is suitable for exercising the interface. HTTP polling and WebSocket sources require a compatible telemetry endpoint.</p>
         <p>Live values are labeled as live and can show reachability, negotiated rate, throughput, errors, delivered PoE, device load, temperature, and CPU. Missing telemetry remains distinct from a zero measurement.</p>
       </section>
 
       <section id="save">
-        <div class="kicker">09 · Save and exchange</div>
+        <div class="kicker">10 · Save and exchange</div>
         <h2>Autosave locally; export intentionally</h2>
-        <p>The browser’s local storage is the standalone source of truth and is updated as the plan changes. Menu → <strong>Export plan (JSON)</strong> creates a portable backup; <strong>Import plan (JSON)</strong> replaces the current working plan with a RackWire export.</p>
+        <p>The browser’s local storage is the standalone store and is updated as the plan changes. Menu → <strong>Export plan (JSON)</strong> creates a portable backup; <strong>Import plan (JSON)</strong> replaces the current working plan with a RackWire export.</p>
         <p>Snapshots preserve named restore points in the browser. When a compatible same-origin plan service is present, RackWire can also synchronize plans and versions through that integration.</p>
         <div class="callout"><strong>Before clearing browser data</strong>Export a JSON copy. Browser privacy controls, storage cleanup, or changing origins can make a locally saved plan unavailable.</div>
       </section>
 
       <section id="shortcuts">
-        <div class="kicker">10 · Keyboard</div>
+        <div class="kicker">11 · Keyboard</div>
         <h2>Common shortcuts</h2>
         <table>
           <thead><tr><th>Keys</th><th>Action</th></tr></thead>
@@ -203,13 +272,29 @@
       </section>
 
       <section id="offline">
-        <div class="kicker">11 · Runtime</div>
+        <div class="kicker">12 · Runtime</div>
         <h2>Works from a file and without a CDN</h2>
         <p>Open <code>index.html</code> directly for standalone use. The application, React runtime, and brand assets are stored in the repository, so core planning works offline. Camera access and live network sources remain subject to browser security and origin rules.</p>
-        <p>For a same-origin iframe integration, see <a href="CONTRACT-RW.md">the RackWire integration contract</a>. Runtime provenance and the verification procedure are documented in <a href="SUPPORT-RUNTIME.md">Support Runtime</a>.</p>
-        <div class="meta">User Manual · Brand Standards v1.1 color and application rules · Updated 2026-08-12<br>Brand Identity is a foundational source; RackWire Brand Standards v1.1 governs usage where guidance differs.</div>
+        <p>In the SolariNet same-origin iframe, use the dashboard's <strong>Scan inventory barcode</strong> action to open RackWire's barcode lookup, then resolve a scanner-ingested asset against the SoR and retain its asset tag and serial on the placed device. Plan persistence, inventory lookup, library merge, and telemetry use separate SolariNet endpoints when available. Offline planning falls back to local browser storage. The standalone discovery backend remains independent of those endpoints.</p>
+        <div class="meta">User Manual · Brand Standards v1.1 color and application rules · Updated 2026-10-22 · Integration candidate; not a deployed-release reference.<br>UNVERIFIED: live hosted discovery, browser camera permissions, deployed SolariNet iframe/API behavior, and public deployment readiness. Brand Standards v1.1 governs visual usage.</div>
+      </section>
+      <section id="help">
+        <div class="kicker">13 · Troubleshooting</div>
+        <h2>Find the boundary that failed</h2>
+        <table>
+          <thead><tr><th>Symptom</th><th>Check</th></tr></thead>
+          <tbody>
+            <tr><td>Discover cannot connect</td><td>The planner still works offline. Discovery requires the hosted RackWire service at the same origin; opening <code>index.html</code> from a file does not start that backend.</td></tr>
+            <tr><td>Scan is denied</td><td>Confirm the requested network is in the operator-configured subnet allowlist. An empty allowlist denies all scans. Missing scanner tools can also reduce results without stopping the planner.</td></tr>
+            <tr><td>Live fields are blank</td><td>Confirm a live source is selected and its endpoint is reachable. An omitted field means no measurement was supplied; it is not a zero reading. Use the simulator to check the overlay itself.</td></tr>
+            <tr><td>A plan seems missing</td><td>Check the exact browser origin and profile. Local storage belongs to that origin. Import a prior JSON export if one exists; do not clear browser data before exporting.</td></tr>
+          </tbody>
+        </table>
       </section>
     </main>
   </div>
+  <script>
+    document.getElementById('print-guide').addEventListener('click', function () { window.print(); });
+  </script>
 </body>
 </html>
