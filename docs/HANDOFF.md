@@ -350,9 +350,10 @@ backend.
 This section records the SolariNet integration candidate based on the published
 RackWire revision `5f29f59`; it is not a deployed release.
 
-- `node tests/dashboard/test_rackwire_ui.js`: **51 passed**. Covers the embedded
+- `node tests/dashboard/test_rackwire_ui.js`: **60 passed**. Covers the embedded
   host bridge, navigation into SolariNet Discovery and Inventory, barcode action,
-  same-origin CSRF handling, and token bridge behavior.
+  same-origin CSRF handling including one-time refresh/retry for both plan writes
+  and barcode lookup, and token bridge behavior.
 - `php tests/dashboard/test_rackwire_api.php`: **58 passed**. Covers SoR-backed
   plans, ownership, snapshots, library profiles, and commit classification.
 - The standalone browser acceptance passed with pinned Playwright 1.64.1 and the
