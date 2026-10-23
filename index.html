@@ -16,7 +16,7 @@ window.__resources = Object.assign(window.__resources || {}, {
   "https://unpkg.com/@babel/standalone@7.29.0/babel.min.js": "./vendor/babel.min.js"
 });
 </script>
-<script src="./support.js"></script>
+<script src="./support.js?v=20261023a"></script>
 </head>
 <body>
 <x-dc>
@@ -138,22 +138,22 @@ window.__resources = Object.assign(window.__resources || {}, {
     .rw-toolbar-subtitle { display:none !important; }
   }
 </style>
-<script src="device-library.js"></script>
+<script src="device-library.js?v=20261023a"></script>
 <!-- Device library data modules — each calls window.RW.addDevices([...]).
      Loaded after the core engine (device-library.js) and before the app.
      Add one line per new vendor module; order among modules is irrelevant. -->
-<script src="devices/generic.js"></script>
-<script src="devices/ubiquiti.js"></script>
-<script src="devices/netgear.js"></script>
-<script src="devices/netool.js"></script>
-<script src="devices/apple.js"></script>
-<script src="devices/samsung.js"></script>
-<script src="devices/raspberry-pi.js"></script>
-<script src="devices/qualcomm-arduino.js"></script>
-<script src="devices/m5stack.js"></script>
-<script src="devices/eos.js"></script>
-<script src="devices/minisforum.js"></script>
-<script src="live-adapter.js"></script>
+<script src="devices/generic.js?v=20261023a"></script>
+<script src="devices/ubiquiti.js?v=20261023a"></script>
+<script src="devices/netgear.js?v=20261023a"></script>
+<script src="devices/netool.js?v=20261023a"></script>
+<script src="devices/apple.js?v=20261023a"></script>
+<script src="devices/samsung.js?v=20261023a"></script>
+<script src="devices/raspberry-pi.js?v=20261023a"></script>
+<script src="devices/qualcomm-arduino.js?v=20261023a"></script>
+<script src="devices/m5stack.js?v=20261023a"></script>
+<script src="devices/eos.js?v=20261023a"></script>
+<script src="devices/minisforum.js?v=20261023a"></script>
+<script src="live-adapter.js?v=20261023a"></script>
 </helmet>
 <div style="display:flex;flex-direction:column;height:100vh;width:100vw;background:var(--sn-bg, #070A0E);color:var(--sn-ink, #EDF3F9);font-family:var(--font-display);overflow:hidden;touch-action:manipulation">
 
@@ -628,10 +628,12 @@ const KEY = 'rackwire.project.v2';
    (logged out) degrades to exactly the offline path rather than erroring. */
 const API = '/api/rackwire';
 const PLAN_ID_KEY = KEY + '.planId';       // which rw_plans row this browser is bound to
+const LEGACY_PLAN_DIRTY_KEY = KEY + '.remoteDirty'; // clear orphan markers written by older builds
 const PLAN_NAME_KEY = KEY + '.planName';
 const REMOTE_VERSIONS_KEY = KEY + '.versions.remote';  // id/name/at cache, so versions() stays sync
 let rwPlanCsrf = '';
 let rwPlanCsrfPromise = null;
+let rwPlanCsrfFailureStatus = 0;
 
 /* file:// (and anything else without an HTTP origin) is permanently offline. */
 function rwOnline() { return location.protocol === 'http:' || location.protocol === 'https:'; }
@@ -639,27 +641,59 @@ function rwOnline() { return location.protocol === 'http:' || location.protocol 
 /* RackWire lives in its own document and cannot reuse api.jsx's private token
    cache. Read the same authenticated identity envelope the dashboard uses;
    coalesce simultaneous writes so a burst needs only one whoami request. */
-async function rwSessionCsrf(refresh) {
+function rwAwaitCsrf(pending, signal) {
+  if (!signal) return pending;
+  if (signal.aborted) return Promise.resolve('');
+  return new Promise((resolve) => {
+    let settled = false;
+    const finish = (value) => {
+      if (settled) return;
+      settled = true;
+      signal.removeEventListener('abort', onAbort);
+      resolve(value);
+    };
+    const onAbort = () => finish('');
+    signal.addEventListener('abort', onAbort, { once: true });
+    pending.then(finish, () => finish(''));
+  });
+}
+async function rwSessionCsrf(refresh, signal) {
   if (!rwOnline()) return '';
-  if (refresh) rwPlanCsrf = '';
+  if (refresh) { rwPlanCsrf = ''; rwPlanCsrfFailureStatus = 0; }
   if (rwPlanCsrf) return rwPlanCsrf;
-  if (rwPlanCsrfPromise && !refresh) return rwPlanCsrfPromise;
-  const pending = (async () => {
+  if (rwPlanCsrfPromise && !refresh) return rwAwaitCsrf(rwPlanCsrfPromise, signal);
+  const identityController = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const identitySignal = identityController ? identityController.signal : undefined;
+  const identityTimer = identityController ? setTimeout(() => identityController.abort(), 15000) : null;
+  let pending;
+  pending = (async () => {
     try {
       const r = await fetch('/api/auth/whoami', {
-        headers: { Accept: 'application/json' }, credentials: 'same-origin'
+        headers: { Accept: 'application/json' }, credentials: 'same-origin', signal: identitySignal
       });
-      if (!r.ok) return '';
+      if (!r.ok) {
+        if (rwPlanCsrfPromise === pending) rwPlanCsrfFailureStatus = r.status;
+        return '';
+      }
       const j = await r.json();
       const token = j && j.ok && j.data && typeof j.data.csrfToken === 'string'
         ? j.data.csrfToken : '';
-      if (token) rwPlanCsrf = token;
+      if (rwPlanCsrfPromise === pending) {
+        rwPlanCsrf = token;
+        rwPlanCsrfFailureStatus = token ? 0 : 401;
+      }
       return token;
-    } catch (e) { return ''; }
+    } catch (e) {
+      if (rwPlanCsrfPromise === pending) rwPlanCsrfFailureStatus = 0;
+      return '';
+    }
+    finally { if (identityTimer) clearTimeout(identityTimer); }
   })();
+  rwPlanCsrfFailureStatus = 0;
   rwPlanCsrfPromise = pending;
-  try { return await pending; }
-  finally { if (rwPlanCsrfPromise === pending) rwPlanCsrfPromise = null; }
+  const clearPending = () => { if (rwPlanCsrfPromise === pending) rwPlanCsrfPromise = null; };
+  pending.then(clearPending, clearPending);
+  return rwAwaitCsrf(pending, signal);
 }
 
 /* ── postMessage peer pinning (HANDOFF §4 bridge) ────────────────────────────
@@ -687,13 +721,22 @@ function rwFromHost(e) {
 /* Unwrap the SolariNet envelope ({ok, data, ts}). Returns null on ANY failure —
    transport error, non-2xx (401 included), or a malformed body. Callers treat
    null as "stay offline", never as an error to surface. */
-async function rwFetch(path, body) {
+async function rwFetch(path, body, timeoutMs, onFailure) {
   if (!rwOnline()) return null;
+  let timer = null, controller = null;
   try {
     const opt = { headers: { Accept: 'application/json' }, credentials: 'same-origin' };
+    if (typeof AbortController !== 'undefined') {
+      controller = new AbortController();
+      opt.signal = controller.signal;
+      timer = setTimeout(() => controller.abort(), timeoutMs || 15000);
+    }
     if (body !== undefined) {
-      const token = await rwSessionCsrf(false);
-      if (!token) return null;
+      const token = await rwSessionCsrf(false, opt.signal);
+      if (!token) {
+        if (onFailure) onFailure(rwPlanCsrfFailureStatus || 503, { error: { code: rwPlanCsrfFailureStatus ? 'operator_session_required' : 'identity_unavailable' } });
+        return null;
+      }
       opt.method = 'POST';
       opt.headers['Content-Type'] = 'application/json';
       opt.headers['X-Solari-CSRF'] = token;
@@ -703,15 +746,22 @@ async function rwFetch(path, body) {
     let j = await r.json();
     if (r.status === 403 && body !== undefined && j && j.error &&
         j.error.message === 'Missing or invalid CSRF token.') {
-      const token = await rwSessionCsrf(true);
-      if (!token) return null;
+      const token = await rwSessionCsrf(true, opt.signal);
+      if (!token) {
+        if (onFailure) onFailure(rwPlanCsrfFailureStatus || 503, { error: { code: rwPlanCsrfFailureStatus ? 'operator_session_required' : 'identity_unavailable' } });
+        return null;
+      }
       opt.headers['X-Solari-CSRF'] = token;
       r = await fetch(API + path, opt);
       j = await r.json();
     }
-    if (!r.ok) return null;
+    if (!r.ok) {
+      if (typeof onFailure === 'function') onFailure(r.status, j);
+      return null;
+    }
     return j && j.ok ? j.data : null;
   } catch (e) { return null; }
+  finally { if (timer) clearTimeout(timer); }
 }
 
 /* ── RackWire discovery seam (RackWire's OWN backend, not the SolariNet SoR) ───
@@ -789,6 +839,20 @@ class Component extends DCLogic {
       live: { on: false, source: rwOnline() ? 'solarinet-rest' : 'simulator', url: '', status: 'idle', msg: '', frame: null, at: 0 },
       saved: '', marquee: null, chrome: true, search: null, help: false, versions: null
     }, this.load());
+    if (typeof this._planServerBaselineRaw === 'string') {
+      this._planServerBaseline = this._planServerBaselineRaw;
+      this._planServerBaselineKnown = true;
+    } else if (!this._planRemoteDirty) {
+      this._planServerBaseline = this.planComparable(this.plan());
+      this._planServerBaselineKnown = true;
+    } else {
+      this._planServerBaseline = '';
+      this._planServerBaselineKnown = false;
+    }
+    if (this._planLocalRecoveryReady === false) this.state.saved = 'Local recovery unavailable · browser storage blocked';
+    this._prev = { devices: this.state.devices, cables: this.state.cables, racks: this.state.racks,
+      notes: this.state.notes, codeMap: this.state.codeMap, zoom: this.state.zoom,
+      panX: this.state.panX, panY: this.state.panY, sel: this.state.sel };
     this._geo = {};
     this._ptr = new Map();
     this._drag = null;
@@ -804,10 +868,19 @@ class Component extends DCLogic {
   load() {
     try {
       const raw = localStorage.getItem(KEY);
-      if (!raw) return {};
+      this._planLocalRecoveryReady = true;
+      if (!raw) { this._planRemoteDirty = false; return {}; }
       const d = JSON.parse(raw);
+      this._planDeleted = d.deletedPlan === true;
+      this._planHashConflict = this._planDeleted;
+      this._planRemoteDirty = !this._planDeleted && d.remoteDirty === true;
+      this._planServerHash = typeof d.serverHash === 'string' ? d.serverHash : '';
+      this._planServerBaselineRaw = d.serverBaseVersion === 2 && typeof d.serverBase === 'string' && d.serverBase !== '' ? d.serverBase : null;
+      if (this._planServerBaselineRaw === null && !this._planRemoteDirty) {
+        this._planServerBaselineRaw = this.planComparable({ devices: d.devices || [], cables: d.cables || [], racks: d.racks || [], notes: d.notes || [], codeMap: d.codeMap || {} });
+      }
       return { devices: this.migrate(d.devices || []), cables: d.cables || [], racks: d.racks || [], notes: d.notes || [], codeMap: d.codeMap || {}, zoom: d.zoom || 0.8, panX: d.panX || 60, panY: d.panY || 40 };
-    } catch (e) { return {}; }
+    } catch (e) { this._planLocalRecoveryReady = false; return {}; }
   }
   /* Devices are snapshots of a library def taken at placement time, so a plan saved before a
      library field existed keeps the stale copy forever. Backfill anything the instance is
@@ -837,84 +910,433 @@ class Component extends DCLogic {
       return out;
     });
   }
-  persist() {
+  persist(pushRemote) {
     const s = this.state;
+    if (pushRemote !== false) {
+      this._planRevision = (this._planRevision || 0) + 1;
+      this._planRemoteDirty = true;
+    }
     try {
-      localStorage.setItem(KEY, JSON.stringify({ devices: s.devices, cables: s.cables, racks: s.racks, notes: s.notes, codeMap: s.codeMap, zoom: s.zoom, panX: s.panX, panY: s.panY }));
-    } catch (e) {}
-    this.pushPlan();
+      localStorage.setItem(KEY, JSON.stringify({ devices: s.devices, cables: s.cables, racks: s.racks, notes: s.notes, codeMap: s.codeMap, zoom: s.zoom, panX: s.panX, panY: s.panY, remoteDirty: !!this._planRemoteDirty, deletedPlan: this._planDeleted === true, serverHash: this._planServerHash || '', serverBaseVersion: 2, serverBase: this._planServerBaselineKnown ? this._planServerBaseline : '' }));
+      this._planLocalRecoveryReady = true;
+    } catch (e) { this._planLocalRecoveryReady = false; }
+    if (this._planLocalRecoveryReady === false) {
+      this.setPlanSyncStatus('Local recovery unavailable · browser storage blocked');
+    }
+    if (pushRemote !== false) {
+      this.pushPlan();
+    }
   }
 
   /* ── remote plan (CONTRACT-RW §2 /api/rackwire/plans, §5.3) ─────────────────
      localStorage above already ran and is authoritative for this browser; the
      SoR copy is the shared one. persist() fires from componentDidUpdate, i.e.
-     on every keystroke, so the upload is debounced hard — one POST per idle
-     second, and never more than one in flight. Failures are silent by design:
-     a logged-out or unreachable API must not interrupt planning. */
+     on every plan edit, so the upload is debounced — one POST per idle second,
+     with only one request in flight. A local dirty marker and status line make
+     interrupted or unauthorized saves visible and recoverable. */
   pushPlan() {
+    if (this._unmounted) return;
+    if (this._planRestoreBusy) {
+      this._planPending = true;
+      clearTimeout(this._planT);
+      this._planT = null;
+      return;
+    }
+    if (this._planHashConflict) {
+      clearTimeout(this._planT);
+      this._planT = null;
+      return;
+    }
     // _planHold suppresses the echo when the state change we just made CAME
     // from the server (loadRemote / restoreVersion).
-    if (!rwOnline() || this._planHold) return;
+    if (this._planHold) {
+      clearTimeout(this._planT);
+      this._planT = null;
+      return;
+    }
+    if (!rwOnline()) {
+      this.setPlanSyncStatus('Local copy · shared plan unavailable');
+      clearTimeout(this._planT);
+      return;
+    }
+    this.setPlanSyncStatus('Saving shared plan…');
     clearTimeout(this._planT);
     this._planT = setTimeout(() => { this.flushPlan(); }, 1000);
   }
   async flushPlan() {
-    if (!rwOnline() || this._planBusy) return;
+    if (this._unmounted) return;
+    if (this._planRestoreBusy) {
+      this._planPending = true;
+      clearTimeout(this._planT);
+      this._planT = null;
+      return;
+    }
+    if (this._planHold) {
+      clearTimeout(this._planT);
+      this._planT = setTimeout(() => { this.flushPlan(); }, 250);
+      return;
+    }
+    if (!rwOnline()) {
+      this.setPlanSyncStatus('Local copy · shared plan unavailable');
+      clearTimeout(this._planT);
+      return;
+    }
+    if (this._planBusy) { this._planPending = true; return; }
+    if (!this._planRemoteDirty || this._planHashConflict) {
+      this._planPending = false;
+      clearTimeout(this._planT);
+      return;
+    }
+    this._planPending = false;
     this._planBusy = true;
+    const requestGenerationAtStart = this._planRequestGeneration || 0;
+    let revision = this._planRevision || 0;
     try {
+      if (this.planId() && !this._planServerHash) {
+        const preflightId = this.planId();
+        const preflightRevision = this._planRevision || 0;
+        const ready = await this.ensurePlanServerHash();
+        if (this._unmounted) return;
+        if (requestGenerationAtStart !== (this._planRequestGeneration || 0) || this._planHold) return;
+        if (!ready) {
+          if (this.planId() !== preflightId || (this._planRevision || 0) !== preflightRevision) return;
+          this._planPending = false;
+          if (this._planHashConflict) {
+            this.setPlanSyncStatus('Local plan differs from shared copy · review before syncing');
+          } else if (this._planHashFailureStatus === 401 || this._planHashFailureStatus === 403) {
+            this.setPlanSyncStatus('Shared save needs an active operator session');
+          } else {
+            this.setPlanSyncStatus('Local copy · shared plan unavailable');
+            clearTimeout(this._planT);
+            const delay = Math.min(60000, 3000 * Math.pow(2, Math.min(this._planRetry || 0, 4)));
+            this._planRetry = (this._planRetry || 0) + 1;
+            this._planT = setTimeout(() => { this.flushPlan(); }, delay);
+          }
+          return;
+        }
+      }
+      this._planPending = false;
+      if (requestGenerationAtStart !== (this._planRequestGeneration || 0) || this._planHold) return;
+      revision = this._planRevision || 0;
       const body = { name: this.planName(), plan: this.plan() };
-      const id = this.planId();
-      if (id) body.id = id;
-      const row = await rwFetch('/plans', body);
+      const bindingAtRequest = this.planId();
+      const id = bindingAtRequest;
+      if (id) {
+        body.id = id;
+        if (this._planServerHash) body.expectedHash = this._planServerHash;
+      }
+      const writeGeneration = (this._planRequestGeneration || 0) + 1;
+      this._planRequestGeneration = writeGeneration;
+      let failureStatus = 0;
+      let failureCode = '';
+      let row = await rwFetch('/plans', body, 15000, (status, payload) => {
+        failureStatus = status;
+        failureCode = payload && payload.error && payload.error.code || '';
+      });
+      if (!row && !id && failureStatus === 409 && failureCode === 'conflict') {
+        row = await this.recoverCreatedPlan(body);
+      }
+      if (this._unmounted) return;
+      if (this.planId() !== bindingAtRequest) {
+        if (row && String(row.id) === String(bindingAtRequest)) {
+          this._planPriorWriteNotice = true;
+          this.setPlanSyncStatus('Earlier save reached the previous shared plan · checking the separate copy');
+        }
+        return;
+      }
+      if (writeGeneration !== this._planRequestGeneration) return;
       // A 404 (someone deleted the plan) or a 403 (viewer role) both land here
-      // as null; drop the binding on 404-shaped loss so the next write creates
-      // a fresh row rather than retrying a dead id forever.
-      if (row && row.id) this.setPlanId(row.id, row.name);
-    } finally { this._planBusy = false; }
+      // as null. A deleted binding is retained as a tombstone so a later save
+      // cannot silently recreate it under the old plan name.
+      if (row && row.id) {
+        this.setPlanId(row.id, row.name);
+        this._planHashConflict = false;
+        this._planDeleted = false;
+        if (typeof row.planHash === 'string') this._planServerHash = row.planHash;
+        this._planServerBaseline = this.planComparable(body.plan);
+        this._planServerBaselineKnown = true;
+        const latestRevision = revision === (this._planRevision || 0);
+        this._planRemoteDirty = !latestRevision;
+        if (latestRevision) {
+          try { localStorage.removeItem(LEGACY_PLAN_DIRTY_KEY); } catch (e) {}
+        }
+        this.persist(false);
+        if (latestRevision) {
+          this._planRetry = 0;
+          const suffix = this._planPriorWriteNotice ? ' · earlier edits also reached the previous shared plan' : '';
+          this.setPlanSyncStatus((this._planLocalRecoveryReady === false ? 'Shared plan saved · local recovery unavailable' : 'Shared plan saved') + suffix);
+          this._planPriorWriteNotice = false;
+        } else {
+          this.setPlanSyncStatus('Shared plan saved · syncing latest edit');
+        }
+      } else {
+        this._planPending = false;
+        clearTimeout(this._planT);
+        if (failureStatus === 401 || failureStatus === 403) {
+          this._planRetry = 0;
+          this.setPlanSyncStatus('Shared save needs an active operator session');
+        } else if (failureStatus === 404 && this.planId()) {
+          this._planRetry = 0;
+          this.markPlanDeleted();
+        } else if (failureStatus === 409 && failureCode === 'plan_conflict') {
+          this._planRetry = 0;
+          this._planHashConflict = true;
+          this.setPlanSyncStatus('Shared plan changed elsewhere · review before syncing');
+        } else if (failureStatus === 409 && failureCode === 'plan_hash_required') {
+          this._planRetry = 0;
+          this.setPlanSyncStatus('Reload RackWire to resume safe shared-plan saving');
+        } else if (failureStatus === 409) {
+          this._planRetry = 0;
+          this._planHashConflict = true;
+          this.setPlanSyncStatus('Shared plan update was rejected · check its name and ownership');
+        } else {
+          this.setPlanSyncStatus(this._planLocalRecoveryReady === false ? 'Shared save failed; retrying · local recovery unavailable' : 'Local copy · shared save failed; retrying');
+          const delay = Math.min(60000, 3000 * Math.pow(2, Math.min(this._planRetry || 0, 4)));
+          this._planRetry = (this._planRetry || 0) + 1;
+          this._planT = setTimeout(() => { this.flushPlan(); }, delay);
+        }
+      }
+    } finally {
+      this._planBusy = false;
+      if (this._planPending && !this._unmounted && this._planRemoteDirty && !this._planHashConflict) {
+        this._planPending = false;
+        clearTimeout(this._planT);
+        this._planT = setTimeout(() => { this.flushPlan(); }, 1000);
+      }
+    }
   }
-  planId() { try { return localStorage.getItem(PLAN_ID_KEY) || ''; } catch (e) { return ''; } }
-  planName() { try { return localStorage.getItem(PLAN_NAME_KEY) || 'RackWire plan'; } catch (e) { return 'RackWire plan'; } }
+  async recoverCreatedPlan(body) {
+    const plans = await rwFetch('/plans');
+    if (!Array.isArray(plans)) return null;
+    const candidate = plans.find((plan) => plan && plan.name === body.name);
+    if (!candidate || candidate.id === undefined || candidate.id === null) return null;
+    const current = await rwFetch('/plans/' + encodeURIComponent(candidate.id));
+    if (!current || !current.plan || String(current.id) !== String(candidate.id)) return null;
+    return this.planComparable(current.plan) === this.planComparable(body.plan) ? current : null;
+  }
+  setPlanSyncStatus(status) {
+    if (this._planLocalRecoveryReady === false && !/local recovery unavailable/i.test(status)) status += ' · local recovery unavailable';
+    if (!this._unmounted && this.state.saved !== status) this.setState({ saved: status });
+  }
+  planComparable(plan) {
+    const canonical = (value, key) => {
+      if (Array.isArray(value)) {
+        if ((key === 'codeMap' || key === 'ifMap') && value.length === 0) return {};
+        return value.map((entry) => canonical(entry, ''));
+      }
+      if (value && typeof value === 'object') {
+        const out = {};
+        Object.keys(value).sort().forEach((childKey) => { out[childKey] = canonical(value[childKey], childKey); });
+        return out;
+      }
+      return value;
+    };
+    const devices = (Array.isArray(plan.devices) ? plan.devices : []).map((device) => {
+      const out = Object.assign({}, device);
+      delete out.rev;
+      return out;
+    });
+    const codeMap = plan.codeMap && typeof plan.codeMap === 'object' && !Array.isArray(plan.codeMap) ? plan.codeMap : {};
+    return JSON.stringify(canonical({
+      devices: devices,
+      cables: Array.isArray(plan.cables) ? plan.cables : [],
+      racks: Array.isArray(plan.racks) ? plan.racks : [],
+      notes: Array.isArray(plan.notes) ? plan.notes : [],
+      codeMap: codeMap
+    }));
+  }
+  async ensurePlanServerHash() {
+    const id = this.planId();
+    if (!id || this._planServerHash) return true;
+    const revision = this._planRevision || 0;
+    const requestGeneration = this._planRequestGeneration || 0;
+    const baselineKnown = this._planServerBaselineKnown === true;
+    let failureStatus = 0;
+    const current = await rwFetch('/plans/' + encodeURIComponent(id), undefined, 15000, (status) => { failureStatus = status; });
+    if (this._unmounted) return false;
+    if (requestGeneration !== (this._planRequestGeneration || 0)) return false;
+    if (this.planId() !== id || (this._planRevision || 0) !== revision) return false;
+    if (!current || !current.plan || typeof current.planHash !== 'string') {
+      if (failureStatus === 404) {
+        this.markPlanDeleted();
+        return true;
+      }
+      this._planHashFailureStatus = failureStatus;
+      return false;
+    }
+    const remoteBaseline = this.planComparable(current.plan);
+    const migratedRemoteBaseline = baselineKnown ? remoteBaseline : this.planComparable(Object.assign({}, current.plan, {
+      devices: this.migrate(Array.isArray(current.plan.devices) ? current.plan.devices : [])
+    }));
+    const comparisonBaseline = baselineKnown ? this._planServerBaseline : this.planComparable(this.plan());
+    if (migratedRemoteBaseline !== comparisonBaseline) {
+      this._planHashConflict = true;
+      return false;
+    }
+    this._planHashConflict = false;
+    this._planHashFailureStatus = 0;
+    this._planServerHash = current.planHash;
+    this._planServerBaseline = remoteBaseline;
+    this._planServerBaselineKnown = true;
+    this.persist(false);
+    return true;
+  }
+  planId() { try { this._planId = localStorage.getItem(PLAN_ID_KEY) || this._planId || ''; } catch (e) {} return this._planId || ''; }
+  planName() { try { this._planName = localStorage.getItem(PLAN_NAME_KEY) || this._planName || 'RackWire plan'; } catch (e) {} return this._planName || 'RackWire plan'; }
   setPlanId(id, name) {
+    this._planId = String(id);
+    if (name) this._planName = name;
+    if (this._planId) this._planDeleted = false;
     try {
-      localStorage.setItem(PLAN_ID_KEY, String(id));
-      if (name) localStorage.setItem(PLAN_NAME_KEY, name);
+      localStorage.setItem(PLAN_ID_KEY, this._planId);
+      if (this._planName) localStorage.setItem(PLAN_NAME_KEY, this._planName);
     } catch (e) {}
   }
+  savePlanConflictAsCopy() {
+    const suffix = this._planDeleted ? ' (recovered)' : ' (local copy)';
+    const name = prompt(this._planDeleted ? 'Save the retained plan as a new shared plan' : 'Save your local edits as a separate shared plan', this.planName() + suffix);
+    if (!name || !name.trim()) return;
+    this._planServerHash = '';
+    this._planServerBaseline = '';
+    this._planServerBaselineKnown = false;
+    this._planHashConflict = false;
+    this._planDeleted = false;
+    this._planRemoteDirty = true;
+    this._planRetry = 0;
+    this._planPending = false;
+    this.setPlanId('', name.trim());
+    this.setState({ menu: false });
+    this.setPlanSyncStatus('Saving local edits as a separate shared plan');
+    this.pushPlan();
+  }
+  async discardPlanConflictAndReload() {
+    if (this._planDeleted) {
+      this.setPlanSyncStatus('The shared plan was removed · save the retained local plan as a new shared plan to recover it');
+      return;
+    }
+    if (!confirm('Keep your local edits as a browser snapshot, discard the conflicting local copy, and load the shared plan?')) return;
+    const versions = this.localVersions();
+    const currentPlan = this.plan();
+    const alreadyArchived = versions.some((v) => v.name === 'Before shared plan reload' && v.plan && this.planComparable(v.plan) === this.planComparable(currentPlan));
+    if (!alreadyArchived) {
+      versions.unshift({ id: 'v_' + Date.now(), name: 'Before shared plan reload', at: new Date().toISOString(), plan: currentPlan });
+      try { localStorage.setItem(KEY + '.versions', JSON.stringify(versions.slice(0, 25))); }
+      catch (e) { alert('Could not archive the local edits in browser storage. They were kept in place.'); return; }
+    }
+    this._planRequestGeneration = (this._planRequestGeneration || 0) + 1;
+    clearTimeout(this._planT);
+    this.setState({ menu: false });
+    this.setPlanSyncStatus('Loading the shared plan · local edits archived in Snapshots');
+    await this.loadRemote(true);
+  }
+  markPlanDeleted() {
+    this.setPlanId('', this.planName());
+    this._planServerHash = '';
+    this._planServerBaseline = '';
+    this._planServerBaselineKnown = false;
+    this._planRemoteDirty = false;
+    this._planHashConflict = true;
+    this._planDeleted = true;
+    this._planPending = false;
+    this._planRequestGeneration = (this._planRequestGeneration || 0) + 1;
+    clearTimeout(this._planT);
+    this._planT = null;
+    this.persist(false);
+    this.setPlanSyncStatus('Shared plan was removed · local copy retained; save it as a new plan to recover');
+  }
   /* Pull the shared plan at boot. load() has already seeded state synchronously
-     from localStorage (the constructor cannot await), so this is a second pass:
-     if the server has a plan, it replaces what we booted with — SoR is the
-     authority per D4. Offline, or with no plans on the server, this is a no-op
-     and the local plan stands. */
-  async loadRemote() {
-    if (!rwOnline()) return;
+     from localStorage (the constructor cannot await), so this is a second pass.
+     A clean local snapshot yields to the SoR copy. A dirty snapshot is retried
+     first so an interrupted local edit is not discarded. Offline, or with no
+     plans on the server, the local plan stands. */
+  async loadRemote(forceRemote) {
+    if (this._planDeleted) {
+      this.setPlanSyncStatus('Shared plan was removed · local copy retained; save it as a new plan to recover');
+      return;
+    }
+    if (!rwOnline()) { this.setPlanSyncStatus('Local copy · offline'); return; }
+    const bootRevision = this._planRevision || 0;
+    if (this._planRemoteDirty && !forceRemote) {
+      this._planRevision = this._planRevision || 1;
+      this.pushPlan();
+      return;
+    }
     const list = await rwFetch('/plans');
-    if (!list || !list.length) return;
+    if (this._unmounted) return;
+    if ((!forceRemote && this._planRemoteDirty) || (this._planRevision || 0) !== bootRevision) {
+      if (forceRemote) this.setPlanSyncStatus('Shared reload interrupted by a local edit · keeping the local copy');
+      else this.pushPlan();
+      return;
+    }
     const want = this.planId();
-    const pick = (want && list.find((p) => String(p.id) === String(want))) || list[0];  // list is updated_at DESC
+    if (!Array.isArray(list)) { this.setPlanSyncStatus('Local copy · shared plan unavailable'); return; }
+    // The standalone dirty marker can outlive its main snapshot (for example,
+    // browser storage was partially cleared). It cannot prove which local plan
+    // should be uploaded, so a successful server read resolves it safely.
+    const clearOrphanDirtyMarker = () => {
+      try { localStorage.removeItem(LEGACY_PLAN_DIRTY_KEY); } catch (e) {}
+    };
+    if (forceRemote && !want) {
+      this.setPlanSyncStatus('No shared plan is bound · local edits are archived in Snapshots');
+      return;
+    }
+    if (!list.length) {
+      clearOrphanDirtyMarker();
+      if (want) this.markPlanDeleted();
+      else this.setPlanSyncStatus('Shared plan ready · no saved plan');
+      return;
+    }
+    const matching = want && list.find((p) => String(p.id) === String(want));
+    if (forceRemote && want && !matching) {
+      this.markPlanDeleted();
+      return;
+    }
+    if (!forceRemote && want && !matching) {
+      try { localStorage.removeItem(LEGACY_PLAN_DIRTY_KEY); } catch (e) {}
+      this.markPlanDeleted();
+      return;
+    }
+    const pick = matching || list[0];  // list is updated_at DESC
     const full = await rwFetch('/plans/' + encodeURIComponent(pick.id));
-    if (!full || !full.plan) return;
+    if (this._unmounted) return;
+    if ((!forceRemote && this._planRemoteDirty) || (this._planRevision || 0) !== bootRevision) {
+      if (forceRemote) this.setPlanSyncStatus('Shared reload interrupted by a local edit · keeping the local copy');
+      else this.pushPlan();
+      return;
+    }
+    if (!full || !full.plan) { this.setPlanSyncStatus('Local copy · shared plan unavailable'); return; }
     const p = full.plan;
     this.setPlanId(full.id, full.name);
+    this._planServerHash = typeof full.planHash === 'string' ? full.planHash : '';
+    this._planServerBaseline = this.planComparable(p);
+    this._planServerBaselineKnown = true;
+    this._planRemoteDirty = false;
+    this._planHashConflict = false;
+    clearOrphanDirtyMarker();
     this._geo = {};
     this._planHold = true;
     this.setState({
       devices: this.migrate(p.devices || []), cables: p.cables || [], racks: p.racks || [],
       notes: p.notes || [], codeMap: p.codeMap || {}, sel: []
     }, () => { this._planHold = false; });
+    this.setPlanSyncStatus('Shared plan loaded');
     this.refreshVersions();
   }
   componentDidUpdate() {
     this.syncDialogFocus();
-    this.persist();
     const s = this.state, p = this._prev || {};
-    const changed = p.devices && (p.devices !== s.devices || p.cables !== s.cables || p.racks !== s.racks || p.notes !== s.notes);
-    if (changed && !this._timeTravel) {
-      this._past = (this._past || []).concat([{ devices: p.devices, cables: p.cables, racks: p.racks, notes: p.notes }]);
+    const planChanged = p.devices && (p.devices !== s.devices || p.cables !== s.cables || p.racks !== s.racks || p.notes !== s.notes || (p.codeMap !== undefined && p.codeMap !== s.codeMap));
+    const localChanged = planChanged || (p.zoom !== undefined && (p.zoom !== s.zoom || p.panX !== s.panX || p.panY !== s.panY));
+    if (localChanged) this.persist(planChanged && !this._planHold);
+    const changed = p.devices && (p.devices !== s.devices || p.cables !== s.cables || p.racks !== s.racks || p.notes !== s.notes || (p.codeMap !== undefined && p.codeMap !== s.codeMap));
+    if (changed && !this._timeTravel && !this._planHold) {
+      this._past = (this._past || []).concat([{ devices: p.devices, cables: p.cables, racks: p.racks, notes: p.notes, codeMap: p.codeMap }]);
       if (this._past.length > 80) this._past.shift();
       this._future = [];
     }
     this._timeTravel = false;
-    this._prev = { devices: s.devices, cables: s.cables, racks: s.racks, notes: s.notes, sel: s.sel };
+    this._prev = { devices: s.devices, cables: s.cables, racks: s.racks, notes: s.notes, codeMap: s.codeMap,
+      zoom: s.zoom, panX: s.panX, panY: s.panY, sel: s.sel };
     if (this._emit && changed) this._emit();
     if (p.sel && p.sel !== s.sel && window.parent && window.parent !== window) {
       try { window.parent.postMessage({ source: 'rackwire', event: 'select', payload: s.sel }, RW_TARGET); } catch (e) {}
@@ -1199,6 +1621,8 @@ class Component extends DCLogic {
     this.forceUpdate();
   }
   componentWillUnmount() {
+    this._unmounted = true;
+    this._planPending = false;
     window.removeEventListener('keydown', this._kd);
     if (this._onMsg) window.removeEventListener('message', this._onMsg);
     if (this._themeObs) this._themeObs.disconnect();
@@ -1325,11 +1749,12 @@ class Component extends DCLogic {
   seedDemo() {
     const mk = (id, x, y) => { const d = this.mkDevice(id); d.x = x; d.y = y; return d; };
     const a = mk('udm-pro-max', 120, 300), b = mk('usw-pro-max-16-poe', 100, 520), c = mk('macmini-m4pro', 760, 120), p = mk('pdu-8', 700, 700);
-    this.setState({ devices: [a, b, c, p] });
+    this._planHold = true;
+    this.setState({ devices: [a, b, c, p] }, () => { this._planHold = false; });
   }
 
   // ---------- history ----------
-  snap() { const s = this.state; return { devices: s.devices, cables: s.cables, racks: s.racks, notes: s.notes }; }
+  snap() { const s = this.state; return { devices: s.devices, cables: s.cables, racks: s.racks, notes: s.notes, codeMap: s.codeMap }; }
   undo() {
     const past = this._past || [];
     if (!past.length) return;
@@ -1960,13 +2385,38 @@ class Component extends DCLogic {
      edits have to be flushed first — otherwise the snapshot is one debounce
      interval stale. Cap-25 pruning is the API's job (§2). */
   async saveVersionRemote(name) {
-    if (!rwOnline()) return;
+    if (!rwOnline()) {
+      this.setPlanSyncStatus('Local snapshot saved · shared plan unavailable');
+      return;
+    }
     clearTimeout(this._planT);
     await this.flushPlan();
+    await this.waitForPlanFlush();
+    if (this._planRemoteDirty || this._planHashConflict || this._planBusy) {
+      this.setPlanSyncStatus(this._planHashConflict
+        ? 'Local snapshot saved · shared snapshot blocked by a plan conflict'
+        : 'Local snapshot saved · shared plan still has unsynced edits');
+      return;
+    }
     const id = this.planId();
-    if (!id) return;
-    const v = await rwFetch('/plans/' + encodeURIComponent(id) + '/versions', { name: name || 'Snapshot' });
+    if (!id) {
+      this.setPlanSyncStatus('Local snapshot saved · no shared plan is bound');
+      return;
+    }
+    let failureStatus = 0;
+    const v = await rwFetch('/plans/' + encodeURIComponent(id) + '/versions', { name: name || 'Snapshot' }, 15000,
+      (status) => { failureStatus = status; });
     if (v) this.refreshVersions();
+    else if (failureStatus === 401 || failureStatus === 403) this.setPlanSyncStatus('Local snapshot saved · operator access needed for shared snapshot');
+    else if (failureStatus === 409) this.setPlanSyncStatus('Local snapshot saved · shared snapshot rejected; check plan ownership');
+    else this.setPlanSyncStatus('Local snapshot saved · shared snapshot unavailable');
+  }
+  async waitForPlanFlush() {
+    const deadline = Date.now() + 16000;
+    while (this._planBusy && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 25));
+    }
+    return !this._planBusy;
   }
   async refreshVersions() {
     if (!rwOnline()) return;
@@ -2000,15 +2450,94 @@ class Component extends DCLogic {
   }
   async restoreVersionRemote(v) {
     const id = this.planId();
-    const full = id ? await rwFetch('/plans/' + encodeURIComponent(id) + '/restore', { versionId: v.remoteId }) : null;
-    if (!full || !full.plan) { alert('Could not load that snapshot from the server. Check the live connection, then try again.'); return; }
+    const binding = id;
+    const revision = this._planRevision || 0;
+    if (this._planRemoteDirty || this._planBusy) {
+      clearTimeout(this._planT);
+      await this.flushPlan();
+      await this.waitForPlanFlush();
+      if (this._unmounted || this._planBusy || this._planRemoteDirty || this._planHashConflict) {
+        this.setPlanSyncStatus(this._planHashConflict
+          ? 'Shared plan changed elsewhere · review before restoring'
+          : 'Local edits are still syncing · retry the snapshot restore when saving finishes');
+        return;
+      }
+    }
+    const restoreGeneration = this._planRequestGeneration || 0;
+    if (!id) { alert('This shared plan is no longer bound. Reload RackWire before restoring a shared snapshot.'); return; }
+    if (!this._planServerHash) {
+      const ready = await this.ensurePlanServerHash();
+      if (restoreGeneration !== (this._planRequestGeneration || 0)) return;
+      if (this.planId() !== binding || revision !== (this._planRevision || 0)) {
+        this.setPlanSyncStatus('Local plan changed while checking the shared version · retry the restore');
+        return;
+      }
+      if (!ready || !this._planServerHash) {
+        if (this._planHashConflict) {
+          this.setPlanSyncStatus('Shared plan changed elsewhere · review before restoring');
+        } else if (this._planHashFailureStatus === 401 || this._planHashFailureStatus === 403) {
+          this.setPlanSyncStatus('Could not verify the shared plan · operator sign-in is required');
+        } else {
+          this.setPlanSyncStatus('Could not verify the shared plan · retry the snapshot restore');
+        }
+        return;
+      }
+    }
+    const expectedHash = this._planServerHash;
+    const previousBaseline = this._planServerBaseline || '';
+    const previousBaselineKnown = this._planServerBaselineKnown === true;
+    let failureStatus = 0;
+    let failureCode = '';
+    this._planRestoreBusy = true;
+    let full;
+    try {
+      full = await rwFetch('/plans/' + encodeURIComponent(id) + '/restore', { versionId: v.remoteId, expectedHash }, 15000, (status, payload) => {
+        failureStatus = status;
+        failureCode = payload && payload.error && payload.error.code || '';
+      });
+    } finally {
+      this._planRestoreBusy = false;
+      if (this._planPending && !this._unmounted && this._planRemoteDirty && !this._planHashConflict) {
+        this._planPending = false;
+        clearTimeout(this._planT);
+        this._planT = setTimeout(() => { this.flushPlan(); }, 1000);
+      }
+    }
+    if (!full || !full.plan) {
+      if (failureStatus === 409 && failureCode === 'plan_conflict') {
+        this._planHashConflict = true;
+        this.setPlanSyncStatus('Shared plan changed elsewhere · review before restoring');
+      } else {
+        alert('Could not load that snapshot from the server. Check the live connection, then try again.');
+      }
+      return;
+    }
+    if (this.planId() !== binding) return;
     const p = full.plan;
+    this._planServerHash = typeof full.planHash === 'string' ? full.planHash : '';
+    this._planServerBaseline = this.planComparable(p);
+    this._planServerBaselineKnown = true;
+    if (revision !== (this._planRevision || 0)) {
+      this._planServerHash = '';
+      this._planServerBaseline = previousBaseline;
+      this._planServerBaselineKnown = previousBaselineKnown;
+      this._planHashConflict = true;
+      this.persist(false);
+      this.setPlanSyncStatus('A local edit happened during restore · review the shared version before syncing');
+      return;
+    }
+    this._past = (this._past || []).concat([this.snap()]);
+    if (this._past.length > 80) this._past.shift();
+    this._future = [];
     this._geo = {};
+    this._planRemoteDirty = false;
+    this._planHashConflict = false;
+    try { localStorage.removeItem(LEGACY_PLAN_DIRTY_KEY); } catch (e) {}
     this._planHold = true;
     this.setState({
       devices: this.migrate(p.devices || []), cables: p.cables || [], racks: p.racks || [],
       notes: p.notes || [], codeMap: p.codeMap || {}, sel: [], versions: null
-    }, () => { this._planHold = false; });
+    }, () => { this._planHold = false; this.persist(false); });
   }
   dropVersion(id) {
     // Server snapshots are pruned by the API's cap-25 rule, not from here.
@@ -2075,23 +2604,26 @@ class Component extends DCLogic {
      Anything else — no session, a viewer role, an unknown code, a location or
      project barcode — returns null and the caller falls through to the local
      library match and then the bind dialog, unchanged. */
-  async lookupCode(code) {
+  async lookupCode(code, timeoutMs) {
     if (!rwOnline()) return null;
     let j = null;
+    const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    const timer = controller ? setTimeout(() => controller.abort(), timeoutMs || 15000) : null;
+    const signal = controller ? controller.signal : undefined;
     try {
       const send = async (token) => fetch('/api/inventory/codes/lookup', {
         method: 'POST',
         credentials: 'same-origin',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json', 'X-Solari-CSRF': token },
-        body: JSON.stringify({ code: code })
+        body: JSON.stringify({ code: code }), signal: signal
       });
-      let token = await rwSessionCsrf(false);
+      let token = await rwSessionCsrf(false, signal);
       if (!token) return null;
       let r = await send(token);
       if (r.status === 403) {
         const failure = await r.clone().json().catch(() => null);
         if (failure && failure.error && failure.error.message === 'Missing or invalid CSRF token.') {
-          token = await rwSessionCsrf(true);
+          token = await rwSessionCsrf(true, signal);
           if (!token) return null;
           r = await send(token);
         }
@@ -2099,6 +2631,7 @@ class Component extends DCLogic {
       if (!r.ok) return null;
       j = await r.json();
     } catch (e) { return null; }
+    finally { if (timer) clearTimeout(timer); }
     const d = j && j.ok ? j.data : null;
     if (!d || !d.found || d.subjectTable !== 'hardware_units' || !d.subject) return null;
     const hit = window.RW.DEVICES.find((x) => String(x.id) === String(d.subject.modelId));
@@ -2864,6 +3397,7 @@ class Component extends DCLogic {
     }
     const dot = { idle: this.T.faint, connecting: this.T.warn, live: this.T.ok, error: this.T.crit }[L.status] || this.T.faint;
     const age = L.at ? Math.max(0, Math.round((Date.now() - L.at) / 1000)) + 's ago' : '—';
+    const planConflict = this._planHashConflict || /shared plan changed elsewhere|local plan differs from shared copy/i.test(s.saved || '');
 
     return {
       chromeDisplay: s.chrome === false ? 'none' : 'flex',
@@ -2977,8 +3511,11 @@ class Component extends DCLogic {
       kindList: ['switch', 'gateway', 'router', 'ap', 'server', 'sbc', 'power', 'printer', 'camera', 'appliance', 'other'],
 
       menu: s.menu, openMenu: () => this.setState({ menu: !s.menu }), closeMenu: () => this.setState({ menu: false }),
-      saveNote: 'Autosaved · ' + s.devices.length + ' devices · ' + s.cables.length + ' cables',
-      menuItems: [
+      saveNote: (s.saved || (rwOnline() ? 'Autosaved locally · shared sync pending' : 'Autosaved locally · offline')) + ' · ' + s.devices.length + ' devices · ' + s.cables.length + ' cables',
+      menuItems: (planConflict ? [
+        { name: 'Save local edits as a separate shared plan…', go: () => this.savePlanConflictAsCopy() },
+        ...(this._planDeleted ? [] : [{ name: 'Load shared plan · archive local edits…', go: () => this.discardPlanConflictAndReload() }])
+      ] : []).concat([
         { name: 'Export plan (JSON)', go: () => { this.exportJson(); this.setState({ menu: false }); } },
         { name: 'Import plan (JSON)', go: () => this.importJson() },
         { name: 'Export connections (CSV)', go: () => { this.exportCsv(); this.setState({ menu: false }); } },
@@ -2992,7 +3529,7 @@ class Component extends DCLogic {
         { name: 'Keyboard shortcuts', go: () => this.setState({ help: true, menu: false }) },
         { name: 'Fit to screen', go: () => { this.fitAll(); this.setState({ menu: false }); } },
         { name: 'Clear plan', go: () => { if (confirm('Delete all ' + this.state.devices.length + ' devices and ' + this.state.cables.length + ' cables? Undo restores the plan.')) { this._geo = {}; this.setState({ devices: [], cables: [], racks: [], notes: [], sel: [], menu: false }); } } }
-      ],
+      ]),
 
       q: s.q, setQ: (e) => this.setState({ q: e.target.value }),
       fType: s.fType, setFType: (e) => this.setState({ fType: e.target.value }),

@@ -18,7 +18,7 @@ live PHP API.**
 | D1 | RackWire ships as a self-contained app under `dashboard/public/rackwire/` (`index.html` + `device-library.js` + `live-adapter.js` + `support.js`), served same-origin from `/var/www/solarinet/rackwire/`. *(Amendment, brand-integration: the app additionally ships `vendor/` — vendored React/ReactDOM/Babel wired through `support.js`'s resource override — closing the runtime CDN dependency; `file://` is now fully offline. "Self-contained" here now includes that directory.)* | No new Apache config; session cookie rides along; standalone URL works; iPad file:// offline use preserved. |
 | D2 | Dashboard embed = same-origin iframe screen (`screens-rackwire.jsx`) driving the existing postMessage bridge (`{source:'rackwire', cmd, args}`). First iframe in the SPA; `X-Frame-Options SAMEORIGIN` already permits it. | RackWire is not a Babel-JSX module; porting = rewrite; HANDOFF §4 requires standalone to keep working. |
 | D3 | Telemetry transport = `solarinet-rest` polling `GET /api/rackwire/telemetry` with session-cookie auth (no token; fetch default `credentials: same-origin` suffices). No WebSocket — none exists and persistent PHP workers are forbidden by architecture. | Dashboard brief §7. `solarinet-ws` stays registered but unused. |
-| D4 | Plan persistence = new SoR tables (`rw_plans`, `rw_plan_versions`) on cesium via `Sor::db()` (authoritative, 503 when unreachable), with client-side localStorage fallback for file:// / offline. | Plans are human-curated infra records; SoR replicates to benzene; commit-to-SoR then shares one DB/txn. |
+| D4 | Plan persistence = new SoR tables (`rw_plans`, `rw_plan_versions`) on cesium via `Sor::db()` (authoritative, 503 when unreachable), with client-side localStorage fallback for file:// / offline. Existing-plan updates use a SHA-256 base hash and return 409 on concurrent change. | Plans are human-curated infra records; SoR replicates to benzene; commit-to-SoR then shares one DB/txn. |
 | D5 | Power modeling extends the existing SoR shape rather than a parallel domain: power inlets/outlets are `interfaces` rows (new `if_kind` values), power cords are `interconnects` (new `link_kind 'power'`), plus a new `power_circuits` table hanging off `locations`. | SoR brief §2/§8: reuse existing structures, no new edge tables. |
 | D6 | Committing a plan to SoR writes `interconnects` (asserted_kind='human', a dedicated `sources` row for RackWire) and `locations` racks/positions. Machine `lldp_adjacency` rows are read-only context, never treated as planned cables — filter on `link_kind` + `asserted_kind`. | SoR brief §2, §4. |
 | D7 | Barcode lookup = existing `POST /api/inventory/codes/lookup` (operator-gated, session cookie + `X-Solari-CSRF`; writes an audit scan row). No new barcode service. | Migration 015 anticipated this; RackWire refreshes and retries one expired dashboard CSRF token. |
@@ -98,12 +98,12 @@ bootstrap. Endpoints:
 | Verb | Path | Notes |
 |---|---|---|
 | GET | `/api/rackwire/plans` | list (id, name, updated, sans blob) |
-| GET | `/api/rackwire/plans/{id}` | full plan_json |
-| POST | `/api/rackwire/plans` | create/update (upsert by id), operator |
-| POST | `/api/rackwire/plans/{id}/delete` | soft delete, operator |
+| GET | `/api/rackwire/plans/{id}` | full plan_json and `planHash` (SHA-256 of the JSON tuple `[name, thumbnail, notes, plan_json]`) |
+| POST | `/api/rackwire/plans` | create with no id; update by id requires `expectedHash` from the last GET/save, operator; omitted thumbnail/notes retain stored metadata and are excluded from stale-hash retry comparison; stale hash returns typed `plan_conflict` 409 unless the submitted name, plan JSON, and explicitly supplied metadata match the stored row, in which case an uncertain retry returns the current row idempotently |
+| POST | `/api/rackwire/plans/{id}/delete` | soft delete, operator; this route does not accept an expected hash; row-lock waits are bounded to five seconds and return retryable `busy` 503 |
 | GET | `/api/rackwire/plans/{id}/versions` | list snapshots |
-| POST | `/api/rackwire/plans/{id}/versions` | save snapshot, cap 25 (prune oldest), operator |
-| POST | `/api/rackwire/plans/{id}/restore` | restore snapshot, operator |
+| POST | `/api/rackwire/plans/{id}/versions` | save current row as a snapshot, cap 25 (prune oldest), operator; this route does not accept an expected hash, so a concurrent update may be the version captured; row-lock waits are bounded to five seconds and return retryable `busy` 503 |
+| POST | `/api/rackwire/plans/{id}/restore` | body requires `versionId` and `expectedHash` from the last GET/save; restores under a row lock only when the current plan hash matches; a retry is idempotent when the selected snapshot's `plan_json` is already current, and the returned row contains current metadata (name, thumbnail, and notes); otherwise a stale hash returns typed `plan_conflict` 409 |
 | GET | `/api/rackwire/library` | hardware_models ⋈ rw_model_groups → HANDOFF §6 device-definition shape; include per-model unit count |
 | POST | `/api/rackwire/library/{modelId}/groups` | upsert rw_model_groups from a library-shaped definition, operator |
 | GET | `/api/rackwire/telemetry` | frame endpoint, see §3 |
@@ -144,9 +144,12 @@ transaction.
    Planner.dc.html` → `index.html`); keep `?embed=1`, `?view=`, `?live=` flags.
 2. Token bridge `<style>` (D9) + `tok()` re-resolve on data-theme changes; theme
    handshake from parent via existing bridge `theme()` or localStorage read.
-3. Persistence adapter: `load()`/`persist()` try `/api/rackwire/plans` first
-   (same-origin fetch), fall back to localStorage on network/401/file:// —
-   standalone offline must keep working byte-for-byte.
+3. Persistence adapter: localStorage records edits immediately; same-origin
+   `/api/rackwire/plans` synchronizes the shared plan. A dirty marker protects
+   unsynced local edits from an older server snapshot on reload. Failed saves
+   remain local, report status, and retry with capped backoff. Fetch requests
+   time out after 15 seconds where `AbortController` is supported. `file://`
+   and offline use retain local planning.
 4. `handleCode()` middle swapped for `POST /api/inventory/codes/lookup` with the
    dashboard session cookie and session-bound `X-Solari-CSRF`; bind dialog stays
    as fallback for unknown codes.
@@ -189,15 +192,16 @@ transaction.
 ## 8. Out of scope (v1)
 
 Known accepted limits (Lead-ratified at review):
-- `rackwire/index.html` loads its three sub-scripts without `?v=` — deliberate
-  (query strings are untested on the iPad file:// path); staleness is covered by
-  the SW's network-first strategy for non-vendor assets.
+- `rackwire/index.html` versions all 14 app-owned runtime scripts with the same
+  `?v=` cache revision used by the dashboard embed and standalone link. This
+  keeps browser caches aligned across the parent SPA and RackWire bundle. The
+  standalone `file://` path passes Chromium acceptance; iPad Safari query-string
+  behavior remains unverified.
 - `support.js` (vendored, do-not-edit per HANDOFF) has a second wildcard
   message listener limited to `__dc_theme`/`__dc_design_mode` — same class as
   the fixed bridge issue but theme-toggle reach only; revisit if support.js is
   ever re-vendored.
 
 
-Multi-user conflict resolution (last-write-wins + versions only), WebSocket/SSE
-telemetry, rack elevation view, CORS/token auth for off-origin standalone, PoE
-telemetry (no data source), camera scanning on iOS.
+WebSocket/SSE telemetry, rack elevation view, CORS/token auth for off-origin
+standalone, PoE telemetry (no data source), camera scanning on iOS.
