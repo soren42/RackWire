@@ -1,0 +1,2 @@
+# Pinned test-only dependency; not installed by the discovery service.
+pytest==8.3.5
